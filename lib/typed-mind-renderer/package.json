@@ -1,0 +1,33 @@
+{
+  "name": "@sammons/typed-mind-renderer",
+  "version": "1.0.0",
+  "description": "Interactive HTML/D3.js renderer for TypedMind DSL",
+  "author": "sammons",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "static"
+  ],
+  "scripts": {
+    "build": "tsc --build && npm run copy-static",
+    "copy-static": "mkdir -p dist && cp -r src/static dist/",
+    "dev": "tsc --build --watch",
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@sammons/typed-mind": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "tsup": "^8.3.5",
+    "vitest": "^2.1.8"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

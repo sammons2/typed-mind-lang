@@ -1,0 +1,264 @@
+import type { AnyEntity, ValidationError, ValidationResult } from './types';
+
+export class DSLValidator {
+  private errors: ValidationError[] = [];
+
+  validate(entities: Map<string, AnyEntity>): ValidationResult {
+    this.errors = [];
+
+    this.checkOrphans(entities);
+    this.checkImports(entities);
+    this.checkCircularDeps(entities);
+    this.checkEntryPoint(entities);
+    this.checkUniquePaths(entities);
+
+    return {
+      valid: this.errors.length === 0,
+      errors: this.errors,
+    };
+  }
+
+  private checkOrphans(entities: Map<string, AnyEntity>): void {
+    const referenced = new Set<string>();
+
+    // Find all referenced entities
+    for (const entity of entities.values()) {
+      if ('imports' in entity) {
+        for (const imp of entity.imports) {
+          if (!imp.includes('*')) {
+            referenced.add(imp);
+          }
+        }
+      }
+      if ('exports' in entity) {
+        for (const exp of entity.exports) {
+          referenced.add(exp);
+        }
+      }
+      if ('calls' in entity) {
+        for (const call of entity.calls) {
+          referenced.add(call);
+        }
+      }
+      if ('methods' in entity) {
+        for (const method of entity.methods) {
+          referenced.add(method);
+        }
+      }
+      if (entity.type === 'Program') {
+        referenced.add(entity.entry);
+      }
+    }
+
+    // Check for orphans
+    for (const [name, entity] of entities) {
+      if (!referenced.has(name) && entity.type !== 'Program') {
+        this.addError({
+          position: entity.position,
+          message: `Orphaned entity '${name}'`,
+          severity: 'error',
+          suggestion: 'Remove or reference this entity',
+        });
+      }
+    }
+  }
+
+  private checkImports(entities: Map<string, AnyEntity>): void {
+    for (const entity of entities.values()) {
+      if (!('imports' in entity)) continue;
+
+      for (const imp of entity.imports) {
+        // Handle wildcards
+        if (imp.includes('*')) {
+          const base = imp.split('*')[0] as string;
+          const hasMatch = Array.from(entities.keys()).some((name) => name.startsWith(base));
+
+          if (!hasMatch) {
+            this.addError({
+              position: entity.position,
+              message: `No entities match import pattern '${imp}'`,
+              severity: 'error',
+            });
+          }
+        } else if (!entities.has(imp)) {
+          // Fuzzy match for suggestions
+          const suggestion = this.findSimilar(imp, entities);
+          const error: ValidationError = {
+            position: entity.position,
+            message: `Import '${imp}' not found`,
+            severity: 'error',
+          };
+          if (suggestion) {
+            error.suggestion = `Did you mean '${suggestion}'?`;
+          }
+          this.addError(error);
+        }
+      }
+    }
+  }
+
+  private checkCircularDeps(entities: Map<string, AnyEntity>): void {
+    const graph = this.buildDependencyGraph(entities);
+    const visited = new Set<string>();
+    const recursionStack = new Set<string>();
+
+    const hasCycle = (node: string, path: string[] = []): string[] | null => {
+      visited.add(node);
+      recursionStack.add(node);
+      path.push(node);
+
+      const deps = graph.get(node) || [];
+      for (const dep of deps) {
+        if (!visited.has(dep)) {
+          const cycle = hasCycle(dep, [...path]);
+          if (cycle) return cycle;
+        } else if (recursionStack.has(dep)) {
+          return [...path, dep];
+        }
+      }
+
+      recursionStack.delete(node);
+      return null;
+    };
+
+    for (const name of entities.keys()) {
+      if (!visited.has(name)) {
+        const cycle = hasCycle(name);
+        if (cycle) {
+          const entity = entities.get(name);
+          if (entity) {
+            this.addError({
+              position: entity.position,
+              message: `Circular dependency detected: ${cycle.join(' -> ')}`,
+              severity: 'error',
+            });
+          }
+        }
+      }
+    }
+  }
+
+  private checkEntryPoint(entities: Map<string, AnyEntity>): void {
+    const programs = Array.from(entities.values()).filter((e) => e.type === 'Program');
+
+    if (programs.length === 0) {
+      this.addError({
+        position: { line: 1, column: 1 },
+        message: 'No program entry point defined',
+        severity: 'error',
+        suggestion: 'Add a Program entity: AppName -> EntryFile',
+      });
+    } else if (programs.length > 1) {
+      for (let i = 1; i < programs.length; i++) {
+        const program = programs[i];
+        if (program) {
+          this.addError({
+            position: program.position,
+            message: 'Multiple program entry points defined',
+            severity: 'error',
+            suggestion: 'Only one Program entity is allowed',
+          });
+        }
+      }
+    }
+  }
+
+  private checkUniquePaths(entities: Map<string, AnyEntity>): void {
+    const paths = new Map<string, AnyEntity>();
+
+    for (const entity of entities.values()) {
+      if ('path' in entity && entity.path) {
+        const existing = paths.get(entity.path);
+        if (existing) {
+          this.addError({
+            position: entity.position,
+            message: `Duplicate path '${entity.path}'`,
+            severity: 'error',
+            suggestion: `Already used by '${existing.name}'`,
+          });
+        } else {
+          paths.set(entity.path, entity);
+        }
+      }
+    }
+  }
+
+  private buildDependencyGraph(entities: Map<string, AnyEntity>): Map<string, string[]> {
+    const graph = new Map<string, string[]>();
+
+    for (const [name, entity] of entities) {
+      const deps: string[] = [];
+
+      if ('imports' in entity) {
+        deps.push(...entity.imports.filter((imp) => !imp.includes('*')));
+      }
+      if ('calls' in entity) {
+        deps.push(...entity.calls);
+      }
+      if (entity.type === 'Program') {
+        deps.push(entity.entry);
+      }
+
+      graph.set(name, deps);
+    }
+
+    return graph;
+  }
+
+  private findSimilar(target: string, entities: Map<string, AnyEntity>): string | null {
+    let bestMatch = '';
+    let bestScore = 0.6; // Threshold
+
+    for (const name of entities.keys()) {
+      const score = this.similarity(target.toLowerCase(), name.toLowerCase());
+      if (score > bestScore) {
+        bestScore = score;
+        bestMatch = name;
+      }
+    }
+
+    return bestMatch || null;
+  }
+
+  private similarity(a: string, b: string): number {
+    if (a === b) return 1;
+    if (a.length === 0 || b.length === 0) return 0;
+
+    // Create and initialize matrix
+    const matrix: number[][] = [];
+    for (let i = 0; i <= b.length; i++) {
+      matrix[i] = [];
+      for (let j = 0; j <= a.length; j++) {
+        if (i === 0) {
+          matrix[i][j] = j;
+        } else if (j === 0) {
+          matrix[i][j] = i;
+        } else {
+          matrix[i][j] = 0;
+        }
+      }
+    }
+
+    // Fill the matrix
+    for (let i = 1; i <= b.length; i++) {
+      for (let j = 1; j <= a.length; j++) {
+        if (b.charAt(i - 1) === a.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1, // substitution
+            matrix[i][j - 1] + 1, // insertion
+            matrix[i - 1][j] + 1 // deletion
+          );
+        }
+      }
+    }
+
+    const distance = matrix[b.length][a.length];
+    return 1 - distance / Math.max(a.length, b.length);
+  }
+
+  private addError(error: ValidationError): void {
+    this.errors.push(error);
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "name": "@sammons/typed-mind-cli",
+  "version": "1.0.0",
+  "description": "Command-line interface for TypedMind DSL",
+  "author": "sammons",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "typed-mind": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc --build && chmod +x dist/cli.js",
+    "dev": "tsc --build --watch",
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@sammons/typed-mind": "workspace:*",
+    "@sammons/typed-mind-renderer": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "tsup": "^8.3.5",
+    "vitest": "^2.1.8"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

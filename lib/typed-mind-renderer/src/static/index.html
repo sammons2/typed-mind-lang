@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TypedMind Architecture Viewer</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            overflow: hidden;
+        }
+        
+        #container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        #sidebar {
+            width: 300px;
+            background: #161b22;
+            border-right: 1px solid #30363d;
+            overflow-y: auto;
+            padding: 16px;
+        }
+        
+        #canvas {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .entity-list {
+            margin-top: 16px;
+        }
+        
+        .entity-group {
+            margin-bottom: 24px;
+        }
+        
+        .entity-group h3 {
+            color: #58a6ff;
+            font-size: 14px;
+            text-transform: uppercase;
+            margin: 0 0 8px 0;
+        }
+        
+        .entity-item {
+            padding: 8px 12px;
+            margin: 4px 0;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .entity-item:hover {
+            background: #21262d;
+            border-color: #58a6ff;
+        }
+        
+        .entity-item.selected {
+            background: #1f6feb;
+            border-color: #58a6ff;
+        }
+        
+        .entity-name {
+            font-weight: 600;
+            color: #f0f6fc;
+        }
+        
+        .entity-path {
+            font-size: 12px;
+            color: #8b949e;
+            margin-top: 4px;
+        }
+        
+        #graph {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .node {
+            cursor: pointer;
+        }
+        
+        .node rect {
+            fill: #21262d;
+            stroke: #30363d;
+            stroke-width: 2;
+            transition: all 0.2s;
+        }
+        
+        .node:hover rect {
+            fill: #30363d;
+            stroke: #58a6ff;
+        }
+        
+        .node.selected rect {
+            fill: #1f6feb;
+            stroke: #58a6ff;
+            stroke-width: 3;
+        }
+        
+        .node text {
+            fill: #f0f6fc;
+            font-size: 14px;
+            font-weight: 600;
+            pointer-events: none;
+        }
+        
+        .link {
+            fill: none;
+            stroke: #484f58;
+            stroke-width: 2;
+            marker-end: url(#arrowhead);
+        }
+        
+        .link.import {
+            stroke: #3fb950;
+        }
+        
+        .link.export {
+            stroke: #58a6ff;
+        }
+        
+        .link.call {
+            stroke: #f85149;
+            stroke-dasharray: 5,5;
+        }
+        
+        #details {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 300px;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 16px;
+            display: none;
+        }
+        
+        #details h3 {
+            margin: 0 0 12px 0;
+            color: #58a6ff;
+        }
+        
+        #details .detail-row {
+            margin: 8px 0;
+            font-size: 14px;
+        }
+        
+        #details .detail-label {
+            color: #8b949e;
+            display: inline-block;
+            width: 80px;
+        }
+        
+        #details .detail-value {
+            color: #f0f6fc;
+        }
+        
+        .controls {
+            position: absolute;
+            bottom: 16px;
+            left: 16px;
+            display: flex;
+            gap: 8px;
+        }
+        
+        button {
+            background: #21262d;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        button:hover {
+            background: #30363d;
+            border-color: #58a6ff;
+        }
+
+        #error-panel {
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            width: 400px;
+            max-height: 300px;
+            background: #161b22;
+            border: 1px solid #f85149;
+            border-radius: 8px;
+            padding: 16px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        #error-panel h3 {
+            margin: 0 0 12px 0;
+            color: #f85149;
+        }
+
+        .error-item {
+            margin: 8px 0;
+            font-size: 13px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            color: #f85149;
+        }
+
+        .error-item .suggestion {
+            color: #58a6ff;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="sidebar">
+            <h2 style="margin: 0 0 16px 0; color: #f0f6fc;">TypedMind Explorer</h2>
+            <input type="text" id="search" placeholder="Search entities..." style="
+                width: 100%;
+                padding: 8px 12px;
+                background: #0d1117;
+                border: 1px solid #30363d;
+                border-radius: 6px;
+                color: #c9d1d9;
+                font-size: 14px;
+            ">
+            <div class="entity-list" id="entityList"></div>
+        </div>
+        
+        <div id="canvas">
+            <svg id="graph"></svg>
+            <div id="details"></div>
+            <div id="error-panel"></div>
+            <div class="controls">
+                <button onclick="window.typedMindRenderer.zoomFit()">Fit View</button>
+                <button onclick="window.typedMindRenderer.toggleLayout()">Toggle Layout</button>
+                <button onclick="window.typedMindRenderer.clearSelection()">Clear Selection</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="renderer.js"></script>
+</body>
+</html>
