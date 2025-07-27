@@ -1,4 +1,4 @@
-export type EntityType = 'Program' | 'File' | 'Function' | 'Class' | 'Constants';
+export type EntityType = 'Program' | 'File' | 'Function' | 'Class' | 'Constants' | 'DTO';
 
 export interface Position {
   line: number;
@@ -31,6 +31,8 @@ export interface FunctionEntity extends Entity {
   signature: string;
   description?: string;
   calls: string[];
+  input?: string; // Can reference a DTO name
+  output?: string; // Can reference a DTO name
 }
 
 export interface ClassEntity extends Entity {
@@ -48,7 +50,20 @@ export interface ConstantsEntity extends Entity {
   schema?: string;
 }
 
-export type AnyEntity = ProgramEntity | FileEntity | FunctionEntity | ClassEntity | ConstantsEntity;
+export interface DTOField {
+  name: string;
+  type: string;
+  description?: string;
+  optional?: boolean;
+}
+
+export interface DTOEntity extends Entity {
+  type: 'DTO';
+  purpose?: string;
+  fields: DTOField[];
+}
+
+export type AnyEntity = ProgramEntity | FileEntity | FunctionEntity | ClassEntity | ConstantsEntity | DTOEntity;
 
 export interface ValidationError {
   position: Position;

@@ -1,0 +1,53 @@
+# DTO Example
+
+TodoApp -> AppEntry v2.0
+
+AppEntry @ src/index.ts:
+  <- [UserService]
+  -> [startServer]
+
+UserService @ src/services/user.ts:
+  -> [createUser, getUser, validateUser, saveToDatabase, findInDatabase, UserCreateDTO, UserDTO]
+
+# DTO Definitions
+UserCreateDTO % "Data for creating a new user"
+  - name: string "User's full name"
+  - email: string "User's email address"
+  - age: number "User's age" (optional)
+  - isActive: boolean "Whether user is active"
+
+UserDTO % "Complete user data"
+  - id: string "Unique user identifier"
+  - name: string "User's full name"
+  - email: string "User's email address"
+  - age: number "User's age" (optional)
+  - isActive: boolean "Whether user is active"
+  - createdAt: Date "When user was created"
+
+# Functions using DTOs
+createUser :: (data: UserCreateDTO) => Promise<UserDTO>
+  "Creates a new user"
+  <- UserCreateDTO
+  -> UserDTO
+  ~> [validateUser, saveToDatabase]
+
+getUser :: (id: string) => Promise<UserDTO>
+  "Gets user by ID"
+  -> UserDTO
+  ~> [findInDatabase]
+
+validateUser :: (data: UserCreateDTO) => ValidationResult
+  "Validates user creation data"
+  <- UserCreateDTO
+
+saveToDatabase :: (data: UserCreateDTO) => Promise<UserDTO>
+  "Saves user to database"
+  <- UserCreateDTO
+  -> UserDTO
+
+findInDatabase :: (id: string) => Promise<UserDTO>
+  "Finds user in database"
+  -> UserDTO
+
+startServer :: () => Promise<void>
+  "Starts the server"

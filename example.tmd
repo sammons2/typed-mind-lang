@@ -46,7 +46,7 @@ UserController <:
 # Service layer for business logic
 TodoServiceFile @ src/services/todo.ts:
   <- [TodoModelFile, ValidatorFile]
-  -> [TodoService]
+  -> [TodoService, TodoDTO]
 
 UserServiceFile @ src/services/user.ts:
   <- [UserModelFile]
@@ -90,10 +90,38 @@ app <:
   => [listen, use]
 
 ValidatorFile @ src/validators/todo.ts:
-  -> [validateTodo]
+  -> [validateTodo, TodoCreateDTO, ValidationErrorDTO, ValidationResultDTO]
 
-validateTodo :: (data) => ValidationResult
+# DTO Definitions
+TodoCreateDTO % "Data for creating a new todo"
+  - title: string "Todo title"
+  - description: string "Todo description" (optional)
+  - priority: string "Priority level: low, medium, high"
+  - dueDate: Date "When todo is due" (optional)
+
+TodoDTO % "Complete todo data"
+  - id: string "Unique todo identifier"
+  - title: string "Todo title"
+  - description: string "Todo description" (optional)
+  - priority: string "Priority level: low, medium, high"
+  - dueDate: Date "When todo is due" (optional)
+  - completed: boolean "Whether todo is completed"
+  - createdAt: Date "When todo was created"
+  - updatedAt: Date "When todo was last updated"
+
+ValidationErrorDTO % "Single validation error"
+  - field: string "Field that has the error"
+  - message: string "Error message"
+  - code: string "Error code for programmatic handling"
+
+ValidationResultDTO % "Result of validation operation"
+  - isValid: boolean "Whether validation passed"
+  - errors: ValidationErrorDTO[] "List of validation errors"
+
+validateTodo :: (data: TodoCreateDTO) => ValidationResultDTO
   "Validates todo data"
+  <- TodoCreateDTO
+  -> ValidationResultDTO
 
 # Utility functions exported by ControllerUtilsFile
 handleError :: (error, res) => void
@@ -160,19 +188,23 @@ deleteUser :: (req, res) => Promise<void>
   ~> [UserService.deleteUserService, sendResponse]
 
 # Service method implementations
-createTodo :: (data) => Promise<Todo>
+createTodo :: (data: TodoCreateDTO) => Promise<TodoDTO>
   "Creates todo in database"
+  <- TodoCreateDTO
+  -> TodoDTO
   ~> [validateTodo, TodoModel.create]
 
-findTodos :: (query) => Promise<Todo[]>
+findTodos :: (query) => Promise<TodoDTO[]>
   "Finds todos in database"
   ~> [TodoModel.find]
 
-updateTodo :: (id, data) => Promise<Todo>
+updateTodo :: (id: string, data: TodoCreateDTO) => Promise<TodoDTO>
   "Updates todo in database"
+  <- TodoCreateDTO
+  -> TodoDTO
   ~> [validateTodo, TodoModel.update]
 
-deleteTodo :: (id) => Promise<void>
+deleteTodo :: (id: string) => Promise<void>
   "Deletes todo from database"
   ~> [TodoModel.delete]
 

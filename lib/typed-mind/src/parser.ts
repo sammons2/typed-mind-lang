@@ -5,6 +5,8 @@ import type {
   FunctionEntity,
   ClassEntity,
   ConstantsEntity,
+  DTOEntity,
+  DTOField,
   Position,
 } from './types';
 
@@ -51,12 +53,12 @@ export class DSLParser {
 
   private isEntityDeclaration(line: string): boolean {
     // Match various entity patterns - entities can start with any letter
-    return /^\w+\s*(->|@|<:|!|::|\s*:)/.test(line);
+    return /^\w+\s*(->|@|<:|!|::|%|\s*:)/.test(line);
   }
 
   private isContinuation(line: string): boolean {
     // Lines starting with whitespace and specific operators are continuations
-    return /^\s+(->|<-|~>|=>|")/.test(line);
+    return /^\s+(->|<-|~>|=>|"|-)/.test(line);
   }
 
   private parseEntity(line: string, lineNum: number): AnyEntity | null {
@@ -167,6 +169,31 @@ export class DSLParser {
       } as ConstantsEntity;
     }
 
+    // DTO: UserDTO % "User data transfer object"
+    const dtoMatch = line.match(/^(\w+)\s*%\s*"([^"]+)"$/);
+    if (dtoMatch) {
+      return {
+        name: dtoMatch[1] as string,
+        type: 'DTO',
+        purpose: dtoMatch[2] as string,
+        fields: [],
+        position,
+        raw: line,
+      } as DTOEntity;
+    }
+
+    // DTO without purpose: UserDTO %
+    const dtoSimpleMatch = line.match(/^(\w+)\s*%$/);
+    if (dtoSimpleMatch) {
+      return {
+        name: dtoSimpleMatch[1] as string,
+        type: 'DTO',
+        fields: [],
+        position,
+        raw: line,
+      } as DTOEntity;
+    }
+
     // Long form with explicit type
     const longFormMatch = line.match(/^(\w+)\s*:$/);
     if (longFormMatch) {
@@ -208,10 +235,40 @@ export class DSLParser {
       return;
     }
 
+    // Function Input: <- UserCreateDTO
+    const inputMatch = line.match(/^<-\s*(\w+)$/);
+    if (inputMatch && entity.type === 'Function') {
+      const funcEntity = entity as FunctionEntity;
+      funcEntity.input = inputMatch[1] as string;
+      return;
+    }
+
+    // Function Output: -> UserDTO
+    const outputMatch = line.match(/^->\s*(\w+)$/);
+    if (outputMatch && entity.type === 'Function') {
+      const funcEntity = entity as FunctionEntity;
+      funcEntity.output = outputMatch[1] as string;
+      return;
+    }
+
     // Methods: => [handleCreate, handleGet]
     const methodsMatch = line.match(/^=>\s*\[([^\]]+)\]/);
     if (methodsMatch && 'methods' in entity) {
       entity.methods = this.parseList(methodsMatch[1] as string);
+      return;
+    }
+
+    // DTO Fields: - fieldName: type "description" (optional)
+    const dtoFieldMatch = line.match(/^-\s*(\w+):\s*([^"]+?)(?:\s*"([^"]+)")?(?:\s*\(([^)]+)\))?$/);
+    if (dtoFieldMatch && entity.type === 'DTO') {
+      const dtoEntity = entity as DTOEntity;
+      const field: DTOField = {
+        name: dtoFieldMatch[1] as string,
+        type: dtoFieldMatch[2]?.trim() as string,
+        description: dtoFieldMatch[3],
+        optional: dtoFieldMatch[4]?.includes('optional') || false,
+      };
+      dtoEntity.fields.push(field);
       return;
     }
 

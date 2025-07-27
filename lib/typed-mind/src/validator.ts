@@ -1,4 +1,4 @@
-import type { AnyEntity, ClassEntity, ValidationError, ValidationResult } from './types';
+import type { AnyEntity, ClassEntity, FunctionEntity, ValidationError, ValidationResult } from './types';
 
 export class DSLValidator {
   private errors: ValidationError[] = [];
@@ -15,6 +15,7 @@ export class DSLValidator {
     this.checkDuplicateExports(entities);
     this.checkMethodCalls(entities);
     this.checkUndefinedExports(entities);
+    this.checkFunctionDTOs(entities);
 
     return {
       valid: this.errors.length === 0,
@@ -394,6 +395,53 @@ export class DSLValidator {
               message: `Export '${exportName}' is not defined anywhere in the codebase`,
               severity: 'error',
               suggestion: `Define '${exportName}' as a Function, Class, or Constants entity`,
+            });
+          }
+        }
+      }
+    }
+  }
+
+  private checkFunctionDTOs(entities: Map<string, AnyEntity>): void {
+    // Check that function input/output DTOs exist
+    for (const entity of entities.values()) {
+      if (entity.type === 'Function') {
+        const funcEntity = entity as FunctionEntity;
+        
+        if (funcEntity.input) {
+          const inputEntity = entities.get(funcEntity.input);
+          if (!inputEntity) {
+            this.addError({
+              position: entity.position,
+              message: `Function input DTO '${funcEntity.input}' not found`,
+              severity: 'error',
+              suggestion: `Define '${funcEntity.input}' as a DTO entity`,
+            });
+          } else if (inputEntity.type !== 'DTO') {
+            this.addError({
+              position: entity.position,
+              message: `Function input '${funcEntity.input}' is not a DTO (it's a ${inputEntity.type})`,
+              severity: 'error',
+              suggestion: `Change '${funcEntity.input}' to a DTO or use a different input type`,
+            });
+          }
+        }
+
+        if (funcEntity.output) {
+          const outputEntity = entities.get(funcEntity.output);
+          if (!outputEntity) {
+            this.addError({
+              position: entity.position,
+              message: `Function output DTO '${funcEntity.output}' not found`,
+              severity: 'error',
+              suggestion: `Define '${funcEntity.output}' as a DTO entity`,
+            });
+          } else if (outputEntity.type !== 'DTO') {
+            this.addError({
+              position: entity.position,
+              message: `Function output '${funcEntity.output}' is not a DTO (it's a ${outputEntity.type})`,
+              severity: 'error',
+              suggestion: `Change '${funcEntity.output}' to a DTO or use a different output type`,
             });
           }
         }
