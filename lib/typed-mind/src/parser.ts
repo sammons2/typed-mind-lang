@@ -78,15 +78,41 @@ export class DSLParser {
     // File: UserService @ src/services/user.ts:
     const fileMatch = line.match(/^(\w+)\s*@\s*([^:]+):/);
     if (fileMatch) {
-      return {
-        name: fileMatch[1] as string,
-        type: 'File',
-        path: fileMatch[2]?.trim() as string,
-        imports: [],
-        exports: [],
-        position,
-        raw: line,
-      } as FileEntity;
+      // Check if this is actually a class by looking ahead for methods
+      let isClass = false;
+      for (let i = lineNum; i < Math.min(lineNum + 5, this.lines.length); i++) {
+        const nextLine = this.lines[i]?.trim();
+        if (nextLine?.startsWith('=>')) {
+          isClass = true;
+          break;
+        }
+        // Stop looking if we hit another entity declaration
+        if (nextLine && this.isEntityDeclaration(nextLine)) {
+          break;
+        }
+      }
+
+      if (isClass) {
+        return {
+          name: fileMatch[1] as string,
+          type: 'Class',
+          path: fileMatch[2]?.trim() as string,
+          implements: [],
+          methods: [],
+          position,
+          raw: line,
+        } as ClassEntity;
+      } else {
+        return {
+          name: fileMatch[1] as string,
+          type: 'File',
+          path: fileMatch[2]?.trim() as string,
+          imports: [],
+          exports: [],
+          position,
+          raw: line,
+        } as FileEntity;
+      }
     }
 
     // Function: createUser :: (data: UserInput) => Promise<User>
@@ -102,10 +128,21 @@ export class DSLParser {
       } as FunctionEntity;
     }
 
-    // Class: UserController <: BaseController, IController
-    const classMatch = line.match(/^(\w+)\s*<:\s*(.+)$/);
+    // Class: UserController <: BaseController, IController or just TodoModel <:
+    const classMatch = line.match(/^(\w+)\s*<:\s*(.*)$/);
     if (classMatch) {
-      const [baseClass, ...interfaces] = (classMatch[2] as string).split(',').map((s) => s.trim());
+      const inheritance = classMatch[2]?.trim();
+      let baseClass: string | undefined;
+      let interfaces: string[] = [];
+      
+      if (inheritance) {
+        const parts = inheritance.split(',').map((s) => s.trim());
+        if (parts.length > 0 && parts[0]) {
+          baseClass = parts[0];
+          interfaces = parts.slice(1);
+        }
+      }
+      
       return {
         name: classMatch[1] as string,
         type: 'Class',

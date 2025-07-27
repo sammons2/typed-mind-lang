@@ -36,6 +36,7 @@ export interface FunctionEntity extends Entity {
 export interface ClassEntity extends Entity {
   type: 'Class';
   container?: string;
+  path?: string;
   extends?: string;
   implements: string[];
   methods: string[];

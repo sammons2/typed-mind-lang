@@ -1,0 +1,135 @@
+# TypedMind Example - Properly Structured
+
+TodoApp -> AppEntry v2.0
+
+AppEntry @ src/index.ts:
+  <- [ExpressSetup, Routes, DatabaseFile, ConfigFile]
+  -> [startServer]
+
+ExpressSetup @ src/server.ts:
+  <- [express, middlewareIndex]
+  -> [app]
+
+Routes @ src/routes/index.ts:
+  <- [TodoRoutes, UserRoutes]
+  -> [router]
+
+TodoRoutes @ src/routes/todos.ts:
+  <- [TodoControllerFile]
+  -> [todoRouter]
+
+UserRoutes @ src/routes/users.ts:
+  <- [UserControllerFile]
+  -> [userRouter]
+
+TodoControllerFile @ src/controllers/todo.ts:
+  <- [BaseControllerFile, TodoModelFile, ValidatorFile]
+  -> [TodoController]
+
+UserControllerFile @ src/controllers/user.ts:
+  <- [BaseControllerFile, UserModelFile]
+  -> [UserController]
+
+BaseControllerFile @ src/controllers/base.ts:
+  <- [ConfigFile]
+  -> [BaseController]
+
+TodoController <: BaseController
+  => [create, read, update, delete]
+
+UserController <: BaseController
+  => [createUser, readUser, updateUser, deleteUser]
+
+BaseController <:
+  => [handleError, sendResponse]
+
+# Model files export model classes
+TodoModelFile @ src/models/todo.ts:
+  <- [DatabaseFile]
+  -> [TodoModel]
+
+UserModelFile @ src/models/user.ts:
+  <- [DatabaseFile]
+  -> [UserModel]
+
+# Model classes with their methods
+TodoModel <:
+  => [create, find, update, delete]
+
+UserModel <:
+  => [create, find, update, delete]
+
+# Database file exports database class
+DatabaseFile @ src/db/index.ts:
+  <- [mongoose]
+  -> [Database, connection]
+
+Database <:
+  => [connect, disconnect]
+
+# Config as constants
+ConfigFile @ src/config.ts:
+  -> [Config]
+
+Config ! EnvSchema
+
+# External modules
+express @ node_modules/express:
+  -> [Application, Router]
+
+mongoose @ node_modules/mongoose:
+  -> [connect, Schema, model]
+
+middlewareIndex @ src/middleware/index.ts:
+  -> [setupMiddleware]
+
+app <:
+  => [listen, use]
+
+ValidatorFile @ src/validators/todo.ts:
+  -> [validateTodo]
+
+validateTodo :: (data) => ValidationResult
+  "Validates todo data"
+
+# Method implementation details for TodoController
+create :: (req, res) => Promise<void>
+  "Creates new todo item"
+  ~> [validateTodo, TodoModel.create]
+
+read :: (req, res) => Promise<void>
+  "Retrieves todo items"
+  ~> [TodoModel.find]
+
+update :: (req, res) => Promise<void>
+  "Updates existing todo"
+  ~> [validateTodo, TodoModel.update]
+
+delete :: (req, res) => Promise<void>
+  "Deletes a todo item"
+  ~> [TodoModel.delete]
+
+# Method implementation details for UserController
+createUser :: (req, res) => Promise<void>
+  "Creates new user"
+  ~> [UserModel.create]
+
+readUser :: (req, res) => Promise<void>
+  "Gets user data"  
+  ~> [UserModel.find]
+
+updateUser :: (req, res) => Promise<void>
+  "Updates user"
+  ~> [UserModel.update]
+
+deleteUser :: (req, res) => Promise<void>
+  "Deletes user"
+  ~> [UserModel.delete]
+
+# Standalone functions
+startServer :: () => Promise<void>
+  "Starts the Express server"
+  ~> [app.listen, Database.connect]
+
+connection :: mongoose.Connection
+  "Database connection instance"

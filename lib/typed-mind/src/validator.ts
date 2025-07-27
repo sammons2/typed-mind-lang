@@ -1,4 +1,4 @@
-import type { AnyEntity, ValidationError, ValidationResult } from './types';
+import type { AnyEntity, ClassEntity, ValidationError, ValidationResult } from './types';
 
 export class DSLValidator {
   private errors: ValidationError[] = [];
@@ -11,6 +11,10 @@ export class DSLValidator {
     this.checkCircularDeps(entities);
     this.checkEntryPoint(entities);
     this.checkUniquePaths(entities);
+    this.checkClassAndFunctionExports(entities);
+    this.checkDuplicateExports(entities);
+    this.checkMethodCalls(entities);
+    this.checkUndefinedExports(entities);
 
     return {
       valid: this.errors.length === 0,
@@ -260,5 +264,140 @@ export class DSLValidator {
 
   private addError(error: ValidationError): void {
     this.errors.push(error);
+  }
+
+  private checkClassAndFunctionExports(entities: Map<string, AnyEntity>): void {
+    // Build a set of all exported entities
+    const exportedEntities = new Set<string>();
+    
+    // Build a set of all class methods
+    const classMethods = new Set<string>();
+    
+    for (const entity of entities.values()) {
+      if ('exports' in entity && entity.exports) {
+        for (const exp of entity.exports) {
+          exportedEntities.add(exp);
+        }
+      }
+      if ('methods' in entity && entity.methods) {
+        for (const method of entity.methods) {
+          classMethods.add(method);
+        }
+      }
+    }
+
+    // Check that all classes and standalone functions are exported by at least one file
+    // Note: Methods of classes don't need to be exported separately
+    for (const [name, entity] of entities) {
+      if (entity.type === 'Class' && !exportedEntities.has(name)) {
+        this.addError({
+          position: entity.position,
+          message: `Class '${name}' is not exported by any file`,
+          severity: 'error',
+          suggestion: `Add '${name}' to the exports of a file entity`,
+        });
+      } else if (entity.type === 'Function' && !exportedEntities.has(name) && !classMethods.has(name)) {
+        this.addError({
+          position: entity.position,
+          message: `Function '${name}' is not exported by any file and is not a class method`,
+          severity: 'error',
+          suggestion: `Either add '${name}' to the exports of a file entity or define it as a method of a class`,
+        });
+      }
+    }
+  }
+
+  private checkDuplicateExports(entities: Map<string, AnyEntity>): void {
+    const exportMap = new Map<string, AnyEntity[]>();
+    
+    // Build map of all exports
+    for (const entity of entities.values()) {
+      if ('exports' in entity && entity.exports) {
+        for (const exp of entity.exports) {
+          if (!exportMap.has(exp)) {
+            exportMap.set(exp, []);
+          }
+          exportMap.get(exp)!.push(entity);
+        }
+      }
+    }
+    
+    // Check for duplicates
+    for (const [exportName, exporters] of exportMap) {
+      if (exporters.length > 1) {
+        // Check if this exported name is an entity (exists in entities map)
+        const isEntity = entities.has(exportName);
+        
+        for (const exporter of exporters) {
+          this.addError({
+            position: exporter.position,
+            message: `Export '${exportName}' is already exported by ${exporters.filter(e => e !== exporter).map(e => e.name).join(', ')}`,
+            severity: isEntity ? 'error' : 'warning',
+            suggestion: isEntity ? 
+              'Entity names must be unique across the codebase. Consider renaming one of the entities.' : 
+              'Consider using unique names to avoid ambiguity',
+          });
+        }
+      }
+    }
+  }
+
+  private checkMethodCalls(entities: Map<string, AnyEntity>): void {
+    // Check function calls for validity
+    for (const entity of entities.values()) {
+      if ('calls' in entity && entity.calls) {
+        for (const call of entity.calls) {
+          // Check for method call syntax (e.g., TodoModel.create)
+          if (call.includes('.')) {
+            const [objectName, methodName] = call.split('.', 2);
+            const targetEntity = entities.get(objectName as string);
+            
+            if (!targetEntity) {
+              this.addError({
+                position: entity.position,
+                message: `Call to '${call}' references unknown entity '${objectName}'`,
+                severity: 'error',
+              });
+            } else if (targetEntity.type !== 'Class') {
+              this.addError({
+                position: entity.position,
+                message: `Cannot call method '${methodName}' on ${targetEntity.type} '${objectName}'. Only Classes can have methods`,
+                severity: 'error',
+                suggestion: `Either define '${objectName}' as a Class or use a different call syntax`,
+              });
+            } else {
+              // Check if the method exists on the class
+              const classEntity = targetEntity as ClassEntity;
+              if (!classEntity.methods.includes(methodName as string)) {
+                this.addError({
+                  position: entity.position,
+                  message: `Method '${methodName}' not found on class '${objectName}'`,
+                  severity: 'error',
+                  suggestion: `Available methods: ${classEntity.methods.join(', ')}`,
+                });
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private checkUndefinedExports(entities: Map<string, AnyEntity>): void {
+    // Check that all exported names have corresponding entity definitions
+    for (const entity of entities.values()) {
+      if ('exports' in entity && entity.exports) {
+        for (const exportName of entity.exports) {
+          if (!entities.has(exportName)) {
+            this.addError({
+              position: entity.position,
+              message: `Export '${exportName}' is not defined anywhere in the codebase`,
+              severity: 'error',
+              suggestion: `Define '${exportName}' as a Function, Class, or Constants entity`,
+            });
+          }
+        }
+      }
+    }
   }
 }

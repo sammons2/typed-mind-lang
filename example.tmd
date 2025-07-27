@@ -1,0 +1,197 @@
+# TypedMind Example Architecture - Composition Pattern
+
+TodoApp -> AppEntry v2.0
+
+AppEntry @ src/index.ts:
+  <- [ExpressSetup, Routes, DatabaseFile, ConfigFile]
+  -> [startServer]
+
+ExpressSetup @ src/server.ts:
+  <- [middleware]
+  -> [app]
+
+Routes @ src/routes/index.ts:
+  <- [TodoRoutes, UserRoutes]
+  -> [router]
+
+TodoRoutes @ src/routes/todos.ts:
+  <- [TodoControllerFile]
+  -> [todoRouter]
+
+UserRoutes @ src/routes/users.ts:
+  <- [UserControllerFile]
+  -> [userRouter]
+
+TodoControllerFile @ src/controllers/todo.ts:
+  <- [ControllerUtilsFile, TodoServiceFile, ValidatorFile]
+  -> [TodoController]
+
+UserControllerFile @ src/controllers/user.ts:
+  <- [ControllerUtilsFile, UserServiceFile]
+  -> [UserController]
+
+ControllerUtilsFile @ src/controllers/utils.ts:
+  <- [ConfigFile]
+  -> [handleError, sendResponse, validateRequest]
+
+# Controllers using composition instead of inheritance
+TodoController <:
+  => [create, read, update, delete]
+
+UserController <:
+  => [createUser, readUser, updateUser, deleteUser]
+
+# Utility functions are exported directly from ControllerUtilsFile
+
+# Service layer for business logic
+TodoServiceFile @ src/services/todo.ts:
+  <- [TodoModelFile, ValidatorFile]
+  -> [TodoService]
+
+UserServiceFile @ src/services/user.ts:
+  <- [UserModelFile]
+  -> [UserService]
+
+TodoService <:
+  => [createTodo, findTodos, updateTodo, deleteTodo]
+
+UserService <:
+  => [createUserService, findUsers, updateUserService, deleteUserService]
+
+DatabaseFile @ src/db/index.ts:
+  -> [connection, models, Database]
+
+Database <:
+  => [connect, disconnect]
+
+TodoModelFile @ src/models/todo.ts:
+  <- [DatabaseFile]
+  -> [TodoModel]
+
+UserModelFile @ src/models/user.ts:
+  <- [DatabaseFile]
+  -> [UserModel]
+
+TodoModel <:
+  => [create, find, update, delete]
+
+UserModel <:
+  => [create, find, update, delete]
+
+ConfigFile @ src/config.ts:
+  -> [Config]
+
+Config ! EnvSchema
+
+middleware @ src/middleware/index.ts:
+  -> [setupMiddleware]
+
+app <:
+  => [listen, use]
+
+ValidatorFile @ src/validators/todo.ts:
+  -> [validateTodo]
+
+validateTodo :: (data) => ValidationResult
+  "Validates todo data"
+
+# Utility functions exported by ControllerUtilsFile
+handleError :: (error, res) => void
+  "Handles errors and sends error response"
+
+sendResponse :: (res, data) => void
+  "Sends successful response with data"
+
+validateRequest :: (req) => ValidationResult
+  "Validates incoming request data"
+
+# Router instances
+router :: Express.Router
+  "Main application router"
+
+todoRouter :: Express.Router
+  "Todo-specific router"
+
+userRouter :: Express.Router
+  "User-specific router"
+
+# Database exports
+connection :: mongoose.Connection
+  "Database connection instance"
+
+models :: DatabaseModels
+  "Collection of database models"
+
+# Middleware function
+setupMiddleware :: (app) => void
+  "Sets up Express middleware"
+
+# Controller method implementations using composition
+create :: (req, res) => Promise<void>
+  "Creates new todo item"
+  ~> [validateRequest, TodoService.createTodo, sendResponse]
+
+read :: (req, res) => Promise<void>
+  "Retrieves todo items"
+  ~> [TodoService.findTodos, sendResponse]
+
+update :: (req, res) => Promise<void>
+  "Updates existing todo"
+  ~> [validateRequest, TodoService.updateTodo, sendResponse]
+
+delete :: (req, res) => Promise<void>
+  "Deletes a todo item"
+  ~> [TodoService.deleteTodo, sendResponse]
+
+createUser :: (req, res) => Promise<void>
+  "Creates new user"
+  ~> [validateRequest, UserService.createUserService, sendResponse]
+
+readUser :: (req, res) => Promise<void>
+  "Gets user data"  
+  ~> [UserService.findUsers, sendResponse]
+
+updateUser :: (req, res) => Promise<void>
+  "Updates user"
+  ~> [validateRequest, UserService.updateUserService, sendResponse]
+
+deleteUser :: (req, res) => Promise<void>
+  "Deletes user"
+  ~> [UserService.deleteUserService, sendResponse]
+
+# Service method implementations
+createTodo :: (data) => Promise<Todo>
+  "Creates todo in database"
+  ~> [validateTodo, TodoModel.create]
+
+findTodos :: (query) => Promise<Todo[]>
+  "Finds todos in database"
+  ~> [TodoModel.find]
+
+updateTodo :: (id, data) => Promise<Todo>
+  "Updates todo in database"
+  ~> [validateTodo, TodoModel.update]
+
+deleteTodo :: (id) => Promise<void>
+  "Deletes todo from database"
+  ~> [TodoModel.delete]
+
+createUserService :: (data) => Promise<User>
+  "Creates user in database"
+  ~> [UserModel.create]
+
+findUsers :: (query) => Promise<User[]>
+  "Finds users in database"
+  ~> [UserModel.find]
+
+updateUserService :: (id, data) => Promise<User>
+  "Updates user in database"
+  ~> [UserModel.update]
+
+deleteUserService :: (id) => Promise<void>
+  "Deletes user from database"
+  ~> [UserModel.delete]
+
+startServer :: () => Promise<void>
+  "Starts the Express server"
+  ~> [app.listen, Database.connect]

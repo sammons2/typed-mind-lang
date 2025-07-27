@@ -1,0 +1,70 @@
+{
+  "name": "@sammons/typed-mind-vscode-extension",
+  "displayName": "TypedMind DSL",
+  "description": "VS Code extension for TypedMind DSL (.tmd files)",
+  "version": "1.0.0",
+  "author": "sammons",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sammons/typed-mind"
+  },
+  "publisher": "sammons",
+  "categories": ["Programming Languages"],
+  "keywords": ["typedmind", "dsl", "architecture"],
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "activationEvents": [
+    "onLanguage:typedmind"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "typedmind",
+        "aliases": ["TypedMind", "typedmind"],
+        "extensions": [".tmd"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "typedmind",
+        "scopeName": "source.typedmind",
+        "path": "./syntaxes/typedmind.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "TypedMind",
+      "properties": {
+        "typedmind.trace.server": {
+          "scope": "window",
+          "type": "string",
+          "enum": ["off", "messages", "verbose"],
+          "default": "off",
+          "description": "Traces the communication between VS Code and the language server."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "pnpm run build",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "package": "vsce package --no-dependencies",
+    "clean": "rm -rf dist node_modules *.vsix"
+  },
+  "dependencies": {
+    "@sammons/typed-mind-lsp": "workspace:*",
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0",
+    "@types/node": "^24.0.0",
+    "@vscode/vsce": "^3.2.1",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2"
+  }
+}
