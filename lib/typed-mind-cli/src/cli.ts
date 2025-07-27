@@ -53,10 +53,10 @@ Options:
   --no-browser         Do not open browser automatically
 
 Examples:
-  typed-mind --check architecture.dsl
-  typed-mind --render architecture.dsl
-  typed-mind --render architecture.dsl --output output.html
-  typed-mind --render architecture.dsl --port 8080 --no-browser
+  typed-mind --check examples/example.tmd
+  typed-mind --render examples/example.tmd
+  typed-mind --render examples/example.tmd --output output.html
+  typed-mind --render examples/dto-example.tmd --port 8080 --no-browser
 `);
 }
 

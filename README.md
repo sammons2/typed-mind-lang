@@ -4,11 +4,13 @@ A domain-specific language (DSL) for describing and visualizing program architec
 
 ## Packages
 
-This monorepo contains three packages:
+This monorepo contains five packages:
 
 - **@sammons/typed-mind** - Core language parser and validator
-- **@sammons/typed-mind-renderer** - Interactive HTML/D3.js visualization renderer
+- **@sammons/typed-mind-renderer** - Interactive HTML/D3.js visualization renderer  
 - **@sammons/typed-mind-cli** - Command-line interface
+- **@sammons/typed-mind-lsp** - Language Server Protocol implementation
+- **@sammons/typed-mind-vscode-extension** - VS Code extension with syntax highlighting
 
 ## Installation
 
@@ -29,17 +31,26 @@ pnpm test
 
 ```bash
 # Check a DSL file for errors
-typed-mind --check architecture.dsl
+node lib/typed-mind-cli/dist/cli.js --check examples/example.tmd
 
 # Render a DSL file interactively
-typed-mind --render architecture.dsl
+node lib/typed-mind-cli/dist/cli.js --render examples/example.tmd
 
 # Generate static HTML output
-typed-mind --render architecture.dsl --output output.html
+node lib/typed-mind-cli/dist/cli.js --render examples/example.tmd --output output.html
 
 # Custom port and disable auto-browser
-typed-mind --render architecture.dsl --port 8080 --no-browser
+node lib/typed-mind-cli/dist/cli.js --render examples/dto-example.tmd --port 8080 --no-browser
 ```
+
+## Examples
+
+See the [`examples/`](./examples/) directory for comprehensive examples demonstrating:
+
+- **Complete Architecture**: Full todo application with composition patterns
+- **DTO Usage**: Data transfer objects with validation workflows
+- **Comments**: Inline and continuation comment syntax
+- **All Entity Types**: Programs, Files, Functions, Classes, Constants, DTOs
 
 ### Programmatic API
 
