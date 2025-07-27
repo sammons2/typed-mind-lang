@@ -1,0 +1,361 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`TypedMind DSL Validation Scenarios > should validate scenario-01-duplicate-export.tmd 1`] = `
+{
+  "errors": [
+    {
+      "column": 1,
+      "line": 6,
+      "message": "Orphaned entity 'SecondFile'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 13,
+      "message": "Orphaned entity 'BaseService'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 13,
+      "message": "Class 'BaseService' is not exported by any file",
+      "severity": "error",
+      "suggestion": "Add 'BaseService' to the exports of a file entity",
+    },
+    {
+      "column": 1,
+      "line": 3,
+      "message": "Entity 'UserService' is exported by multiple files: MainFile, SecondFile",
+      "severity": "error",
+      "suggestion": "Each entity should be exported by exactly one file. Remove the duplicate exports.",
+    },
+  ],
+  "file": "scenario-01-duplicate-export.tmd",
+  "valid": false,
+}
+`;
+
+exports[`TypedMind DSL Validation Scenarios > should validate scenario-02-orphaned-entity.tmd 1`] = `
+{
+  "errors": [
+    {
+      "column": 1,
+      "line": 9,
+      "message": "Orphaned entity 'OrphanedFunction'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 11,
+      "message": "Orphaned entity 'OrphanedClass'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 14,
+      "message": "Orphaned entity 'OrphanedFile'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 9,
+      "message": "Function 'OrphanedFunction' is not exported by any file and is not a class method",
+      "severity": "error",
+      "suggestion": "Either add 'OrphanedFunction' to the exports of a file entity or define it as a method of a class",
+    },
+    {
+      "column": 1,
+      "line": 11,
+      "message": "Class 'OrphanedClass' is not exported by any file",
+      "severity": "error",
+      "suggestion": "Add 'OrphanedClass' to the exports of a file entity",
+    },
+  ],
+  "file": "scenario-02-orphaned-entity.tmd",
+  "valid": false,
+}
+`;
+
+exports[`TypedMind DSL Validation Scenarios > should validate scenario-03-circular-dependency.tmd 1`] = `
+{
+  "errors": [
+    {
+      "column": 1,
+      "line": 1,
+      "message": "Circular dependency detected: TestApp -> ServiceA -> ServiceB -> ServiceC -> ServiceA",
+      "severity": "error",
+      "suggestion": undefined,
+    },
+  ],
+  "file": "scenario-03-circular-dependency.tmd",
+  "valid": false,
+}
+`;
+
+exports[`TypedMind DSL Validation Scenarios > should validate scenario-04-undefined-imports.tmd 1`] = `
+{
+  "errors": [
+    {
+      "column": 1,
+      "line": 3,
+      "message": "Import 'NonExistentService' not found",
+      "severity": "error",
+      "suggestion": undefined,
+    },
+    {
+      "column": 1,
+      "line": 3,
+      "message": "Import 'MissingModule' not found",
+      "severity": "error",
+      "suggestion": undefined,
+    },
+    {
+      "column": 1,
+      "line": 8,
+      "message": "Import 'UndefinedEntity' not found",
+      "severity": "error",
+      "suggestion": undefined,
+    },
+  ],
+  "file": "scenario-04-undefined-imports.tmd",
+  "valid": false,
+}
+`;
+
+exports[`TypedMind DSL Validation Scenarios > should validate scenario-05-undefined-exports.tmd 1`] = `
+{
+  "errors": [
+    {
+      "column": 1,
+      "line": 3,
+      "message": "Export 'updateUser' is not defined anywhere in the codebase",
+      "severity": "error",
+      "suggestion": "Define 'updateUser' as a Function, Class, or Constants entity",
+    },
+    {
+      "column": 1,
+      "line": 3,
+      "message": "Export 'deleteUser' is not defined anywhere in the codebase",
+      "severity": "error",
+      "suggestion": "Define 'deleteUser' as a Function, Class, or Constants entity",
+    },
+  ],
+  "file": "scenario-05-undefined-exports.tmd",
+  "valid": false,
+}
+`;
+
+exports[`TypedMind DSL Validation Scenarios > should validate scenario-06-invalid-method-calls.tmd 1`] = `
+{
+  "errors": [
+    {
+      "column": 1,
+      "line": 9,
+      "message": "Method 'update' not found on class 'UserService'",
+      "severity": "error",
+      "suggestion": "Available methods: create, read",
+    },
+    {
+      "column": 1,
+      "line": 9,
+      "message": "Method 'delete' not found on class 'UserService'",
+      "severity": "error",
+      "suggestion": "Available methods: create, read",
+    },
+    {
+      "column": 1,
+      "line": 9,
+      "message": "Call to 'NotAClass.method' references unknown entity 'NotAClass'",
+      "severity": "error",
+      "suggestion": undefined,
+    },
+  ],
+  "file": "scenario-06-invalid-method-calls.tmd",
+  "valid": false,
+}
+`;
+
+exports[`TypedMind DSL Validation Scenarios > should validate scenario-07-duplicate-paths.tmd 1`] = `
+{
+  "errors": [
+    {
+      "column": 1,
+      "line": 10,
+      "message": "Duplicate path 'src/shared/utils.ts'",
+      "severity": "error",
+      "suggestion": "Already used by 'FileOne'",
+    },
+  ],
+  "file": "scenario-07-duplicate-paths.tmd",
+  "valid": false,
+}
+`;
+
+exports[`TypedMind DSL Validation Scenarios > should validate scenario-08-multiple-programs.tmd 1`] = `
+{
+  "errors": [
+    {
+      "column": 1,
+      "line": 4,
+      "message": "Multiple program entry points defined",
+      "severity": "error",
+      "suggestion": "Only one Program entity is allowed",
+    },
+  ],
+  "file": "scenario-08-multiple-programs.tmd",
+  "valid": false,
+}
+`;
+
+exports[`TypedMind DSL Validation Scenarios > should validate scenario-09-no-program.tmd 1`] = `
+{
+  "errors": [
+    {
+      "column": 1,
+      "line": 3,
+      "message": "Orphaned entity 'MainFile'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 1,
+      "message": "No program entry point defined",
+      "severity": "error",
+      "suggestion": "Add a Program entity: AppName -> EntryFile",
+    },
+  ],
+  "file": "scenario-09-no-program.tmd",
+  "valid": false,
+}
+`;
+
+exports[`TypedMind DSL Validation Scenarios > should validate scenario-10-dto-validation.tmd 1`] = `
+{
+  "errors": [
+    {
+      "column": 1,
+      "line": 14,
+      "message": "Orphaned entity 'UserDTO'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 19,
+      "message": "Orphaned entity 'UserFile'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+  ],
+  "file": "scenario-10-dto-validation.tmd",
+  "valid": false,
+}
+`;
+
+exports[`TypedMind DSL Validation Scenarios > should validate scenario-11-class-export-validation.tmd 1`] = `
+{
+  "errors": [
+    {
+      "column": 1,
+      "line": 7,
+      "message": "Orphaned entity 'UnexportedClass'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 10,
+      "message": "Orphaned entity 'unexportedFunction'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 7,
+      "message": "Class 'UnexportedClass' is not exported by any file",
+      "severity": "error",
+      "suggestion": "Add 'UnexportedClass' to the exports of a file entity",
+    },
+    {
+      "column": 1,
+      "line": 10,
+      "message": "Function 'unexportedFunction' is not exported by any file and is not a class method",
+      "severity": "error",
+      "suggestion": "Either add 'unexportedFunction' to the exports of a file entity or define it as a method of a class",
+    },
+  ],
+  "file": "scenario-11-class-export-validation.tmd",
+  "valid": false,
+}
+`;
+
+exports[`TypedMind DSL Validation Scenarios > should validate scenario-12-valid-complete.tmd 1`] = `
+{
+  "errors": [
+    {
+      "column": 1,
+      "line": 7,
+      "message": "Orphaned entity 'ControllerFile'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 11,
+      "message": "Orphaned entity 'ModelFile'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 15,
+      "message": "Orphaned entity 'DatabaseFile'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 88,
+      "message": "Orphaned entity 'TodoCreateDTO'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 93,
+      "message": "Orphaned entity 'TodoUpdateDTO'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 99,
+      "message": "Orphaned entity 'TodoDTO'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 108,
+      "message": "Orphaned entity 'UserCreateDTO'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 113,
+      "message": "Orphaned entity 'UserDTO'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+  ],
+  "file": "scenario-12-valid-complete.tmd",
+  "valid": false,
+}
+`;

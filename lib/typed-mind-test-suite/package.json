@@ -1,0 +1,20 @@
+{
+  "name": "@sammons/typed-mind-test-suite",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:update": "vitest run -u"
+  },
+  "dependencies": {
+    "@sammons/typed-mind": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.6",
+    "@vitest/ui": "^2.1.8",
+    "typescript": "^5.4.0",
+    "vitest": "^2.1.8"
+  }
+}

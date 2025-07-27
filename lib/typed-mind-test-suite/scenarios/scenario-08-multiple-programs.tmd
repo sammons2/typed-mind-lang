@@ -1,0 +1,10 @@
+TestApp -> MainFile v1.0.0
+
+# Second program - should error
+AnotherApp -> OtherFile v2.0.0
+
+MainFile @ src/main.ts:
+  -> []
+
+OtherFile @ src/other.ts:
+  -> []

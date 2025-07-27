@@ -1,0 +1,13 @@
+TestApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  -> [createUser, updateUser, deleteUser, UserModel]
+
+# Only createUser is defined - others are undefined exports
+createUser :: () => void
+
+UserModel <:
+  => [save, find]
+
+save :: () => void
+find :: () => void

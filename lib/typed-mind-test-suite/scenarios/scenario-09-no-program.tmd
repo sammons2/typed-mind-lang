@@ -1,0 +1,6 @@
+# Missing program entry point
+
+MainFile @ src/main.ts:
+  -> [doSomething]
+
+doSomething :: () => void

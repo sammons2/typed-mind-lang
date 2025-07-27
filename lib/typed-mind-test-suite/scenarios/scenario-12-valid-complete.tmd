@@ -1,0 +1,117 @@
+TodoApp -> AppFile v1.0.0 # Main todo application
+
+AppFile @ src/app.ts:
+  <- [TodoController, UserController, Database]
+  -> []
+
+ControllerFile @ src/controllers/index.ts:
+  <- [TodoModel, UserModel]
+  -> [TodoController, UserController]
+
+ModelFile @ src/models/index.ts:
+  <- [Database]
+  -> [TodoModel, UserModel]
+
+DatabaseFile @ src/database.ts:
+  -> [Database]
+
+TodoController <:
+  => [create, read, update, delete]
+
+UserController <:
+  => [register, login, logout]
+
+TodoModel <:
+  => [save, find, findAll, remove]
+
+UserModel <:
+  => [save, findByEmail, findById]
+
+Database <:
+  => [connect, query, close]
+
+# Todo Controller methods
+create :: (data: TodoCreateDTO) => TodoDTO
+  <- TodoCreateDTO
+  -> TodoDTO
+  ~> [TodoModel.save]
+
+read :: (id: string) => TodoDTO
+  -> TodoDTO
+  ~> [TodoModel.find]
+
+update :: (id: string, data: TodoUpdateDTO) => TodoDTO
+  <- TodoUpdateDTO
+  -> TodoDTO
+  ~> [TodoModel.find, TodoModel.save]
+
+delete :: (id: string) => void
+  ~> [TodoModel.remove]
+
+# User Controller methods
+register :: (data: UserCreateDTO) => UserDTO
+  <- UserCreateDTO
+  -> UserDTO
+  ~> [UserModel.save]
+
+login :: (email: string, password: string) => UserDTO
+  -> UserDTO
+  ~> [UserModel.findByEmail]
+
+logout :: (userId: string) => void
+
+# Model methods
+save :: () => void
+  ~> [Database.query]
+
+find :: (id: string) => any
+  ~> [Database.query]
+
+findAll :: () => any[]
+  ~> [Database.query]
+
+remove :: (id: string) => void
+  ~> [Database.query]
+
+findByEmail :: (email: string) => any
+  ~> [Database.query]
+
+findById :: (id: string) => any
+  ~> [Database.query]
+
+# Database methods
+connect :: () => void
+query :: (sql: string) => any
+close :: () => void
+
+# DTOs
+TodoCreateDTO % "Data for creating a new todo"
+  - title: string "Todo title"
+  - description: string "Todo description" (optional)
+  - dueDate: Date "Due date" (optional)
+
+TodoUpdateDTO % "Data for updating a todo"
+  - title: string "Todo title" (optional)
+  - description: string "Todo description" (optional)
+  - completed: boolean "Completion status" (optional)
+  - dueDate: Date "Due date" (optional)
+
+TodoDTO % "Todo data transfer object"
+  - id: string "Todo ID"
+  - title: string "Todo title"
+  - description: string "Todo description" (optional)
+  - completed: boolean "Completion status"
+  - dueDate: Date "Due date" (optional)
+  - createdAt: Date "Creation timestamp"
+  - updatedAt: Date "Last update timestamp"
+
+UserCreateDTO % "Data for creating a new user"
+  - email: string "User email"
+  - password: string "User password"
+  - name: string "User full name"
+
+UserDTO % "User data transfer object"
+  - id: string "User ID"
+  - email: string "User email"
+  - name: string "User full name"
+  - createdAt: Date "Account creation timestamp"

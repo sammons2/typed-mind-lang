@@ -1,0 +1,20 @@
+TestApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  -> [UserService]
+
+SecondFile @ src/second.ts:
+  -> [UserService]
+
+# This should error - UserService exported by multiple files
+UserService <: BaseService
+  => [create, read, update, delete]
+
+BaseService <:
+  => [initialize]
+
+create :: () => void
+read :: () => void  
+update :: () => void
+delete :: () => void
+initialize :: () => void

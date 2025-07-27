@@ -1,0 +1,10 @@
+TestApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  <- [NonExistentService, MissingModule]
+  -> [MainFile]
+
+# ServiceA imports something that doesn't exist
+ServiceA @ src/service.ts:
+  <- [UndefinedEntity]
+  -> [ServiceA]

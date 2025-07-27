@@ -311,7 +311,7 @@ export class DSLValidator {
   private checkDuplicateExports(entities: Map<string, AnyEntity>): void {
     const exportMap = new Map<string, AnyEntity[]>();
     
-    // Build map of all exports
+    // Build map of which files export each entity
     for (const entity of entities.values()) {
       if ('exports' in entity && entity.exports) {
         for (const exp of entity.exports) {
@@ -323,20 +323,20 @@ export class DSLValidator {
       }
     }
     
-    // Check for duplicates
+    // Check if any entity is exported by multiple files
     for (const [exportName, exporters] of exportMap) {
       if (exporters.length > 1) {
         // Check if this exported name is an entity (exists in entities map)
         const isEntity = entities.has(exportName);
         
-        for (const exporter of exporters) {
+        // Only report error once for the first duplicate we find
+        const [first] = exporters;
+        if (isEntity && first) {
           this.addError({
-            position: exporter.position,
-            message: `Export '${exportName}' is already exported by ${exporters.filter(e => e !== exporter).map(e => e.name).join(', ')}`,
-            severity: isEntity ? 'error' : 'warning',
-            suggestion: isEntity ? 
-              'Entity names must be unique across the codebase. Consider renaming one of the entities.' : 
-              'Consider using unique names to avoid ambiguity',
+            position: first.position,
+            message: `Entity '${exportName}' is exported by multiple files: ${exporters.map(e => e.name).join(', ')}`,
+            severity: 'error',
+            suggestion: 'Each entity should be exported by exactly one file. Remove the duplicate exports.',
           });
         }
       }

@@ -1,0 +1,15 @@
+TestApp -> ServiceA v1.0.0
+
+ServiceA @ src/a.ts:
+  <- [ServiceB]
+  -> [ServiceA]
+
+ServiceB @ src/b.ts:
+  <- [ServiceC]
+  -> [ServiceB]
+
+ServiceC @ src/c.ts:
+  <- [ServiceA]
+  -> [ServiceC]
+
+# This creates a circular dependency: ServiceA -> ServiceB -> ServiceC -> ServiceA

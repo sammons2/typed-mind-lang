@@ -1,0 +1,14 @@
+TestApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  -> [FileOne, FileTwo]
+
+# Both files use the same path
+FileOne @ src/shared/utils.ts:
+  -> [helperOne]
+
+FileTwo @ src/shared/utils.ts:
+  -> [helperTwo]
+
+helperOne :: () => void
+helperTwo :: () => void

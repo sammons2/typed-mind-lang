@@ -1,0 +1,18 @@
+TestApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  -> [ActiveService]
+
+ActiveService :: () => void
+
+# These entities are orphaned - not referenced anywhere
+OrphanedFunction :: () => void
+
+OrphanedClass <:
+  => [doSomething]
+
+OrphanedFile @ src/orphan.ts:
+  -> [something]
+
+doSomething :: () => void
+something :: () => void

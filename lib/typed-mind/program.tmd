@@ -1,0 +1,178 @@
+TypedMind -> IndexFile v1.0.0 # DSL Parser and Validator
+
+# Main entry file that exports all public APIs
+IndexFile @ src/index.ts:
+  <- [DSLParser, DSLValidator, ErrorFormatter, TypesModule]
+  -> [DSLChecker, DSLParser, DSLValidator, ErrorFormatter]
+  # Exports all types from TypesModule
+
+# Aggregates parser, validator, and formatter into single API
+DSLChecker @ src/index.ts:
+  => [check, parse, buildDependencyGraph]
+
+# Core module containing all type definitions
+TypesModule @ src/types.ts:
+  -> [EntityType, Position, Entity, ProgramEntity, FileEntity, FunctionEntity, ClassEntity, ConstantsEntity, DTOEntity, DTOField, AnyEntity, ValidationError, ValidationResult, ProgramGraph]
+
+# Parses DSL text into entity map
+DSLParser @ src/parser.ts:
+  <- [TypesModule]
+  => [parse, parseEntity, parseContinuation, extractInlineComment]
+
+# Validates parsed entities for correctness
+DSLValidator @ src/validator.ts:
+  <- [TypesModule]
+  => [validate, checkOrphans, checkImports, checkCircularDeps, checkEntryPoint, checkUniquePaths, checkClassAndFunctionExports, checkDuplicateExports, checkMethodCalls, checkUndefinedExports, checkFunctionDTOs]
+
+# Formats validation errors for display
+ErrorFormatter @ src/formatter.ts:
+  <- [TypesModule]
+  => [format, formatAll]
+
+# Main parsing function
+parse :: (input: string) => Map<string, AnyEntity>
+  # Splits input into lines and parses entities
+
+# Parses individual entity from line
+parseEntity :: (line: string, lineNum: number) => AnyEntity | null
+  # Detects entity type and creates appropriate entity object
+
+# Parses continuation lines for current entity
+parseContinuation :: (entity: AnyEntity, line: string, lineNum: number) => void
+  # Handles imports, exports, calls, methods, DTO fields, etc.
+
+# Extracts inline comments from entity declarations
+extractInlineComment :: (line: string) => { cleanLine: string; comment?: string }
+  # Separates comment from entity declaration
+
+# Main validation function
+validate :: (entities: Map<string, AnyEntity>) => ValidationResult
+  # Runs all validation checks and returns errors
+
+# Checks for orphaned entities
+checkOrphans :: (entities: Map<string, AnyEntity>) => void
+  # Ensures all entities are referenced
+
+# Validates import statements
+checkImports :: (entities: Map<string, AnyEntity>) => void
+  # Ensures imported entities exist
+
+# Detects circular dependencies
+checkCircularDeps :: (entities: Map<string, AnyEntity>) => void
+  # Uses DFS to find dependency cycles
+
+# Validates program entry point
+checkEntryPoint :: (entities: Map<string, AnyEntity>) => void
+  # Ensures exactly one Program entity exists
+
+# Checks for duplicate file paths
+checkUniquePaths :: (entities: Map<string, AnyEntity>) => void
+  # Ensures each path is used only once
+
+# Validates class and function exports
+checkClassAndFunctionExports :: (entities: Map<string, AnyEntity>) => void
+  # Ensures classes and functions are exported by files
+
+# Checks for duplicate exports
+checkDuplicateExports :: (entities: Map<string, AnyEntity>) => void
+  # Ensures entities aren't exported multiple times
+
+# Validates method calls on classes
+checkMethodCalls :: (entities: Map<string, AnyEntity>) => void
+  # Ensures called methods exist on target classes
+
+# Checks that exported names are defined
+checkUndefinedExports :: (entities: Map<string, AnyEntity>) => void
+  # Ensures all exports have corresponding entities
+
+# Validates function input/output DTOs
+checkFunctionDTOs :: (entities: Map<string, AnyEntity>) => void
+  # Ensures referenced DTOs exist and are valid
+
+# Formats single error for display
+format :: (error: ValidationError, lines: string[]) => string
+  # Creates formatted error with line context
+
+# Formats all errors
+formatAll :: (errors: ValidationError[], lines: string[]) => string
+  # Formats multiple errors for display
+
+# Main checker method combining parse and validate
+check :: (input: string) => ValidationResult
+  ~> [parse, validate, format]
+  # Parses input and validates with formatted errors
+
+# Builds dependency graph from entities
+buildDependencyGraph :: (entities: Map<string, AnyEntity>) => Map<string, string[]>
+  # Creates graph of entity dependencies
+
+# Type definitions
+EntityType % "Union type for all entity types"
+  - value: string "Program | File | Function | Class | Constants | DTO"
+
+Position % "Line and column position in source"
+  - line: number "1-indexed line number"
+  - column: number "1-indexed column number"
+
+Entity % "Base entity interface"
+  - name: string "Entity identifier"
+  - type: EntityType "Entity type discriminator"
+  - position: Position "Source position"
+  - raw: string "Original source line"
+  - comment: string "Optional comment" (optional)
+
+ProgramEntity % "Program entry point"
+  - type: string "Always 'Program'"
+  - entry: string "Entry file name"
+  - version: string "Optional version" (optional)
+
+FileEntity % "File/module definition"
+  - type: string "Always 'File'"
+  - path: string "File path"
+  - imports: string[] "Import list"
+  - exports: string[] "Export list"
+
+FunctionEntity % "Function definition"
+  - type: string "Always 'Function'"
+  - signature: string "Function signature"
+  - calls: string[] "Called functions"
+  - input: string "Input DTO name" (optional)
+  - output: string "Output DTO name" (optional)
+  - description: string "Function description" (optional)
+
+ClassEntity % "Class definition"
+  - type: string "Always 'Class'"
+  - extends: string "Base class" (optional)
+  - implements: string[] "Implemented interfaces"
+  - methods: string[] "Class methods"
+  - path: string "File path for @ syntax" (optional)
+
+ConstantsEntity % "Constants definition"
+  - type: string "Always 'Constants'"
+  - path: string "File path"
+  - schema: string "Optional schema" (optional)
+
+DTOField % "DTO field definition"
+  - name: string "Field name"
+  - type: string "Field type"
+  - description: string "Field description" (optional)
+  - optional: boolean "Is field optional" (optional)
+
+DTOEntity % "Data Transfer Object"
+  - type: string "Always 'DTO'"
+  - purpose: string "DTO purpose" (optional)
+  - fields: DTOField[] "DTO fields"
+
+ValidationError % "Validation error details"
+  - position: Position "Error position"
+  - message: string "Error message"
+  - severity: string "error | warning"
+  - suggestion: string "Fix suggestion" (optional)
+
+ValidationResult % "Validation outcome"
+  - valid: boolean "Is valid"
+  - errors: ValidationError[] "List of errors"
+
+ProgramGraph % "Entity dependency graph"
+  - entities: Map "Entity map"
+  - dependencies: Map "Dependency map"

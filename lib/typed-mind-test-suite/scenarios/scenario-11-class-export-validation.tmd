@@ -1,0 +1,20 @@
+TestApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  -> [ExportedClass, exportedFunction]
+
+# These classes and functions are not exported by any file
+UnexportedClass <:
+  => [method]
+
+unexportedFunction :: () => void
+
+# These are properly exported
+ExportedClass <:
+  => [doWork]
+
+exportedFunction :: () => void
+
+# Methods don't need to be exported separately
+method :: () => void
+doWork :: () => void

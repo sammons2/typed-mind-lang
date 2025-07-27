@@ -1,0 +1,20 @@
+TestApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  -> [createUser, updateUser]
+
+createUser :: (data: UserInput) => User
+  <- NonExistentDTO  # This DTO doesn't exist
+  -> UserDTO
+
+updateUser :: (id: string, data: UserInput) => User
+  <- UserFile        # This is a File, not a DTO
+  -> NotADTO         # This doesn't exist
+
+UserDTO % "User data transfer object"
+  - id: string "User ID"
+  - name: string "User name"
+  - email: string "Email address" (optional)
+
+UserFile @ src/user.ts:
+  -> []

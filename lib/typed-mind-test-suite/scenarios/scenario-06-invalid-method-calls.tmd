@@ -1,0 +1,16 @@
+TestApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  -> [UserService, processData]
+
+UserService <:
+  => [create, read]
+
+processData :: () => void
+  ~> [UserService.update, UserService.delete, NotAClass.method]
+
+# UserService.update and UserService.delete don't exist
+# NotAClass.method - NotAClass doesn't exist
+
+create :: () => void
+read :: () => void
