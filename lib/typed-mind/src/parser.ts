@@ -58,14 +58,17 @@ export class DSLParser {
 
   private isContinuation(line: string): boolean {
     // Lines starting with whitespace and specific operators are continuations
-    return /^\s+(->|<-|~>|=>|"|-)/.test(line);
+    return /^\s+(->|<-|~>|=>|"|#|-)/.test(line);
   }
 
   private parseEntity(line: string, lineNum: number): AnyEntity | null {
     const position: Position = { line: lineNum, column: 1 };
+    
+    // Extract inline comment if present
+    const { cleanLine, comment } = this.extractInlineComment(line);
 
     // Program: AppName -> EntryFile v1.0.0
-    const programMatch = line.match(/^(\w+)\s*->\s*(\w+)(?:\s+v([\d.]+))?$/);
+    const programMatch = cleanLine.match(/^(\w+)\s*->\s*(\w+)(?:\s+v([\d.]+))?$/);
     if (programMatch) {
       return {
         name: programMatch[1] as string,
@@ -74,11 +77,12 @@ export class DSLParser {
         version: programMatch[3],
         position,
         raw: line,
+        comment,
       } as ProgramEntity;
     }
 
     // File: UserService @ src/services/user.ts:
-    const fileMatch = line.match(/^(\w+)\s*@\s*([^:]+):/);
+    const fileMatch = cleanLine.match(/^(\w+)\s*@\s*([^:]+):/);
     if (fileMatch) {
       // Check if this is actually a class by looking ahead for methods
       let isClass = false;
@@ -103,6 +107,7 @@ export class DSLParser {
           methods: [],
           position,
           raw: line,
+          comment,
         } as ClassEntity;
       } else {
         return {
@@ -113,12 +118,13 @@ export class DSLParser {
           exports: [],
           position,
           raw: line,
+          comment,
         } as FileEntity;
       }
     }
 
     // Function: createUser :: (data: UserInput) => Promise<User>
-    const functionMatch = line.match(/^(\w+)\s*::\s*(.+)$/);
+    const functionMatch = cleanLine.match(/^(\w+)\s*::\s*(.+)$/);
     if (functionMatch) {
       return {
         name: functionMatch[1] as string,
@@ -127,11 +133,12 @@ export class DSLParser {
         calls: [],
         position,
         raw: line,
+        comment,
       } as FunctionEntity;
     }
 
     // Class: UserController <: BaseController, IController or just TodoModel <:
-    const classMatch = line.match(/^(\w+)\s*<:\s*(.*)$/);
+    const classMatch = cleanLine.match(/^(\w+)\s*<:\s*(.*)$/);
     if (classMatch) {
       const inheritance = classMatch[2]?.trim();
       let baseClass: string | undefined;
@@ -153,11 +160,12 @@ export class DSLParser {
         methods: [],
         position,
         raw: line,
+        comment,
       } as ClassEntity;
     }
 
     // Constants: AppConfig ! src/config.ts : ConfigSchema
-    const constantsMatch = line.match(/^(\w+)\s*!\s*([^:]+)(?:\s*:\s*(\w+))?$/);
+    const constantsMatch = cleanLine.match(/^(\w+)\s*!\s*([^:]+)(?:\s*:\s*(\w+))?$/);
     if (constantsMatch) {
       return {
         name: constantsMatch[1] as string,
@@ -166,11 +174,12 @@ export class DSLParser {
         schema: constantsMatch[3],
         position,
         raw: line,
+        comment,
       } as ConstantsEntity;
     }
 
     // DTO: UserDTO % "User data transfer object"
-    const dtoMatch = line.match(/^(\w+)\s*%\s*"([^"]+)"$/);
+    const dtoMatch = cleanLine.match(/^(\w+)\s*%\s*"([^"]+)"$/);
     if (dtoMatch) {
       return {
         name: dtoMatch[1] as string,
@@ -179,11 +188,12 @@ export class DSLParser {
         fields: [],
         position,
         raw: line,
+        comment,
       } as DTOEntity;
     }
 
     // DTO without purpose: UserDTO %
-    const dtoSimpleMatch = line.match(/^(\w+)\s*%$/);
+    const dtoSimpleMatch = cleanLine.match(/^(\w+)\s*%$/);
     if (dtoSimpleMatch) {
       return {
         name: dtoSimpleMatch[1] as string,
@@ -191,11 +201,12 @@ export class DSLParser {
         fields: [],
         position,
         raw: line,
+        comment,
       } as DTOEntity;
     }
 
     // Long form with explicit type
-    const longFormMatch = line.match(/^(\w+)\s*:$/);
+    const longFormMatch = cleanLine.match(/^(\w+)\s*:$/);
     if (longFormMatch) {
       // Look ahead for type specification
       const nextLineNum = lineNum;
@@ -205,7 +216,11 @@ export class DSLParser {
         if (typeMatch) {
           const entityType = typeMatch[1] as string;
           const name = longFormMatch[1] as string;
-          return this.createLongFormEntity(name, entityType, position, line);
+          const entity = this.createLongFormEntity(name, entityType, position, line);
+          if (entity && comment) {
+            entity.comment = comment;
+          }
+          return entity;
         }
       }
     }
@@ -272,6 +287,13 @@ export class DSLParser {
       return;
     }
 
+    // Comment: # This is a comment about the entity
+    const commentMatch = line.match(/^#\s*(.+)$/);
+    if (commentMatch) {
+      entity.comment = commentMatch[1] as string;
+      return;
+    }
+
     // Description: "Creates a new user in the database"
     const descMatch = line.match(/^"([^"]+)"$/);
     if (descMatch) {
@@ -285,6 +307,17 @@ export class DSLParser {
 
   private parseList(listStr: string): string[] {
     return listStr.split(',').map((item) => item.trim());
+  }
+
+  private extractInlineComment(line: string): { cleanLine: string; comment?: string } {
+    const commentMatch = line.match(/^(.+?)\s*#\s*(.+)$/);
+    if (commentMatch) {
+      return {
+        cleanLine: commentMatch[1]?.trim() as string,
+        comment: commentMatch[2]?.trim() as string,
+      };
+    }
+    return { cleanLine: line };
   }
 
   private createLongFormEntity(name: string, type: string, position: Position, raw: string): AnyEntity | null {

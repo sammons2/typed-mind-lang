@@ -1,0 +1,25 @@
+# Comment Example
+
+TodoApp -> AppEntry v2.0 # Main application entry point
+
+AppEntry @ src/index.ts: # Application bootstrap file
+  <- [UserService]
+  -> [startServer]
+
+# DTO with inline comment
+UserDTO % "User data transfer object" # Complete user information
+  - name: string "User's full name"
+  - email: string "Email address"
+  - age: number "User age" (optional)
+
+UserService @ src/services/user.ts: # Core user business logic
+  # This service handles all user-related operations
+  -> [createUser, UserDTO]
+
+
+
+createUser :: (name: string) => Promise<UserDTO> # Creates a new user account
+  "Creates a new user in the system"
+  -> UserDTO
+
+startServer :: () => Promise<void> # Application startup function

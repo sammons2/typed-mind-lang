@@ -225,6 +225,10 @@ export class TypedMindLanguageServer {
     // Build hover content
     const contents: string[] = [`**${entity.type}**: ${entity.name}`];
 
+    if (entity.comment) {
+      contents.push(`💬 *${entity.comment}*`);
+    }
+
     if ('path' in entity && entity.path) {
       contents.push(`**Path**: ${entity.path}`);
     }
@@ -247,6 +251,22 @@ export class TypedMindLanguageServer {
 
     if ('calls' in entity && entity.calls.length > 0) {
       contents.push(`**Calls**: ${entity.calls.join(', ')}`);
+    }
+
+    // DTO-specific information
+    if (entity.type === 'DTO') {
+      const dtoEntity = entity as any; // DTOEntity not imported in LSP
+      if (dtoEntity.purpose) {
+        contents.push(`**Purpose**: ${dtoEntity.purpose}`);
+      }
+      if (dtoEntity.fields && dtoEntity.fields.length > 0) {
+        const fieldList = dtoEntity.fields.map((field: any) => {
+          const optional = field.optional ? ' *(optional)*' : '';
+          const desc = field.description ? ` - ${field.description}` : '';
+          return `• \`${field.name}: ${field.type}\`${optional}${desc}`;
+        }).join('\n');
+        contents.push(`**Fields**:\n${fieldList}`);
+      }
     }
 
     return {

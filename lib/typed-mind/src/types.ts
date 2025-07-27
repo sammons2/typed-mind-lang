@@ -10,6 +10,7 @@ export interface Entity {
   type: EntityType;
   position: Position;
   raw: string;
+  comment?: string;
 }
 
 export interface ProgramEntity extends Entity {
