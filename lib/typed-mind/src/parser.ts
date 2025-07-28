@@ -10,15 +10,23 @@ import type {
   AssetEntity,
   UIComponentEntity,
   Position,
+  ImportStatement,
 } from './types';
+
+export interface ParseResult {
+  entities: Map<string, AnyEntity>;
+  imports: ImportStatement[];
+}
 
 export class DSLParser {
   private lines: string[] = [];
   private entities = new Map<string, AnyEntity>();
+  private imports: ImportStatement[] = [];
 
-  parse(input: string): Map<string, AnyEntity> {
+  parse(input: string): ParseResult {
     this.lines = input.split('\n');
     this.entities.clear();
+    this.imports = [];
 
     let currentEntity: AnyEntity | null = null;
     const entityStack: AnyEntity[] = [];
@@ -30,6 +38,12 @@ export class DSLParser {
 
       // Skip empty lines and comments
       if (!trimmed || trimmed.startsWith('#')) continue;
+
+      // Check for import statements
+      if (trimmed.startsWith('@import')) {
+        this.parseImport(trimmed, lineNum + 1);
+        continue;
+      }
 
       // Check for continuation of previous entity
       if (currentEntity && this.isContinuation(line)) {
@@ -50,7 +64,10 @@ export class DSLParser {
       }
     }
 
-    return this.entities;
+    return {
+      entities: this.entities,
+      imports: this.imports,
+    };
   }
 
   private isEntityDeclaration(line: string): boolean {
@@ -397,6 +414,19 @@ export class DSLParser {
       };
     }
     return { cleanLine: line };
+  }
+
+  private parseImport(line: string, lineNum: number): void {
+    // @import "./path/to/file.tmd" as Alias
+    const importMatch = line.match(/^@import\s+"([^"]+)"(?:\s+as\s+(\w+))?$/);
+    if (importMatch) {
+      const importStatement: ImportStatement = {
+        path: importMatch[1] as string,
+        alias: importMatch[2],
+        position: { line: lineNum, column: 1 },
+      };
+      this.imports.push(importStatement);
+    }
   }
 
   private createLongFormEntity(name: string, type: string, position: Position, raw: string): AnyEntity | null {

@@ -94,7 +94,14 @@ export interface ValidationResult {
   errors: ValidationError[];
 }
 
+export interface ImportStatement {
+  path: string;
+  alias?: string;
+  position: Position;
+}
+
 export interface ProgramGraph {
   entities: Map<string, AnyEntity>;
   dependencies: Map<string, string[]>;
+  imports?: ImportStatement[];
 }

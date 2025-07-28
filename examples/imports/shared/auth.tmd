@@ -1,0 +1,16 @@
+# Authentication module
+AuthFile @ src/auth.ts:
+  -> [AuthService, loginUser, logoutUser]
+
+AuthService <:
+  => [login, logout, checkAuth]
+
+loginUser :: (credentials: LoginDTO) => Promise<User>
+  ~> [AuthService.login]
+
+logoutUser :: () => void
+  ~> [AuthService.logout]
+
+LoginDTO % "Login credentials"
+  - username: string "User's username"
+  - password: string "User's password"

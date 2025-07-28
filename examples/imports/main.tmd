@@ -1,0 +1,14 @@
+# Main application with imports
+@import "./shared/auth.tmd"
+@import "./shared/database.tmd"
+@import "./ui/components.tmd" as UI
+
+MyApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  <- [AuthService, DatabaseConnection, UI.Button, UI.Modal]
+  -> [startApp]
+
+startApp :: () => void
+  ~> [AuthService.login, DatabaseConnection.connect]
+  ~ [UI.Button, UI.Modal]

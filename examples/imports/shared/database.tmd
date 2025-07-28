@@ -1,0 +1,11 @@
+# Database module
+DatabaseFile @ src/database.ts:
+  -> [DatabaseConnection, query, transaction]
+
+DatabaseConnection <:
+  => [connect, disconnect, executeQuery]
+
+query :: (sql: string, params?: any[]) => Promise<any[]>
+  ~> [DatabaseConnection.executeQuery]
+
+transaction :: (callback: Function) => Promise<void>

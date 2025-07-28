@@ -96,7 +96,7 @@ async function main() {
 
     if (values.check) {
       console.log(`Checking ${filePath}...`);
-      const result = checker.check(content);
+      const result = checker.check(content, absolutePath);
       
       if (result.valid) {
         console.log('\u2713 No errors found!');
@@ -107,8 +107,8 @@ async function main() {
       }
     } else if (values.render) {
       console.log(`Rendering ${filePath}...`);
-      const programGraph = checker.parse(content);
-      const validationResult = checker.check(content);
+      const programGraph = checker.parse(content, absolutePath);
+      const validationResult = checker.check(content, absolutePath);
       
       const renderer = new TypedMindRenderer({
         port: parseInt(values.port || '3000', 10),
@@ -128,7 +128,7 @@ async function main() {
     } else {
       // Default to check
       console.log(`Checking ${filePath}...`);
-      const result = checker.check(content);
+      const result = checker.check(content, absolutePath);
       
       if (result.valid) {
         console.log('\u2713 No errors found!');
