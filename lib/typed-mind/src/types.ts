@@ -68,6 +68,7 @@ export interface DTOEntity extends Entity {
 export interface AssetEntity extends Entity {
   type: 'Asset';
   description: string;
+  containsProgram?: string; // Optional: name of a Program entity this asset contains
 }
 
 export interface UIComponentEntity extends Entity {

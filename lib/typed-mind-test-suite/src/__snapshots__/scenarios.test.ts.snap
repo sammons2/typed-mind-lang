@@ -198,17 +198,9 @@ exports[`TypedMind DSL Validation Scenarios > should validate scenario-07-duplic
 
 exports[`TypedMind DSL Validation Scenarios > should validate scenario-08-multiple-programs.tmd 1`] = `
 {
-  "errors": [
-    {
-      "column": 1,
-      "line": 4,
-      "message": "Multiple program entry points defined",
-      "severity": "error",
-      "suggestion": "Only one Program entity is allowed",
-    },
-  ],
+  "errors": [],
   "file": "scenario-08-multiple-programs.tmd",
-  "valid": false,
+  "valid": true,
 }
 `;
 
@@ -581,6 +573,92 @@ exports[`TypedMind DSL Validation Scenarios > should validate scenario-16-comple
     },
   ],
   "file": "scenario-16-complete-ui-example.tmd",
+  "valid": false,
+}
+`;
+
+exports[`TypedMind DSL Validation Scenarios > should validate scenario-17-multiple-programs.tmd 1`] = `
+{
+  "errors": [
+    {
+      "column": 1,
+      "line": 20,
+      "message": "Orphaned entity 'AppContainer'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 21,
+      "message": "Orphaned entity 'Sidebar'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 22,
+      "message": "Orphaned entity 'GraphCanvas'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 23,
+      "message": "Orphaned entity 'DetailsPanel'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 24,
+      "message": "Orphaned entity 'ErrorPanel'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 8,
+      "message": "Asset 'IndexHTML' is not exported by any file",
+      "severity": "error",
+      "suggestion": "Add 'IndexHTML' to the exports of a file entity",
+    },
+    {
+      "column": 1,
+      "line": 20,
+      "message": "UIComponent 'AppContainer' is not exported by any file",
+      "severity": "error",
+      "suggestion": "Add 'AppContainer' to the exports of a file entity",
+    },
+    {
+      "column": 1,
+      "line": 21,
+      "message": "UIComponent 'Sidebar' is not exported by any file",
+      "severity": "error",
+      "suggestion": "Add 'Sidebar' to the exports of a file entity",
+    },
+    {
+      "column": 1,
+      "line": 22,
+      "message": "UIComponent 'GraphCanvas' is not exported by any file",
+      "severity": "error",
+      "suggestion": "Add 'GraphCanvas' to the exports of a file entity",
+    },
+    {
+      "column": 1,
+      "line": 23,
+      "message": "UIComponent 'DetailsPanel' is not exported by any file",
+      "severity": "error",
+      "suggestion": "Add 'DetailsPanel' to the exports of a file entity",
+    },
+    {
+      "column": 1,
+      "line": 24,
+      "message": "UIComponent 'ErrorPanel' is not exported by any file",
+      "severity": "error",
+      "suggestion": "Add 'ErrorPanel' to the exports of a file entity",
+    },
+  ],
+  "file": "scenario-17-multiple-programs.tmd",
   "valid": false,
 }
 `;

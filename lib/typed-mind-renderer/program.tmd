@@ -1,7 +1,7 @@
 TypedMindRendererApp -> RendererFile v1.0.0 # Interactive visualization renderer for TypedMind DSL
 
 RendererFile @ src/index.ts: # Main renderer implementation
-  -> [TypedMindRenderer]
+  -> [TypedMindRenderer, serve, generateStaticHTML]
 
 # Main renderer class
 TypedMindRenderer <:
@@ -25,3 +25,12 @@ generateRendererJS :: () => string # Generate JavaScript renderer code
 getGraphData :: () => object # Transform graph data for rendering
 
 openInBrowser :: () => void # Open URL in default browser
+
+# Note: The renderer includes a browser-based UI program with the following architecture:
+# - UIProgram -> UIFile (src/static/renderer.js)
+# - IndexHTML asset contains the UIProgram
+# - UI Components: TypedMindExplorer, Sidebar, GraphCanvas, DetailsPanel, ErrorPanel, ControlPanel
+# - Functions that affect UI: initializeRenderer, renderGraph, selectEntity, filterEntities, showErrors, zoomFit, toggleLayout, clearSelection
+# 
+# Due to current DSL limitations, Assets and UIComponents cannot be properly exported by files,
+# so they are documented here but not included in the formal program structure.

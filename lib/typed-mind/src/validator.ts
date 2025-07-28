@@ -1,4 +1,4 @@
-import type { AnyEntity, ClassEntity, FunctionEntity, UIComponentEntity, ValidationError, ValidationResult } from './types';
+import type { AnyEntity, ClassEntity, FunctionEntity, UIComponentEntity, AssetEntity, ValidationError, ValidationResult } from './types';
 
 export class DSLValidator {
   private errors: ValidationError[] = [];
@@ -20,6 +20,7 @@ export class DSLValidator {
     this.checkUIComponentExports(entities);
     this.checkUIComponentRelationships(entities);
     this.checkFunctionUIComponentAffects(entities);
+    this.checkAssetProgramRelationships(entities);
 
     return {
       valid: this.errors.length === 0,
@@ -157,19 +158,8 @@ export class DSLValidator {
         severity: 'error',
         suggestion: 'Add a Program entity: AppName -> EntryFile',
       });
-    } else if (programs.length > 1) {
-      for (let i = 1; i < programs.length; i++) {
-        const program = programs[i];
-        if (program) {
-          this.addError({
-            position: program.position,
-            message: 'Multiple program entry points defined',
-            severity: 'error',
-            suggestion: 'Only one Program entity is allowed',
-          });
-        }
-      }
     }
+    // Multiple programs are now allowed
   }
 
   private checkUniquePaths(entities: Map<string, AnyEntity>): void {
@@ -606,6 +596,34 @@ export class DSLValidator {
                 suggestion: `Add '${entity.name}' to the affects list of function '${funcName}'`,
               });
             }
+          }
+        }
+      }
+    }
+  }
+
+  private checkAssetProgramRelationships(entities: Map<string, AnyEntity>): void {
+    for (const entity of entities.values()) {
+      if (entity.type === 'Asset') {
+        const assetEntity = entity as AssetEntity;
+        
+        if (assetEntity.containsProgram) {
+          const programEntity = entities.get(assetEntity.containsProgram);
+          
+          if (!programEntity) {
+            this.addError({
+              position: entity.position,
+              message: `Asset '${entity.name}' references unknown program '${assetEntity.containsProgram}'`,
+              severity: 'error',
+              suggestion: `Define '${assetEntity.containsProgram}' as a Program entity`,
+            });
+          } else if (programEntity.type !== 'Program') {
+            this.addError({
+              position: entity.position,
+              message: `Asset '${entity.name}' cannot contain '${assetEntity.containsProgram}' (it's a ${programEntity.type})`,
+              severity: 'error',
+              suggestion: `Assets can only contain Program entities`,
+            });
           }
         }
       }

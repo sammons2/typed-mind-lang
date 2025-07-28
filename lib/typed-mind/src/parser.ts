@@ -60,7 +60,7 @@ export class DSLParser {
 
   private isContinuation(line: string): boolean {
     // Lines starting with whitespace and specific operators are continuations
-    return /^\s+(->|<-|~>|=>|>|<|~|"|#|-)/.test(line);
+    return /^\s+(->|<-|~>|=>|>>|>|<|~|"|#|-)/.test(line);
   }
 
   private parseEntity(line: string, lineNum: number): AnyEntity | null {
@@ -339,6 +339,14 @@ export class DSLParser {
     if (containedByMatch && entity.type === 'UIComponent') {
       const uiEntity = entity as UIComponentEntity;
       uiEntity.containedBy = this.parseList(containedByMatch[1] as string);
+      return;
+    }
+
+    // Asset contains program: >> ProgramName
+    const containsProgramMatch = line.match(/^>>\s*(\w+)$/);
+    if (containsProgramMatch && entity.type === 'Asset') {
+      const assetEntity = entity as AssetEntity;
+      assetEntity.containsProgram = containsProgramMatch[1] as string;
       return;
     }
 

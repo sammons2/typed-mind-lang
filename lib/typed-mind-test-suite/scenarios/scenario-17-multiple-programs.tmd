@@ -1,0 +1,27 @@
+RendererApp -> RendererFile v1.0.0 # Server-side renderer program
+
+UIProgram -> IndexHTML v1.0.0 # Client-side UI program
+
+RendererFile @ src/index.ts:
+  -> [TypedMindRenderer]
+
+IndexHTML ~ "Interactive UI HTML file"
+  >> UIProgram
+  -> [IndexHTML]
+
+# Server-side renderer
+TypedMindRenderer <:
+  => [serve, generateStaticHTML]
+
+serve :: () => void
+generateStaticHTML :: () => string
+
+# UI Components in the client-side program
+AppContainer & "Root container for the UI"
+Sidebar & "Entity list sidebar"
+GraphCanvas & "D3.js graph visualization"
+DetailsPanel & "Entity details panel"
+ErrorPanel & "Validation error display"
+
+# These UI components should be referenced somehow
+# Currently they're orphaned which should be caught
