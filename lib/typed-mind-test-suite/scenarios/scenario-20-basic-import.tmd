@@ -1,0 +1,11 @@
+# Test basic import functionality
+@import "./imports/shared/auth-module.tmd"
+
+MyApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  <- [AuthService]
+  -> [startApp]
+
+startApp :: () => void
+  ~> [AuthService.login]

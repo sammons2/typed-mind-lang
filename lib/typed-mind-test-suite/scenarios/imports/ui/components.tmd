@@ -1,0 +1,13 @@
+# UI Components library
+ComponentsFile @ src/components/index.ts:
+  -> [Button, Form, Input, Modal]
+
+Button &! "Reusable button component"
+
+Form &! "Form container"
+  > [Input, Button]
+
+Input & "Form input field"
+
+Modal &! "Modal dialog"
+  > [Button]

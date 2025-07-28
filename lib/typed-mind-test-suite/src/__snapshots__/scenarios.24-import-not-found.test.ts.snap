@@ -1,0 +1,17 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`scenario-24-import-not-found > should validate import not found 1`] = `
+{
+  "errors": [
+    {
+      "column": 1,
+      "line": 2,
+      "message": "Failed to import './non-existent-file.tmd': Error: ENOENT: no such file or directory, open '/home/sammons/Desktop/backend-app-lang/lib/typed-mind-test-suite/scenarios/non-existent-file.tmd'",
+      "severity": "error",
+      "suggestion": undefined,
+    },
+  ],
+  "file": "scenario-24-import-not-found.tmd",
+  "valid": false,
+}
+`;

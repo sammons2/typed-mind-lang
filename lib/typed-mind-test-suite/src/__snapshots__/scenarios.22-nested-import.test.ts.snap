@@ -1,0 +1,31 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`scenario-22-nested-import > should validate nested import 1`] = `
+{
+  "errors": [
+    {
+      "column": 1,
+      "line": 4,
+      "message": "Orphaned entity 'ServiceFile'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 14,
+      "message": "Orphaned entity 'User'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 2,
+      "message": "Orphaned entity 'DatabaseFile'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+  ],
+  "file": "scenario-22-nested-import.tmd",
+  "valid": false,
+}
+`;

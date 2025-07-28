@@ -1,0 +1,9 @@
+# Shared authentication module
+AuthFile @ src/auth/service.ts:
+  -> [AuthService, validateUser]
+
+AuthService <:
+  => [login, logout, checkSession]
+
+validateUser :: (username: string, password: string) => boolean
+  ~> [AuthService.checkSession]

@@ -1,0 +1,11 @@
+# Test nested imports (imports that import other files)
+@import "./imports/shared/service-layer.tmd"
+
+App -> MainEntry v1.0.0
+
+MainEntry @ src/index.ts:
+  <- [UserService]
+  -> [main]
+
+main :: () => void
+  ~> [UserService.createUser]

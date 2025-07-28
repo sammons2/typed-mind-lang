@@ -1,0 +1,11 @@
+# Test import with duplicate entity names (should error without alias)
+@import "./imports/shared/auth-module.tmd"
+@import "./imports/shared/auth-duplicate.tmd"
+
+DuplicateApp -> AppMain v1.0.0
+
+AppMain @ src/app.ts:
+  <- [AuthService]
+  -> [initialize]
+
+initialize :: () => void

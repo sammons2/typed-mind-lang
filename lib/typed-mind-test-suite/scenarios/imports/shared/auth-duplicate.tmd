@@ -1,0 +1,7 @@
+# Another auth module with same entity names
+AuthDuplicateFile @ src/auth/duplicate.ts:
+  -> [AuthService]
+
+# This AuthService has the same name as the one in auth-module.tmd
+AuthService <:
+  => [authenticate, verify]

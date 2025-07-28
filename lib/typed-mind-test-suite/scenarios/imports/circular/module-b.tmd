@@ -1,0 +1,12 @@
+# Module B that imports Module A (creating a circular dependency)
+@import "./module-a.tmd"
+
+FileB @ src/module-b.ts:
+  <- [ServiceA]
+  -> [ServiceB]
+
+ServiceB <:
+  => [methodB]
+
+methodB :: () => void
+  ~> [ServiceA.methodA]

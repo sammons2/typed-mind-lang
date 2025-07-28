@@ -1,0 +1,14 @@
+# Service layer that imports database module
+@import "./database.tmd"
+
+ServiceFile @ src/services/user.ts:
+  <- [Connection]
+  -> [UserService]
+
+UserService <:
+  => [createUser, getUser, updateUser]
+
+createUser :: (data: object) => Promise<User>
+  ~> [Connection.execute]
+
+User ~ "User entity"

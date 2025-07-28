@@ -1,0 +1,9 @@
+# Database connection module
+DatabaseFile @ src/db/connection.ts:
+  -> [Connection, query]
+
+Connection <:
+  => [connect, disconnect, execute]
+
+query :: (sql: string) => Promise<any[]>
+  ~> [Connection.execute]

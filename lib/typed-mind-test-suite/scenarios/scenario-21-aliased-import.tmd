@@ -1,0 +1,13 @@
+# Test aliased imports
+@import "./imports/ui/components.tmd" as UI
+@import "./imports/shared/database.tmd" as DB
+
+WebApp -> AppFile v1.0.0
+
+AppFile @ src/app.ts:
+  <- [DB.Connection, UI.Button, UI.Form]
+  -> [initializeApp]
+
+initializeApp :: () => void
+  ~> [DB.Connection.connect]
+  ~ [UI.Button, UI.Form]

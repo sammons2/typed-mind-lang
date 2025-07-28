@@ -1,0 +1,31 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`scenario-23-circular-import > should validate circular import 1`] = `
+{
+  "errors": [
+    {
+      "column": 1,
+      "line": 4,
+      "message": "Orphaned entity 'FileA'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 4,
+      "message": "Import 'ServiceB' not found",
+      "severity": "error",
+      "suggestion": "Did you mean 'ServiceA'?",
+    },
+    {
+      "column": 1,
+      "line": 11,
+      "message": "Call to 'ServiceB.methodB' references unknown entity 'ServiceB'",
+      "severity": "error",
+      "suggestion": undefined,
+    },
+  ],
+  "file": "scenario-23-circular-import.tmd",
+  "valid": false,
+}
+`;

@@ -1,0 +1,12 @@
+# Module A that imports Module B
+@import "./module-b.tmd"
+
+FileA @ src/module-a.ts:
+  <- [ServiceB]
+  -> [ServiceA]
+
+ServiceA <:
+  => [methodA]
+
+methodA :: () => void
+  ~> [ServiceB.methodB]

@@ -1,0 +1,10 @@
+# Test circular import detection
+@import "./imports/circular/module-a.tmd"
+
+CircularApp -> Entry v1.0.0
+
+Entry @ src/main.ts:
+  <- [ServiceA]
+  -> [start]
+
+start :: () => void

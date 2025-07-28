@@ -1,0 +1,9 @@
+# Test import error - file not found
+@import "./non-existent-file.tmd"
+
+FailApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  -> [main]
+
+main :: () => void

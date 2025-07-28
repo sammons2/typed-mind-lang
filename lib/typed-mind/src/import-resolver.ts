@@ -56,7 +56,8 @@ export class ImportResolver {
 
       // Recursively resolve nested imports
       if (result.imports.length > 0) {
-        const importDir = dirname(this.resolvePath(importStmt.path, basePath));
+        const resolvedPath = this.resolvePath(importStmt.path, basePath);
+        const importDir = dirname(resolvedPath);
         const nestedResult = this.resolveImports(result.imports, importDir);
         
         for (const [name, entity] of nestedResult.resolvedEntities) {
@@ -79,15 +80,20 @@ export class ImportResolver {
   ): ResolvedImport {
     const fullPath = this.resolvePath(importStmt.path, basePath);
 
-    // Check for circular imports
+    // Check for circular imports before adding to stack
     if (this.resolutionStack.includes(fullPath)) {
+      // Create a clean error without causing recursion
+      const cyclePath = [...this.resolutionStack, fullPath];
+      const cycleStart = cyclePath.indexOf(fullPath);
+      const cycle = cyclePath.slice(cycleStart).join(' -> ');
+      
       return {
         import: importStmt,
         entities: new Map(),
         imports: [],
         errors: [{
           position: importStmt.position,
-          message: `Circular import detected: ${this.resolutionStack.join(' -> ')} -> ${fullPath}`,
+          message: `Circular import detected: ${cycle}`,
           severity: 'error',
         }],
       };
