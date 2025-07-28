@@ -1,0 +1,10 @@
+TypedMindCLI -> CLIFile v1.0.0 # Command line interface for TypedMind DSL
+
+CLIFile @ src/cli.ts: # Main CLI entry point
+  -> [main, showHelp]
+
+# Main functions
+main :: () => Promise<void> # Main CLI entry point
+  ~> [showHelp]
+
+showHelp :: () => void # Display help information

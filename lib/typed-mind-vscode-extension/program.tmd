@@ -1,0 +1,9 @@
+TypedMindVSCode -> ExtensionFile v1.0.0 # VS Code extension for TypedMind DSL
+
+ExtensionFile @ src/extension.ts: # Main extension entry point
+  -> [activate, deactivate]
+
+# Extension lifecycle functions
+activate :: () => void # Activate the extension
+
+deactivate :: () => void # Deactivate the extension

@@ -1,0 +1,27 @@
+TypedMindRendererApp -> RendererFile v1.0.0 # Interactive visualization renderer for TypedMind DSL
+
+RendererFile @ src/index.ts: # Main renderer implementation
+  -> [TypedMindRenderer]
+
+# Main renderer class
+TypedMindRenderer <:
+  => [setProgramGraph, setValidationResult, serve, generateStaticHTML, generateRendererJS, getGraphData, openInBrowser]
+
+# Public methods
+setProgramGraph :: () => void # Set the program graph to render
+  
+setValidationResult :: () => void # Set validation results
+
+serve :: () => void # Start interactive server
+  ~> [openInBrowser]
+
+generateStaticHTML :: () => string # Generate static HTML output
+  ~> [generateRendererJS]
+
+# Private methods  
+generateRendererJS :: () => string # Generate JavaScript renderer code
+  ~> [getGraphData]
+
+getGraphData :: () => object # Transform graph data for rendering
+
+openInBrowser :: () => void # Open URL in default browser

@@ -7,12 +7,12 @@ IndexFile @ src/index.ts:
   # Exports all types from TypesModule
 
 # Aggregates parser, validator, and formatter into single API
-DSLChecker @ src/index.ts:
+DSLChecker <:
   => [check, parse, buildDependencyGraph]
 
 # Core module containing all type definitions
 TypesModule @ src/types.ts:
-  -> [EntityType, Position, Entity, ProgramEntity, FileEntity, FunctionEntity, ClassEntity, ConstantsEntity, DTOEntity, DTOField, AnyEntity, ValidationError, ValidationResult, ProgramGraph]
+  -> [EntityType, Position, Entity, ProgramEntity, FileEntity, FunctionEntity, ClassEntity, ConstantsEntity, DTOEntity, DTOField, ValidationError, ValidationResult, ProgramGraph]
 
 # Parses DSL text into entity map
 DSLParser @ src/parser.ts:

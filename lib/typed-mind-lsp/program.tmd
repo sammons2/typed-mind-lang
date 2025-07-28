@@ -1,0 +1,7 @@
+TypedMindLSP -> StartServerFile v1.0.0 # Language Server Protocol implementation for TypedMind DSL
+
+StartServerFile @ src/start-server.ts: # Server startup module
+  -> [startServer]
+
+# Server startup function
+startServer :: () => void # Initialize and start the language server

@@ -1,0 +1,4 @@
+TypedMindTestSuite -> TestFile v1.0.0 # Test suite for TypedMind DSL validation
+
+TestFile @ src/scenarios.test.ts: # Main test file
+  -> []
