@@ -1,0 +1,36 @@
+TestApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  -> [App, Header, LoginForm]
+
+ComponentsFile @ src/components/index.ts:
+  -> [Button, Input]
+
+# Valid UIComponents with hierarchy
+App & "Main application container"
+  > [Header, MainContent]
+
+Header & "Application header"
+  < [App]
+  > [Logo, NavMenu]
+
+MainContent & "Main content area"
+  < [App]
+  > [LoginForm]
+
+LoginForm & "User login form"
+  < [MainContent]
+  > [Input, Button]
+
+Button & "Reusable button component"
+  < [LoginForm]
+
+Input & "Reusable input component"
+  < [LoginForm]
+
+# These should error - not exported
+Logo & "Logo component"
+NavMenu & "Navigation menu"
+
+# This should error - not exported
+UnexportedComponent & "Some component not exported"

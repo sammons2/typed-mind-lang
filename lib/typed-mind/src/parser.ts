@@ -7,6 +7,8 @@ import type {
   ConstantsEntity,
   DTOEntity,
   DTOField,
+  AssetEntity,
+  UIComponentEntity,
   Position,
 } from './types';
 
@@ -53,12 +55,12 @@ export class DSLParser {
 
   private isEntityDeclaration(line: string): boolean {
     // Match various entity patterns - entities can start with any letter
-    return /^\w+\s*(->|@|<:|!|::|%|\s*:)/.test(line);
+    return /^\w+\s*(->|@|<:|!|::|%|~|&|\s*:)/.test(line);
   }
 
   private isContinuation(line: string): boolean {
     // Lines starting with whitespace and specific operators are continuations
-    return /^\s+(->|<-|~>|=>|"|#|-)/.test(line);
+    return /^\s+(->|<-|~>|=>|>|<|~|"|#|-)/.test(line);
   }
 
   private parseEntity(line: string, lineNum: number): AnyEntity | null {
@@ -205,6 +207,35 @@ export class DSLParser {
       } as DTOEntity;
     }
 
+    // Asset: Logo ~ "Company logo image"
+    const assetMatch = cleanLine.match(/^(\w+)\s*~\s*"([^"]+)"$/);
+    if (assetMatch) {
+      return {
+        name: assetMatch[1] as string,
+        type: 'Asset',
+        description: assetMatch[2] as string,
+        position,
+        raw: line,
+        comment,
+      } as AssetEntity;
+    }
+
+    // UIComponent: LoginForm & "User login form"
+    const uiComponentMatch = cleanLine.match(/^(\w+)\s*&\s*"([^"]+)"$/);
+    if (uiComponentMatch) {
+      return {
+        name: uiComponentMatch[1] as string,
+        type: 'UIComponent',
+        purpose: uiComponentMatch[2] as string,
+        contains: [],
+        containedBy: [],
+        affectedBy: [],
+        position,
+        raw: line,
+        comment,
+      } as UIComponentEntity;
+    }
+
     // Long form with explicit type
     const longFormMatch = cleanLine.match(/^(\w+)\s*:$/);
     if (longFormMatch) {
@@ -270,6 +301,44 @@ export class DSLParser {
     const methodsMatch = line.match(/^=>\s*\[([^\]]+)\]/);
     if (methodsMatch && 'methods' in entity) {
       entity.methods = this.parseList(methodsMatch[1] as string);
+      return;
+    }
+
+    // Function affects: ~> [ComponentA, ComponentB]
+    const affectsMatch = line.match(/^~\s*\[([^\]]+)\]/);
+    if (affectsMatch && entity.type === 'Function') {
+      const funcEntity = entity as FunctionEntity;
+      funcEntity.affects = this.parseList(affectsMatch[1] as string);
+      
+      // Update affected components' affectedBy list
+      for (const componentName of funcEntity.affects) {
+        const component = this.entities.get(componentName);
+        if (component && component.type === 'UIComponent') {
+          const uiComponent = component as UIComponentEntity;
+          if (!uiComponent.affectedBy) {
+            uiComponent.affectedBy = [];
+          }
+          if (!uiComponent.affectedBy.includes(funcEntity.name)) {
+            uiComponent.affectedBy.push(funcEntity.name);
+          }
+        }
+      }
+      return;
+    }
+
+    // UIComponent contains: > [ChildComponent1, ChildComponent2]
+    const containsMatch = line.match(/^>\s*\[([^\]]+)\]/);
+    if (containsMatch && entity.type === 'UIComponent') {
+      const uiEntity = entity as UIComponentEntity;
+      uiEntity.contains = this.parseList(containsMatch[1] as string);
+      return;
+    }
+
+    // UIComponent containedBy: < [ParentComponent]
+    const containedByMatch = line.match(/^<\s*\[([^\]]+)\]/);
+    if (containedByMatch && entity.type === 'UIComponent') {
+      const uiEntity = entity as UIComponentEntity;
+      uiEntity.containedBy = this.parseList(containedByMatch[1] as string);
       return;
     }
 

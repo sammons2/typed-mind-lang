@@ -39,6 +39,18 @@
         {
           "name": "entity.name.constant.typedmind",
           "match": "\\b[A-Za-z][A-Za-z0-9]*\\b(?=\\s*!)"
+        },
+        {
+          "name": "entity.name.dto.typedmind",
+          "match": "\\b[A-Za-z][A-Za-z0-9]*\\b(?=\\s*%)"
+        },
+        {
+          "name": "entity.name.asset.typedmind",
+          "match": "\\b[A-Za-z][A-Za-z0-9]*\\b(?=\\s*~)"
+        },
+        {
+          "name": "entity.name.component.typedmind",
+          "match": "\\b[A-Za-z][A-Za-z0-9]*\\b(?=\\s*&)"
         }
       ]
     },
@@ -75,6 +87,26 @@
         {
           "name": "keyword.operator.methods.typedmind",
           "match": "=>"
+        },
+        {
+          "name": "keyword.operator.dto.typedmind",
+          "match": "%"
+        },
+        {
+          "name": "keyword.operator.asset.typedmind",
+          "match": "~"
+        },
+        {
+          "name": "keyword.operator.component.typedmind",
+          "match": "&"
+        },
+        {
+          "name": "keyword.operator.contains.typedmind",
+          "match": ">"
+        },
+        {
+          "name": "keyword.operator.containedBy.typedmind",
+          "match": "<"
         }
       ]
     },

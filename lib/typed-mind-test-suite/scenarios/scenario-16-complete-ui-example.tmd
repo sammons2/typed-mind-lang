@@ -1,0 +1,123 @@
+TodoApp -> AppFile v1.0.0 # Todo app with UI
+
+AppFile @ src/app.ts:
+  <- [TodoController, UserController]
+  -> []
+
+ComponentsFile @ src/components/index.ts:
+  -> [App, TodoListView, TodoItemView, UserProfileView, LoginFormView]
+
+AssetsFile @ src/assets/index.ts:
+  -> [AppLogo, UserAvatar, CheckIcon, DeleteIcon]
+
+ControllersFile @ src/controllers/index.ts:
+  <- [TodoModel, UserModel]
+  -> [TodoController, UserController, createTodo, updateTodo, deleteTodo, login, logout]
+
+ModelsFile @ src/models/index.ts:
+  -> [TodoModel, UserModel]
+
+# Assets
+AppLogo ~ "Application logo SVG"
+UserAvatar ~ "Default user avatar image"
+CheckIcon ~ "Checkmark icon for completed todos"
+DeleteIcon ~ "Trash icon for delete action"
+
+# UI Components
+App & "Root application component"
+  > [TodoListView, UserProfileView]
+
+TodoListView & "Todo list container"
+  < [App]
+  > [TodoItemView]
+
+TodoItemView & "Individual todo item display"
+  < [TodoListView]
+
+UserProfileView & "User profile display"
+  < [App]
+
+LoginFormView & "Login form component"
+
+# Controllers
+TodoController <:
+  => [create, update, delete]
+
+UserController <:
+  => [authenticate, getProfile]
+
+# Models
+TodoModel <:
+  => [save, find, remove]
+
+UserModel <:
+  => [findByEmail, validatePassword]
+
+# Controller methods
+create :: (data: TodoCreateDTO) => TodoDTO
+  <- TodoCreateDTO
+  -> TodoDTO
+  ~> [TodoModel.save]
+
+update :: (id: string, data: TodoUpdateDTO) => TodoDTO
+  <- TodoUpdateDTO
+  -> TodoDTO
+  ~> [TodoModel.find, TodoModel.save]
+
+delete :: (id: string) => void
+  ~> [TodoModel.remove]
+
+authenticate :: (email: string, password: string) => UserDTO
+  -> UserDTO
+  ~> [UserModel.findByEmail, UserModel.validatePassword]
+
+getProfile :: (userId: string) => UserDTO
+  -> UserDTO
+  ~> [UserModel.find]
+
+# Functions that affect UI
+createTodo :: (data: TodoCreateDTO) => void
+  <- TodoCreateDTO
+  ~> [create]
+  ~ [TodoListView, TodoItemView]
+
+updateTodo :: (id: string, completed: boolean) => void
+  ~> [update]
+  ~ [TodoItemView]
+
+deleteTodo :: (id: string) => void
+  ~> [delete]
+  ~ [TodoListView, TodoItemView]
+
+login :: (email: string, password: string) => void
+  ~> [authenticate]
+  ~ [App, LoginFormView, UserProfileView]
+
+logout :: () => void
+  ~ [App, UserProfileView]
+
+# Model methods
+save :: () => void
+find :: (id: string) => any
+remove :: (id: string) => void
+findByEmail :: (email: string) => any
+validatePassword :: (password: string) => boolean
+
+# DTOs
+TodoCreateDTO % "Create todo data"
+  - title: string "Todo title"
+  - description: string "Optional description" (optional)
+
+TodoUpdateDTO % "Update todo data"
+  - completed: boolean "Completion status"
+
+TodoDTO % "Todo response data"
+  - id: string "Todo ID"
+  - title: string "Todo title"
+  - description: string "Description" (optional)
+  - completed: boolean "Is completed"
+
+UserDTO % "User data"
+  - id: string "User ID"
+  - email: string "User email"
+  - name: string "Display name"

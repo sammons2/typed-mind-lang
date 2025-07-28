@@ -1,0 +1,27 @@
+TestApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  -> [updateTodoList, deleteTodo, TodoList, TodoItem]
+
+# UIComponents
+TodoList & "List of todo items"
+  > [TodoItem]
+
+TodoItem & "Individual todo item"
+  < [TodoList]
+
+# Functions that affect UI
+updateTodoList :: () => void
+  ~> [TodoList]
+  ~ [TodoList, TodoItem]
+
+deleteTodo :: (id: string) => void
+  ~ [TodoItem]
+
+# This should error - affects non-existent component
+refreshUI :: () => void
+  ~ [NonExistentComponent]
+
+# This should error - affects non-UIComponent entity
+invalidAffect :: () => void
+  ~ [updateTodoList]

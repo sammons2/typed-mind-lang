@@ -1,4 +1,4 @@
-import type { AnyEntity, ClassEntity, FunctionEntity, ValidationError, ValidationResult } from './types';
+import type { AnyEntity, ClassEntity, FunctionEntity, UIComponentEntity, ValidationError, ValidationResult } from './types';
 
 export class DSLValidator {
   private errors: ValidationError[] = [];
@@ -16,6 +16,10 @@ export class DSLValidator {
     this.checkMethodCalls(entities);
     this.checkUndefinedExports(entities);
     this.checkFunctionDTOs(entities);
+    this.checkAssetExports(entities);
+    this.checkUIComponentExports(entities);
+    this.checkUIComponentRelationships(entities);
+    this.checkFunctionUIComponentAffects(entities);
 
     return {
       valid: this.errors.length === 0,
@@ -443,6 +447,165 @@ export class DSLValidator {
               severity: 'error',
               suggestion: `Change '${funcEntity.output}' to a DTO or use a different output type`,
             });
+          }
+        }
+      }
+    }
+  }
+
+  private checkAssetExports(entities: Map<string, AnyEntity>): void {
+    // Check that all assets are exported by at least one file
+    const exportedEntities = new Set<string>();
+    
+    for (const entity of entities.values()) {
+      if ('exports' in entity && entity.exports) {
+        for (const exp of entity.exports) {
+          exportedEntities.add(exp);
+        }
+      }
+    }
+
+    for (const [name, entity] of entities) {
+      if (entity.type === 'Asset' && !exportedEntities.has(name)) {
+        this.addError({
+          position: entity.position,
+          message: `Asset '${name}' is not exported by any file`,
+          severity: 'error',
+          suggestion: `Add '${name}' to the exports of a file entity`,
+        });
+      }
+    }
+  }
+
+  private checkUIComponentExports(entities: Map<string, AnyEntity>): void {
+    // Check that all UIComponents are exported by at least one file
+    const exportedEntities = new Set<string>();
+    
+    for (const entity of entities.values()) {
+      if ('exports' in entity && entity.exports) {
+        for (const exp of entity.exports) {
+          exportedEntities.add(exp);
+        }
+      }
+    }
+
+    for (const [name, entity] of entities) {
+      if (entity.type === 'UIComponent' && !exportedEntities.has(name)) {
+        this.addError({
+          position: entity.position,
+          message: `UIComponent '${name}' is not exported by any file`,
+          severity: 'error',
+          suggestion: `Add '${name}' to the exports of a file entity`,
+        });
+      }
+    }
+  }
+
+  private checkUIComponentRelationships(entities: Map<string, AnyEntity>): void {
+    for (const entity of entities.values()) {
+      if (entity.type === 'UIComponent') {
+        const uiEntity = entity as UIComponentEntity;
+        
+        // Check contains references
+        if (uiEntity.contains) {
+          for (const childName of uiEntity.contains) {
+            const childEntity = entities.get(childName);
+            if (!childEntity) {
+              this.addError({
+                position: entity.position,
+                message: `UIComponent '${entity.name}' contains unknown component '${childName}'`,
+                severity: 'error',
+                suggestion: `Define '${childName}' as a UIComponent`,
+              });
+            } else if (childEntity.type !== 'UIComponent') {
+              this.addError({
+                position: entity.position,
+                message: `UIComponent '${entity.name}' cannot contain '${childName}' (it's a ${childEntity.type})`,
+                severity: 'error',
+                suggestion: `Only UIComponents can contain other UIComponents`,
+              });
+            }
+          }
+        }
+        
+        // Check containedBy references
+        if (uiEntity.containedBy) {
+          for (const parentName of uiEntity.containedBy) {
+            const parentEntity = entities.get(parentName);
+            if (!parentEntity) {
+              this.addError({
+                position: entity.position,
+                message: `UIComponent '${entity.name}' references unknown parent '${parentName}'`,
+                severity: 'error',
+                suggestion: `Define '${parentName}' as a UIComponent`,
+              });
+            } else if (parentEntity.type !== 'UIComponent') {
+              this.addError({
+                position: entity.position,
+                message: `UIComponent '${entity.name}' cannot be contained by '${parentName}' (it's a ${parentEntity.type})`,
+                severity: 'error',
+                suggestion: `Only UIComponents can contain other UIComponents`,
+              });
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private checkFunctionUIComponentAffects(entities: Map<string, AnyEntity>): void {
+    // Build bi-directional validation
+    const componentAffectedBy = new Map<string, string[]>();
+    
+    for (const entity of entities.values()) {
+      if (entity.type === 'Function') {
+        const funcEntity = entity as FunctionEntity;
+        if (funcEntity.affects) {
+          for (const componentName of funcEntity.affects) {
+            const componentEntity = entities.get(componentName);
+            if (!componentEntity) {
+              this.addError({
+                position: entity.position,
+                message: `Function '${entity.name}' affects unknown component '${componentName}'`,
+                severity: 'error',
+                suggestion: `Define '${componentName}' as a UIComponent`,
+              });
+            } else if (componentEntity.type !== 'UIComponent') {
+              this.addError({
+                position: entity.position,
+                message: `Function '${entity.name}' cannot affect '${componentName}' (it's a ${componentEntity.type})`,
+                severity: 'error',
+                suggestion: `Functions can only affect UIComponents`,
+              });
+            } else {
+              // Track for bi-directional validation
+              if (!componentAffectedBy.has(componentName)) {
+                componentAffectedBy.set(componentName, []);
+              }
+              componentAffectedBy.get(componentName)!.push(entity.name);
+            }
+          }
+        }
+      }
+    }
+    
+    // Check that UIComponent.affectedBy matches Function.affects
+    for (const entity of entities.values()) {
+      if (entity.type === 'UIComponent') {
+        const uiEntity = entity as UIComponentEntity;
+        const functionsAffecting = componentAffectedBy.get(entity.name) || [];
+        
+        if (uiEntity.affectedBy && uiEntity.affectedBy.length > 0) {
+          // Component claims to be affected by functions - verify they match
+          for (const funcName of uiEntity.affectedBy) {
+            if (!functionsAffecting.includes(funcName)) {
+              this.addError({
+                position: entity.position,
+                message: `UIComponent '${entity.name}' claims to be affected by '${funcName}', but that function doesn't affect it`,
+                severity: 'error',
+                suggestion: `Add '${entity.name}' to the affects list of function '${funcName}'`,
+              });
+            }
           }
         }
       }

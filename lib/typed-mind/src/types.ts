@@ -1,4 +1,4 @@
-export type EntityType = 'Program' | 'File' | 'Function' | 'Class' | 'Constants' | 'DTO';
+export type EntityType = 'Program' | 'File' | 'Function' | 'Class' | 'Constants' | 'DTO' | 'Asset' | 'UIComponent';
 
 export interface Position {
   line: number;
@@ -34,6 +34,7 @@ export interface FunctionEntity extends Entity {
   calls: string[];
   input?: string; // Can reference a DTO name
   output?: string; // Can reference a DTO name
+  affects?: string[]; // UIComponents this function affects
 }
 
 export interface ClassEntity extends Entity {
@@ -64,7 +65,20 @@ export interface DTOEntity extends Entity {
   fields: DTOField[];
 }
 
-export type AnyEntity = ProgramEntity | FileEntity | FunctionEntity | ClassEntity | ConstantsEntity | DTOEntity;
+export interface AssetEntity extends Entity {
+  type: 'Asset';
+  description: string;
+}
+
+export interface UIComponentEntity extends Entity {
+  type: 'UIComponent';
+  purpose: string;
+  contains?: string[]; // Other UIComponents this contains
+  containedBy?: string[]; // UIComponents that contain this
+  affectedBy?: string[]; // Functions that affect this component
+}
+
+export type AnyEntity = ProgramEntity | FileEntity | FunctionEntity | ClassEntity | ConstantsEntity | DTOEntity | AssetEntity | UIComponentEntity;
 
 export interface ValidationError {
   position: Position;

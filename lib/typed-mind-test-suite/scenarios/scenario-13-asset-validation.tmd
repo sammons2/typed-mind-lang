@@ -1,0 +1,15 @@
+TestApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  -> [Logo, Banner]
+
+AssetsFile @ src/assets/index.ts:
+  -> [Icon]
+
+# Valid assets
+Logo ~ "Company logo image"
+Banner ~ "Marketing banner image"
+Icon ~ "Application icon"
+
+# This asset is not exported - should error
+UnexportedAsset ~ "Some image that's not exported"
