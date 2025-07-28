@@ -16,8 +16,6 @@ export class DSLValidator {
     this.checkMethodCalls(entities);
     this.checkUndefinedExports(entities);
     this.checkFunctionDTOs(entities);
-    this.checkAssetExports(entities);
-    this.checkUIComponentExports(entities);
     this.checkUIComponentRelationships(entities);
     this.checkFunctionUIComponentAffects(entities);
     this.checkAssetProgramRelationships(entities);
@@ -388,7 +386,7 @@ export class DSLValidator {
               position: entity.position,
               message: `Export '${exportName}' is not defined anywhere in the codebase`,
               severity: 'error',
-              suggestion: `Define '${exportName}' as a Function, Class, or Constants entity`,
+              suggestion: `Define '${exportName}' as a Function, Class, Constants, Asset, or UIComponent entity`,
             });
           }
         }
@@ -443,53 +441,6 @@ export class DSLValidator {
     }
   }
 
-  private checkAssetExports(entities: Map<string, AnyEntity>): void {
-    // Check that all assets are exported by at least one file
-    const exportedEntities = new Set<string>();
-    
-    for (const entity of entities.values()) {
-      if ('exports' in entity && entity.exports) {
-        for (const exp of entity.exports) {
-          exportedEntities.add(exp);
-        }
-      }
-    }
-
-    for (const [name, entity] of entities) {
-      if (entity.type === 'Asset' && !exportedEntities.has(name)) {
-        this.addError({
-          position: entity.position,
-          message: `Asset '${name}' is not exported by any file`,
-          severity: 'error',
-          suggestion: `Add '${name}' to the exports of a file entity`,
-        });
-      }
-    }
-  }
-
-  private checkUIComponentExports(entities: Map<string, AnyEntity>): void {
-    // Check that all UIComponents are exported by at least one file
-    const exportedEntities = new Set<string>();
-    
-    for (const entity of entities.values()) {
-      if ('exports' in entity && entity.exports) {
-        for (const exp of entity.exports) {
-          exportedEntities.add(exp);
-        }
-      }
-    }
-
-    for (const [name, entity] of entities) {
-      if (entity.type === 'UIComponent' && !exportedEntities.has(name)) {
-        this.addError({
-          position: entity.position,
-          message: `UIComponent '${name}' is not exported by any file`,
-          severity: 'error',
-          suggestion: `Add '${name}' to the exports of a file entity`,
-        });
-      }
-    }
-  }
 
   private checkUIComponentRelationships(entities: Map<string, AnyEntity>): void {
     for (const entity of entities.values()) {

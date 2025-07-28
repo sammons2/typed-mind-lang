@@ -1,7 +1,20 @@
 TypedMindRendererApp -> RendererFile v1.0.0 # Interactive visualization renderer for TypedMind DSL
 
+UIProgram -> UIFile v1.0.0 # Browser-based UI application
+
 RendererFile @ src/index.ts: # Main renderer implementation
+  <- [HTMLFile]
   -> [TypedMindRenderer, serve, generateStaticHTML]
+
+UIFile @ src/static/renderer.js: # Browser UI implementation
+  <- [ComponentsFile]
+  -> [initializeRenderer, renderGraph, selectEntity, filterEntities, showErrors, zoomFit, toggleLayout, clearSelection]
+
+HTMLFile @ src/static/index.html:
+  -> [IndexHTML]
+
+IndexHTML ~ "Interactive UI HTML file with embedded JavaScript"
+  >> UIProgram
 
 # Main renderer class
 TypedMindRenderer <:
@@ -26,11 +39,57 @@ getGraphData :: () => object # Transform graph data for rendering
 
 openInBrowser :: () => void # Open URL in default browser
 
-# Note: The renderer includes a browser-based UI program with the following architecture:
-# - UIProgram -> UIFile (src/static/renderer.js)
-# - IndexHTML asset contains the UIProgram
-# - UI Components: TypedMindExplorer, Sidebar, GraphCanvas, DetailsPanel, ErrorPanel, ControlPanel
-# - Functions that affect UI: initializeRenderer, renderGraph, selectEntity, filterEntities, showErrors, zoomFit, toggleLayout, clearSelection
-# 
-# Due to current DSL limitations, Assets and UIComponents cannot be properly exported by files,
-# so they are documented here but not included in the formal program structure.
+# UI Components file
+ComponentsFile @ src/static/components.js:
+  -> [TypedMindExplorer, Sidebar, GraphCanvas, DetailsPanel, ErrorPanel, ControlPanel, SearchInput, EntityList]
+
+# UI Components in the browser program
+TypedMindExplorer & "Root application container"
+  > [Sidebar, GraphCanvas, DetailsPanel, ErrorPanel, ControlPanel]
+
+Sidebar & "Entity list and search sidebar"
+  < [TypedMindExplorer]
+  > [SearchInput, EntityList]
+
+SearchInput & "Entity search input field"
+  < [Sidebar]
+
+EntityList & "Grouped list of entities"
+  < [Sidebar]
+
+GraphCanvas & "D3.js graph visualization area"
+  < [TypedMindExplorer]
+
+DetailsPanel & "Selected entity details display"
+  < [TypedMindExplorer]
+
+ErrorPanel & "Validation errors display"
+  < [TypedMindExplorer]
+
+ControlPanel & "Graph controls (zoom, layout, clear)"
+  < [TypedMindExplorer]
+
+# Functions that affect UI components
+initializeRenderer :: () => void # Initialize the UI
+  ~ [TypedMindExplorer, GraphCanvas]
+
+renderGraph :: (data: object) => void # Render the graph
+  ~ [GraphCanvas]
+
+selectEntity :: (entityName: string) => void # Select an entity
+  ~ [EntityList, GraphCanvas, DetailsPanel]
+
+filterEntities :: (searchTerm: string) => void # Filter entity list
+  ~ [EntityList]
+
+showErrors :: (errors: object[]) => void # Display errors
+  ~ [ErrorPanel]
+
+zoomFit :: () => void # Fit graph to view
+  ~ [GraphCanvas]
+
+toggleLayout :: () => void # Toggle graph layout
+  ~ [GraphCanvas]
+
+clearSelection :: () => void # Clear entity selection
+  ~ [EntityList, GraphCanvas, DetailsPanel]

@@ -1,0 +1,30 @@
+TestApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  -> [Logo, AppIcon, Header, Footer]
+
+ComponentsFile @ src/components/index.ts:
+  -> [Button, Input, Modal]
+
+AssetsFile @ src/assets/index.ts:
+  -> [BackgroundImage, IconSprite]
+
+# Assets exported by files
+Logo ~ "Company logo SVG"
+AppIcon ~ "Application icon"
+BackgroundImage ~ "Background pattern image"
+IconSprite ~ "Icon sprite sheet"
+
+# UIComponents exported by files  
+Header & "Page header component"
+
+Footer & "Page footer component"
+
+Button & "Reusable button component"
+
+Input & "Form input component"
+
+Modal & "Modal dialog component"
+  > [Header, Footer]
+
+# This should pass validation - Files can now export Assets and UIComponents
