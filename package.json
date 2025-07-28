@@ -1,5 +1,5 @@
 {
-  "name": "typed-mind-monorepo",
+  "name": "@sammons/typed-mind-monorepo",
   "version": "1.0.0",
   "private": true,
   "description": "TypedMind - A domain-specific language for program architecture",

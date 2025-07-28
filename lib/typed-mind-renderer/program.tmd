@@ -1,95 +1,112 @@
 TypedMindRendererApp -> RendererFile v1.0.0 # Interactive visualization renderer for TypedMind DSL
 
-UIProgram -> UIFile v1.0.0 # Browser-based UI application
-
 RendererFile @ src/index.ts: # Main renderer implementation
-  <- [HTMLFile]
-  -> [TypedMindRenderer, serve, generateStaticHTML]
+  <- [StaticAssets]
+  -> [RendererOptions, TypedMindRenderer, init, renderSidebar, renderGraph, selectNode, showDetails, setupSearch, renderErrors, zoomFit, toggleLayout, clearSelection, BuildConfig, PackageConfig]
 
-UIFile @ src/static/renderer.js: # Browser UI implementation
-  <- [ComponentsFile]
-  -> [initializeRenderer, renderGraph, selectEntity, filterEntities, showErrors, zoomFit, toggleLayout, clearSelection]
-
-HTMLFile @ src/static/index.html:
-  -> [IndexHTML]
-
-IndexHTML ~ "Interactive UI HTML file with embedded JavaScript"
-  >> UIProgram
+# Interfaces and types
+RendererOptions ~ "Configuration options for the renderer"
+  :: port?: number
+  :: host?: string
+  :: openBrowser?: boolean
 
 # Main renderer class
 TypedMindRenderer <:
   => [setProgramGraph, setValidationResult, serve, generateStaticHTML, generateRendererJS, getGraphData, openInBrowser]
+  -- [programGraph: ProgramGraph | null, validationResult: ValidationResult | null, options: RendererOptions]
 
 # Public methods
-setProgramGraph :: () => void # Set the program graph to render
-  
-setValidationResult :: () => void # Set validation results
+setProgramGraph :: (graph: ProgramGraph) => void # Set the program graph to render
 
-serve :: () => void # Start interactive server
+setValidationResult :: (result: ValidationResult) => void # Set validation results
+
+serve :: () => Promise<void> # Start interactive server with API endpoints
   ~> [openInBrowser]
 
-generateStaticHTML :: () => string # Generate static HTML output
+generateStaticHTML :: () => string # Generate static HTML output with inline JavaScript
   ~> [generateRendererJS]
 
-# Private methods  
-generateRendererJS :: () => string # Generate JavaScript renderer code
+# Private methods
+generateRendererJS :: () => string # Generate complete JavaScript renderer code
   ~> [getGraphData]
 
 getGraphData :: () => object # Transform graph data for rendering
 
-openInBrowser :: () => void # Open URL in default browser
+openInBrowser :: (url: string) => void # Open URL in default browser
 
-# UI Components file
-ComponentsFile @ src/static/components.js:
-  -> [TypedMindExplorer, Sidebar, GraphCanvas, DetailsPanel, ErrorPanel, ControlPanel, SearchInput, EntityList]
+# Static resources
+StaticAssets @ src/static/:
+  -> [TypedMindExplorerUI, SidebarSection, CanvasSection, SearchInput, EntityListContainer, GraphSVG, DetailsPanel, ErrorPanel, ControlsPanel, FitViewButton, ToggleLayoutButton, ClearSelectionButton]
 
-# UI Components in the browser program
-TypedMindExplorer & "Root application container"
-  > [Sidebar, GraphCanvas, DetailsPanel, ErrorPanel, ControlPanel]
+TypedMindExplorerUI &! "Main HTML UI structure"
+  > [SidebarSection, CanvasSection]
 
-Sidebar & "Entity list and search sidebar"
-  < [TypedMindExplorer]
-  > [SearchInput, EntityList]
+SidebarSection & "Left sidebar with search and entity list"
+  > [SearchInput, EntityListContainer]
+
+CanvasSection & "Main canvas area"
+  > [GraphSVG, DetailsPanel, ErrorPanel, ControlsPanel]
 
 SearchInput & "Entity search input field"
-  < [Sidebar]
 
-EntityList & "Grouped list of entities"
-  < [Sidebar]
+EntityListContainer & "Container for grouped entities"
 
-GraphCanvas & "D3.js graph visualization area"
-  < [TypedMindExplorer]
+GraphSVG & "D3.js SVG graph visualization"
 
 DetailsPanel & "Selected entity details display"
-  < [TypedMindExplorer]
 
 ErrorPanel & "Validation errors display"
-  < [TypedMindExplorer]
 
-ControlPanel & "Graph controls (zoom, layout, clear)"
-  < [TypedMindExplorer]
+ControlsPanel & "Graph controls (zoom, layout, clear)"
+  > [FitViewButton, ToggleLayoutButton, ClearSelectionButton]
 
-# Functions that affect UI components
-initializeRenderer :: () => void # Initialize the UI
-  ~ [TypedMindExplorer, GraphCanvas]
+FitViewButton & "Fit graph to view"
 
-renderGraph :: (data: object) => void # Render the graph
-  ~ [GraphCanvas]
+ToggleLayoutButton & "Toggle graph layout"
 
-selectEntity :: (entityName: string) => void # Select an entity
-  ~ [EntityList, GraphCanvas, DetailsPanel]
+ClearSelectionButton & "Clear entity selection"
 
-filterEntities :: (searchTerm: string) => void # Filter entity list
-  ~ [EntityList]
+# Note: The following functions are generated and embedded in the HTML response
+# They are not directly exported but exist within the generated JavaScript
 
-showErrors :: (errors: object[]) => void # Display errors
+# Client-side method that initializes the renderer
+init :: () => void # Initialize the renderer
+  ~> [renderSidebar, renderGraph, setupSearch, renderErrors]
+
+renderSidebar :: () => void # Render entity sidebar
+  ~ [EntityListContainer]
+
+renderGraph :: () => void # Render D3 force-directed graph
+  ~ [GraphSVG]
+
+selectNode :: (name: string) => void # Select an entity node
+  ~> [showDetails]
+  ~ [EntityListContainer, GraphSVG, DetailsPanel]
+
+showDetails :: (entity: object) => void # Display entity details
+  ~ [DetailsPanel]
+
+setupSearch :: () => void # Setup search functionality
+  ~ [SearchInput, EntityListContainer]
+
+renderErrors :: () => void # Display validation errors
   ~ [ErrorPanel]
 
-zoomFit :: () => void # Fit graph to view
-  ~ [GraphCanvas]
+zoomFit :: () => void # Fit graph to viewport
+  ~ [GraphSVG]
 
-toggleLayout :: () => void # Toggle graph layout
-  ~ [GraphCanvas]
+toggleLayout :: () => void # Toggle between layout types (placeholder)
 
-clearSelection :: () => void # Clear entity selection
-  ~ [EntityList, GraphCanvas, DetailsPanel]
+clearSelection :: () => void # Clear current selection
+  ~ [EntityListContainer, GraphSVG, DetailsPanel]
+
+# API endpoints served by TypedMindRenderer
+RootEndpoint @ "/" ~ "Serve static HTML"
+
+RendererJSEndpoint @ "/renderer.js" ~ "Serve generated JavaScript"
+
+GraphAPIEndpoint @ "/api/graph" ~ "Serve graph data JSON"
+
+# Additional Assets
+BuildConfig ~ "TSUP build configuration"
+PackageConfig ~ "Package.json configuration"
