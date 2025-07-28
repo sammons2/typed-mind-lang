@@ -56,7 +56,7 @@ UserForm & "Form to create users"
   < [AppUI]
 
 # Test RunParameter references
-DATABASE_URL $env "Database connection string"
+DATABASE_URL $iam "Database connection string"
 
 API_KEY $env "API key"
 

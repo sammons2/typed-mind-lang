@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TypedMind - The Architecture DSL for LLMs</title>
+    <meta name="description" content="TypedMind is a concise Domain Specific Language designed for LLMs to understand and generate software architecture with bidirectional validation.">
+    <meta name="keywords" content="TypedMind, DSL, Domain Specific Language, LLM, Software Architecture, Code Generation">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://typedmind.dev/">
+    <meta property="og:title" content="TypedMind - The Architecture DSL for LLMs">
+    <meta property="og:description" content="A concise Domain Specific Language designed for LLMs to understand and generate software architecture.">
+    <meta property="og:image" content="https://typedmind.dev/assets/images/og-image.png">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://typedmind.dev/">
+    <meta property="twitter:title" content="TypedMind - The Architecture DSL for LLMs">
+    <meta property="twitter:description" content="A concise Domain Specific Language designed for LLMs to understand and generate software architecture.">
+    <meta property="twitter:image" content="https://typedmind.dev/assets/images/og-image.png">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "TypedMind",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any",
+      "description": "A Domain Specific Language for software architecture designed for LLMs",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
+    
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">TypedMind</div>
+            <div class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#syntax">Syntax</a></li>
+                <li><a href="#playground">Playground</a></li>
+                <li><a href="#examples">Examples</a></li>
+                <li><a href="#getting-started">Get Started</a></li>
+                <li><a href="https://github.com/sammons/backend-app-lang" target="_blank">GitHub</a></li>
+                <li><button class="theme-toggle" id="themeToggle">🌙</button></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1 class="hero-title">TypedMind</h1>
+            <p class="hero-subtitle">The Architecture DSL Designed for LLMs</p>
+            <p class="hero-description">
+                Express complex software architectures in a concise, LLM-friendly syntax with bidirectional validation
+            </p>
+            <div class="hero-actions">
+                <a href="#getting-started" class="btn btn-primary">Get Started</a>
+                <a href="#playground" class="btn btn-secondary">Try Playground</a>
+            </div>
+            <div class="hero-code">
+                <pre><code class="language-typedmind">TodoApp -> api v1.0.0
+
+api @ api.ts:
+  <- [CreateTodoDto, Todo]
+  -> [TodoService]
+
+TodoService <: BaseService
+  => [createTodo, getTodos]
+
+createTodo :: (input: CreateTodoDto) => Todo
+  "Creates a new todo item"
+  <- CreateTodoDto
+  -> Todo
+
+getTodos :: () => Todo[]
+  "Retrieves all todo items"
+  -> Todo
+
+CreateTodoDto % "Input for creating todos"
+  - title: string "Todo title"
+  - completed: boolean "Completion status"
+
+Todo % "Todo entity"
+  - id: string "Unique identifier"
+  - title: string "Todo title"
+  - completed: boolean "Completion status"
+  - createdAt: Date "Creation timestamp"</code></pre>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Overview Section -->
+    <section id="overview" class="section">
+        <div class="container">
+            <h2 class="section-title">Why TypedMind?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3>LLM-Optimized</h3>
+                    <p>Designed specifically for LLMs to understand and generate software architecture efficiently</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">✅</div>
+                    <h3>Bidirectional Validation</h3>
+                    <p>Validates references in both directions, ensuring architectural consistency</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📦</div>
+                    <h3>Import System</h3>
+                    <p>Powerful import system with aliasing support for modular architecture definitions</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Concise Syntax</h3>
+                    <p>Express complex architectures with minimal, readable syntax</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔧</div>
+                    <h3>VS Code Extension</h3>
+                    <p>Full IDE support with syntax highlighting, hover tooltips, and validation</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🏗️</div>
+                    <h3>Modern Patterns</h3>
+                    <p>Supports classes, DTOs, UI components, assets, and runtime parameters</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Syntax Guide Section -->
+    <section id="syntax" class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">Syntax Guide</h2>
+            
+            <div class="syntax-tabs">
+                <div class="tab-buttons">
+                    <button class="tab-button active" data-tab="program">Program</button>
+                    <button class="tab-button" data-tab="file">File</button>
+                    <button class="tab-button" data-tab="class">Class</button>
+                    <button class="tab-button" data-tab="function">Function</button>
+                    <button class="tab-button" data-tab="dto">DTO</button>
+                    <button class="tab-button" data-tab="uicomponent">UI Component</button>
+                    <button class="tab-button" data-tab="asset">Asset</button>
+                    <button class="tab-button" data-tab="constants">Constants</button>
+                    <button class="tab-button" data-tab="runparameter">RunParameter</button>
+                    <button class="tab-button" data-tab="import">Import</button>
+                </div>
+                
+                <div class="tab-content">
+                    <div class="tab-pane active" id="program-tab">
+                        <h3>Program</h3>
+                        <p>The root entity that contains all other entities in your architecture.</p>
+                        <pre><code class="language-typedmind"># Comments start with hash symbol
+# Program declaration with version
+MyApplication -> main v1.0.0
+
+# Import other TypedMind files
+@import "./shared/models.tmd" as models
+@import "./shared/services.tmd" as services</code></pre>
+                    </div>
+                    
+                    <div class="tab-pane" id="file-tab">
+                        <h3>File</h3>
+                        <p>Represents a source code file in your architecture.</p>
+                        <pre><code class="language-typedmind"># File with imports and exports
+UserController @ controllers/user.controller.ts:
+  <- [User, CreateUserDto, UserService]
+  -> [UserController]
+
+# Classes and functions defined in this file
+UserController <: BaseController
+  => [getUser, createUser]</code></pre>
+                    </div>
+                    
+                    <div class="tab-pane" id="class-tab">
+                        <h3>Class</h3>
+                        <p>Define classes with methods and relationships.</p>
+                        <pre><code class="language-typedmind"># Class with inheritance and methods
+UserService <: BaseService, IUserService
+  => [findById, create, update, delete]
+
+# Class methods are defined as functions
+findById :: (id: string) => User
+  "Finds a user by ID"
+  ~> [validateId, queryDatabase]
+
+create :: (data: CreateUserDto) => User
+  "Creates a new user"
+  <- CreateUserDto
+  -> User
+  ~> [validate, save]</code></pre>
+                    </div>
+                    
+                    <div class="tab-pane" id="function-tab">
+                        <h3>Function</h3>
+                        <p>Standalone functions or class methods with parameters and return types.</p>
+                        <pre><code class="language-typedmind"># Standalone function
+validateEmail :: (email: string) => boolean
+  "Validates email format"
+
+# Function with DTO references
+login :: (credentials: LoginDto) => AuthToken
+  "Authenticates user and returns token"
+  <- LoginDto
+  -> AuthToken
+  ~> [validateCredentials, generateToken]
+  $< [JWT_SECRET]
+
+# Function affecting UI
+updateUserProfile :: (data: ProfileDto) => User
+  "Updates user profile"
+  <- ProfileDto
+  -> User
+  +> [ProfileComponent, HeaderComponent]</code></pre>
+                    </div>
+                    
+                    <div class="tab-pane" id="dto-tab">
+                        <h3>Data Transfer Object (DTO)</h3>
+                        <p>Define data structures with field descriptions.</p>
+                        <pre><code class="language-typedmind"># Basic DTO
+BaseEntity % "Base entity with common fields"
+  - id: string "Unique identifier"
+  - createdAt: Date "Creation timestamp"
+  - updatedAt: Date "Last update timestamp"
+
+# DTO with optional fields
+User % "User entity"
+  - id: string "User ID"
+  - email: string "Email address"
+  - name: string "Full name"
+  - role: UserRole "User role" (optional)
+  - avatar: string "Avatar URL" (optional)</code></pre>
+                    </div>
+                    
+                    <div class="tab-pane" id="uicomponent-tab">
+                        <h3>UI Component</h3>
+                        <p>Define UI components with containment relationships.</p>
+                        <pre><code class="language-typedmind"># Root component
+App &! "Main application component"
+  > [Header, MainContent, Footer]
+
+# Child components
+Header & "Application header"
+  < [App]
+  > [Logo, Navigation, UserMenu]
+  <+ [login, logout]
+
+MainContent & "Main content area"
+  < [App]
+  > [Sidebar, ContentArea]
+
+# Component affected by functions
+UserProfile & "User profile display"
+  < [ContentArea]
+  <+ [updateUserProfile, deleteUser]</code></pre>
+                    </div>
+                    
+                    <div class="tab-pane" id="asset-tab">
+                        <h3>Asset</h3>
+                        <p>Define deployable assets like containers, packages, or applications.</p>
+                        <pre><code class="language-typedmind"># Basic asset
+UserServiceContainer ~ "Docker container for user service"
+
+# Asset containing a program
+APIGateway ~ "API Gateway application"
+  >> GatewayProgram
+
+# Multiple assets
+WebApp ~ "Frontend React application"
+  >> ReactApp
+
+MobileApp ~ "React Native mobile app"
+  >> MobileProgram
+
+WorkerService ~ "Background job processor"
+  >> WorkerProgram</code></pre>
+                    </div>
+                    
+                    <div class="tab-pane" id="constants-tab">
+                        <h3>Constants</h3>
+                        <p>Define constant values with file location and type.</p>
+                        <pre><code class="language-typedmind"># Basic constants
+API_VERSION ! config.ts : string
+MAX_RETRIES ! config.ts : number
+DEFAULT_TIMEOUT ! config.ts : number
+
+# Object constants with schema
+DATABASE_CONFIG ! database/config.ts : DatabaseConfig
+FEATURE_FLAGS ! features.ts : FeatureFlags
+
+# Array constants
+ALLOWED_ORIGINS ! cors.config.ts : string[]
+SUPPORTED_LOCALES ! i18n/config.ts : Locale[]</code></pre>
+                    </div>
+                    
+                    <div class="tab-pane" id="runparameter-tab">
+                        <h3>RunParameter</h3>
+                        <p>Define runtime parameters from different sources.</p>
+                        <pre><code class="language-typedmind"># Environment variables
+DATABASE_URL $env "Database connection string" (required)
+PORT $env "Server port"
+  = "3000"
+NODE_ENV $env "Environment mode"
+  = "development"
+
+# IAM/Security parameters
+AWS_ROLE_ARN $iam "AWS role for service" (required)
+SERVICE_ACCOUNT $iam "GCP service account"
+
+# Runtime configuration
+MAX_WORKERS $runtime "Maximum worker threads"
+  = "4"
+MEMORY_LIMIT $runtime "Memory limit in MB"
+
+# Config file parameters
+FEATURE_FLAGS $config "Feature toggle configuration"
+API_RATE_LIMITS $config "Rate limiting rules"</code></pre>
+                    </div>
+                    
+                    <div class="tab-pane" id="import-tab">
+                        <h3>Import System</h3>
+                        <p>Import entities from other TypedMind files with aliasing.</p>
+                        <pre><code class="language-typedmind"># Import statements at the top
+@import "./shared/models.tmd" as models
+@import "./shared/services.tmd" as services
+@import "./auth/auth.tmd" as auth
+
+MyApp -> api v1.0.0
+
+# Reference imported entities
+UserAPI @ api.ts:
+  <- [models.User, services.UserService]
+  -> [UserAPI]
+
+getUser :: (id: string) => models.User
+  "Retrieves user by ID"
+  ~> [services.findUser, auth.checkPermissions]</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Interactive Playground -->
+    <section id="playground" class="section">
+        <div class="container">
+            <h2 class="section-title">Interactive Playground</h2>
+            <p class="section-subtitle">Try TypedMind syntax and see real-time validation</p>
+            
+            <div class="playground">
+                <div class="playground-editor">
+                    <div class="editor-header">
+                        <span>TypedMind Editor</span>
+                        <button class="btn btn-small" id="validateBtn">Validate</button>
+                    </div>
+                    <textarea id="codeEditor" class="code-editor" spellcheck="false">TodoApp -> models v1.0.0
+
+# Data Models
+models @ models.ts:
+  -> [Todo, CreateTodoInput]
+
+Todo % "Todo entity"
+  - id: string "Unique identifier"
+  - title: string "Todo title"
+  - completed: boolean "Completion status"
+  - createdAt: Date "Creation timestamp"
+
+CreateTodoInput % "Input for creating todos"
+  - title: string "Todo title"
+  - completed: boolean "Initial completion status"
+
+# Service Layer
+todoService @ services/todo.service.ts:
+  <- [Todo, CreateTodoInput]
+  -> [TodoService]
+
+TodoService <: BaseService
+  => [create, findAll, findById, update, delete]
+
+create :: (input: CreateTodoInput) => Todo
+  "Creates a new todo"
+  <- CreateTodoInput
+  -> Todo
+  +> [TodoList]
+
+findAll :: () => Todo[]
+  "Retrieves all todos"
+  -> Todo
+
+findById :: (id: string) => Todo
+  "Finds todo by ID"
+  -> Todo
+
+update :: (id: string, input: CreateTodoInput) => Todo
+  "Updates existing todo"
+  <- CreateTodoInput
+  -> Todo
+  +> [TodoItem]
+
+delete :: (id: string) => void
+  "Deletes a todo"
+  +> [TodoList]
+
+# UI Components
+TodoApp &! "Root todo application"
+  > [TodoList, TodoForm]
+
+TodoList & "List of todos"
+  < [TodoApp]
+  > [TodoItem]
+  <+ [create, delete]
+
+TodoItem & "Individual todo display"
+  < [TodoList]
+  <+ [update]
+
+TodoForm & "Form for creating todos"
+  < [TodoApp]
+  <+ [create]</textarea>
+                </div>
+                
+                <div class="playground-output">
+                    <div class="output-header">Validation Results</div>
+                    <div id="validationOutput" class="validation-output">
+                        <div class="validation-success">
+                            <span class="success-icon">✓</span>
+                            <span>Valid TypedMind syntax!</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Examples Gallery -->
+    <section id="examples" class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">Real-World Examples</h2>
+            
+            <div class="examples-grid">
+                <div class="example-card">
+                    <h3>Microservices Architecture</h3>
+                    <p>Define a complete microservices system with service boundaries</p>
+                    <pre><code class="language-typedmind">ECommerce -> services v1.0.0
+
+# User Service
+userService @ services/user-service.ts:
+  <- [User, CreateUserDto]
+  -> [UserService]
+
+UserService <: BaseService
+  => [createUser, getUser, getUserOrders]
+
+createUser :: (data: CreateUserDto) => User
+  "Creates a new user account"
+  <- CreateUserDto
+  -> User
+  ~> [validateUser, saveToDatabase]
+
+getUser :: (id: string) => User
+  "Retrieves user by ID"
+  -> User
+
+getUserOrders :: (userId: string) => Order[]
+  "Gets all orders for a user"
+  -> Order
+  ~> [OrderService.getOrdersByUser]
+
+# Order Service  
+orderService @ services/order-service.ts:
+  <- [Order, CreateOrderDto, User]
+  -> [OrderService]
+
+OrderService <: BaseService
+  => [createOrder, getOrdersByUser]
+
+createOrder :: (data: CreateOrderDto) => Order
+  "Creates a new order"
+  <- CreateOrderDto
+  -> Order
+  ~> [validateOrder, processPayment]
+  $< [PAYMENT_API_KEY]
+
+getOrdersByUser :: (userId: string) => Order[]
+  "Retrieves orders for a user"
+  -> Order</code></pre>
+                    <a href="#" class="example-link">View Full Example →</a>
+                </div>
+                
+                <div class="example-card">
+                    <h3>React Component Architecture</h3>
+                    <p>Model your React component hierarchy and data flow</p>
+                    <pre><code class="language-typedmind">ReactApp -> ui v1.0.0
+
+# UI Component Hierarchy
+App &! "Root React application"
+  > [Header, Dashboard, Footer]
+
+Header & "Application header"
+  < [App]
+  > [Logo, Navigation, ThemeToggle]
+  <+ [toggleTheme]
+
+Dashboard & "Main dashboard view"
+  < [App]
+  > [Sidebar, MainContent]
+
+Sidebar & "Navigation sidebar"
+  < [Dashboard]
+  > [MenuItem]
+  <+ [selectMenuItem]
+
+MainContent & "Main content area"
+  < [Dashboard]
+  > [ContentPanel]
+
+Footer & "Application footer"
+  < [App]
+
+# State Management
+AppState % "Global application state"
+  - user: User "Current user" (optional)
+  - theme: Theme "UI theme"
+  - sidebarOpen: boolean "Sidebar visibility"
+
+Theme % "Theme configuration"
+  - mode: string "light or dark"
+  - primaryColor: string "Primary theme color"
+  - accentColor: string "Accent color"</code></pre>
+                    <a href="#" class="example-link">View Full Example →</a>
+                </div>
+                
+                <div class="example-card">
+                    <h3>API Gateway Pattern</h3>
+                    <p>Express API gateway with authentication and routing</p>
+                    <pre><code class="language-typedmind">APIGateway -> gateway v1.0.0
+
+# Authentication Middleware
+authMiddleware @ gateway/auth.middleware.ts:
+  <- [User, TokenPayload]
+  -> [authenticate, authorize]
+
+authenticate :: (token: string) => User
+  "Validates JWT token and returns user"
+  -> User
+  ~> [verifyToken, fetchUser]
+  $< [JWT_SECRET]
+
+authorize :: (user: User, resource: string) => boolean
+  "Checks user permissions for resource"
+  <- User
+  ~> [checkPermissions]
+
+# API Router
+apiRouter @ gateway/router.ts:
+  <- [Request, Response, Route]
+  -> [APIRouter]
+
+APIRouter <: BaseRouter
+  => [route, registerRoute, handleError]
+
+route :: (request: Request) => Response
+  "Routes incoming requests"
+  <- Request
+  -> Response
+  ~> [authenticate, findRoute, executeHandler]
+
+registerRoute :: (path: string, handler: RouteHandler) => void
+  "Registers a new route"
+  <- RouteHandler
+
+# Route Configuration
+ROUTE_PREFIX ! gateway/config.ts : string
+MAX_REQUEST_SIZE ! gateway/config.ts : number</code></pre>
+                    <a href="#" class="example-link">View Full Example →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Getting Started Section -->
+    <section id="getting-started" class="section">
+        <div class="container">
+            <h2 class="section-title">Getting Started</h2>
+            
+            <div class="getting-started-content">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Install the VS Code Extension</h3>
+                        <p>Get full IDE support with syntax highlighting and validation</p>
+                        <pre><code class="language-bash"># Search for "TypedMind" in VS Code Extensions
+# Or install from the command line:
+code --install-extension typedmind.vscode-typedmind</code></pre>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Create Your First .tmd File</h3>
+                        <p>Start with a simple program structure</p>
+                        <pre><code class="language-typedmind">MyFirstApp -> main v1.0.0
+
+main @ main.ts:
+  -> [App]
+
+App <: Application
+  => [start, stop]
+
+start :: () => void
+  "Starts the application"
+  ~> [initialize, listen]
+  $< [PORT, NODE_ENV]</code></pre>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Add Components and DTOs</h3>
+                        <p>Build out your architecture incrementally</p>
+                        <pre><code class="language-typedmind"># Define your data models
+User % "User entity"
+  - id: string "Unique identifier"
+  - name: string "Full name"
+  - email: string "Email address"
+
+# Add service classes
+UserService <: BaseService
+  => [getUser, createUser, updateUser]
+
+getUser :: (id: string) => User
+  "Retrieves a user by ID"
+  -> User
+  ~> [validateId, queryDatabase]</code></pre>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Use with Your LLM</h3>
+                        <p>Share your .tmd files with LLMs for architecture discussions and code generation</p>
+                        <div class="tip">
+                            <strong>Pro Tip:</strong> TypedMind's concise syntax helps LLMs understand your entire architecture without token limitations.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Documentation Section -->
+    <section id="documentation" class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">Full Documentation</h2>
+            
+            <div class="docs-grid">
+                <a href="#" class="docs-card">
+                    <h3>Language Reference</h3>
+                    <p>Complete syntax reference for all TypedMind entities</p>
+                </a>
+                
+                <a href="#" class="docs-card">
+                    <h3>Validation Rules</h3>
+                    <p>Understanding bidirectional validation and error messages</p>
+                </a>
+                
+                <a href="#" class="docs-card">
+                    <h3>Best Practices</h3>
+                    <p>Tips for organizing large architectures</p>
+                </a>
+                
+                <a href="#" class="docs-card">
+                    <h3>Integration Guide</h3>
+                    <p>Using TypedMind with CI/CD and documentation tools</p>
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>TypedMind</h4>
+                    <p>The Architecture DSL designed for LLMs</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">Examples</a></li>
+                        <li><a href="#">VS Code Extension</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="https://github.com/sammons/backend-app-lang">GitHub</a></li>
+                        <li><a href="#">Discord</a></li>
+                        <li><a href="#">Twitter</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 TypedMind. Open source under MIT License.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/typedmind-syntax.js"></script>
+</body>
+</html>

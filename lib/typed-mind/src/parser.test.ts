@@ -6,7 +6,8 @@ describe('DSLParser', () => {
 
   it('should parse program declarations', () => {
     const input = 'TodoApp -> AppEntry v2.0';
-    const entities = parser.parse(input);
+    const parseResult = parser.parse(input);
+    const entities = parseResult.entities;
 
     expect(entities.size).toBe(1);
     const program = entities.get('TodoApp');
@@ -24,7 +25,8 @@ AppEntry @ src/index.ts:
   <- [ExpressSetup, Routes, Database]
   -> [startServer]
     `;
-    const entities = parser.parse(input);
+    const parseResult = parser.parse(input);
+    const entities = parseResult.entities;
 
     expect(entities.size).toBe(1);
     const file = entities.get('AppEntry');
@@ -43,7 +45,8 @@ createUser :: (data: UserInput) => Promise<User>
   "Creates a new user in the database"
   ~> [validateInput, Database.insert]
     `;
-    const entities = parser.parse(input);
+    const parseResult = parser.parse(input);
+    const entities = parseResult.entities;
 
     expect(entities.size).toBe(1);
     const func = entities.get('createUser');
@@ -61,7 +64,8 @@ createUser :: (data: UserInput) => Promise<User>
 TodoController <: BaseController, IController
   => [create, read, update, delete]
     `;
-    const entities = parser.parse(input);
+    const parseResult = parser.parse(input);
+    const entities = parseResult.entities;
 
     expect(entities.size).toBe(1);
     const cls = entities.get('TodoController');
@@ -76,7 +80,8 @@ TodoController <: BaseController, IController
 
   it('should parse constants declarations', () => {
     const input = 'Config ! src/config.ts : EnvSchema';
-    const entities = parser.parse(input);
+    const parseResult = parser.parse(input);
+    const entities = parseResult.entities;
 
     expect(entities.size).toBe(1);
     const constants = entities.get('Config');
@@ -98,7 +103,8 @@ TodoApp -> AppEntry
 UserService @ src/services/user.ts:
   <- [Database]
     `;
-    const entities = parser.parse(input);
+    const parseResult = parser.parse(input);
+    const entities = parseResult.entities;
 
     expect(entities.size).toBe(2);
     expect(entities.has('TodoApp')).toBe(true);
@@ -126,7 +132,8 @@ create :: (req, res) => Promise<void>
 
 Config ! src/config.ts : EnvSchema
     `;
-    const entities = parser.parse(input);
+    const parseResult = parser.parse(input);
+    const entities = parseResult.entities;
 
     expect(entities.size).toBe(6);
     expect(entities.has('TodoApp')).toBe(true);

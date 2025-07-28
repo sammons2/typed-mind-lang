@@ -1,0 +1,21 @@
+{
+  "name": "@sammons/typed-mind-static-website",
+  "version": "1.0.0",
+  "description": "Static website for TypedMind DSL",
+  "author": "sammons",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sammons/backend-app-lang"
+  },
+  "scripts": {
+    "dev": "npx http-server dist -p 8080 -c-1",
+    "build": "node build.js",
+    "serve": "npm run build && npm run dev"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "marked": "^12.0.2",
+    "prismjs": "^1.29.0"
+  }
+}
