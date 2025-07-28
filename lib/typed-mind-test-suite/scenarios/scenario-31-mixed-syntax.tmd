@@ -1,0 +1,81 @@
+# Test mixed longform and shortform syntax
+
+# Shortform program
+TodoApp -> AppEntry v1.0.0
+
+# Longform program
+program APIServer {
+  entry: ApiMain
+  version: "2.0.0"
+}
+
+# Shortform file
+AppEntry @ src/app.ts:
+  <- [Express]
+  -> [startApp]
+
+# Longform file
+file ApiMain {
+  path: "src/api.ts"
+  imports: [Fastify, Database]
+  exports: [startApi]
+}
+
+# Mixed functions
+createTodo :: (data: TodoDTO) => Todo
+  ~> [validate, save]
+
+function deleteTodo {
+  signature: "(id: string) => void"
+  calls: [Database.delete]
+}
+
+# Mixed DTOs
+TodoDTO % "Todo input data"
+  - title: string
+  - done: boolean
+
+dto UserDTO {
+  description: "User data"
+  fields: {
+    name: { type: "string" }
+    email: { type: "string" }
+  }
+}
+
+# Mixed UIComponents
+Button & "Reusable button"
+
+component UserProfile {
+  description: "User profile display"
+  contains: [Button]
+  affectedBy: [updateProfile]
+}
+
+# Mixed RunParameters
+DATABASE_URL $env "Database connection"
+
+parameter API_KEY {
+  type: "env"
+  description: "API key"
+  default: "dev-key"
+}
+
+# Functions that consume parameters
+function updateProfile {
+  signature: "(data: UserDTO) => void"
+  consumes: [DATABASE_URL, API_KEY]
+  affects: [UserProfile]
+}
+
+# Supporting entities
+Express ! src/express.ts
+Fastify ! src/fastify.ts
+Database <:
+  => [delete]
+
+validate :: (data: any) => boolean
+save :: (data: any) => void
+
+startApp :: () => void
+startApi :: () => void

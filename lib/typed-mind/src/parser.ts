@@ -13,6 +13,7 @@ import type {
   Position,
   ImportStatement,
 } from './types';
+import { LongformParser } from './longform-parser';
 
 export interface ParseResult {
   entities: Map<string, AnyEntity>;
@@ -23,6 +24,7 @@ export class DSLParser {
   private lines: string[] = [];
   private entities = new Map<string, AnyEntity>();
   private imports: ImportStatement[] = [];
+  private longformParser = new LongformParser();
 
   parse(input: string): ParseResult {
     this.lines = input.split('\n');
@@ -40,9 +42,20 @@ export class DSLParser {
       // Skip empty lines and comments
       if (!trimmed || trimmed.startsWith('#')) continue;
 
-      // Check for import statements
-      if (trimmed.startsWith('@import')) {
+      // Check for import statements (both @import and import)
+      if (trimmed.startsWith('@import') || trimmed.startsWith('import ')) {
         this.parseImport(trimmed, lineNum + 1);
+        continue;
+      }
+
+      // Check for longform syntax
+      if (this.isLongformDeclaration(trimmed)) {
+        const longformEntity = this.longformParser.parseLongform(input, lineNum);
+        if (longformEntity) {
+          this.entities.set(longformEntity.name, longformEntity);
+          lineNum = this.longformParser.getConsumedLines() - 1; // Skip processed lines
+          currentEntity = null; // Reset current entity after longform
+        }
         continue;
       }
 
@@ -74,6 +87,11 @@ export class DSLParser {
   private isEntityDeclaration(line: string): boolean {
     // Match various entity patterns - entities can start with any letter
     return /^\w+\s*(->|@|<:|!|::|%|~|&|\$|\s*:)/.test(line);
+  }
+
+  private isLongformDeclaration(line: string): boolean {
+    // Match longform keywords followed by entity name and optional opening brace
+    return /^(program|file|function|class|dto|component|asset|constants|parameter|import)\s+/.test(line);
   }
 
   private isContinuation(line: string): boolean {
@@ -467,8 +485,8 @@ export class DSLParser {
   }
 
   private parseImport(line: string, lineNum: number): void {
-    // @import "./path/to/file.tmd" as Alias
-    const importMatch = line.match(/^@import\s+"([^"]+)"(?:\s+as\s+(\w+))?$/);
+    // Support both @import "./path/to/file.tmd" as Alias and import "./path/to/file.tmd" as Alias
+    const importMatch = line.match(/^(?:@import|import)\s+"([^"]+)"(?:\s+as\s+(\w+))?$/);
     if (importMatch) {
       const importStatement: ImportStatement = {
         path: importMatch[1] as string,

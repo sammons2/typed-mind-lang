@@ -9,6 +9,7 @@ export * from './types';
 export { DSLParser, type ParseResult } from './parser';
 export { DSLValidator } from './validator';
 export { ErrorFormatter } from './formatter';
+export { LongformParser } from './longform-parser';
 
 export class DSLChecker {
   private parser = new DSLParser();
