@@ -1,0 +1,23 @@
+# Test Invalid Reference Types
+TestApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  <- [UserService, UserDTO]
+  -> [startApp]
+
+EntryFile @ src/entry.ts:
+  -> []
+
+# Valid references
+UserService @ src/services/user.ts:
+  -> [createUser]
+
+createUser :: () => void
+
+UserDTO % "User data"
+  - name: string
+
+startApp :: () => void
+
+# Test various invalid reference types through the validator
+# The validator should check these relationships and produce errors

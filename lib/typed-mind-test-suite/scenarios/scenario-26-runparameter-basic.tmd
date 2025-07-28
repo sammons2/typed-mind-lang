@@ -1,0 +1,30 @@
+# Test basic RunParameter functionality
+LambdaApp -> MainFile v1.0.0
+
+MainFile @ src/index.ts:
+  -> [handler, init]
+
+# Environment variables
+DATABASE_URL $env "PostgreSQL connection string" (required)
+API_KEY $env "External API key"
+  = "dev-key-12345"
+
+# IAM roles
+LAMBDA_ROLE $iam "Lambda execution role"
+
+# Runtime configuration
+NODE_VERSION $runtime "Node.js version"
+  = "20.x"
+
+# Configuration parameters
+MEMORY_SIZE $config "Memory allocation in MB"
+  = "512"
+TIMEOUT $config "Function timeout in seconds"
+  = "30"
+
+# Functions consuming parameters
+handler :: (event: any) => Promise<any>
+  $< [DATABASE_URL, API_KEY, LAMBDA_ROLE, MEMORY_SIZE, TIMEOUT]
+
+init :: () => void
+  $< [DATABASE_URL, NODE_VERSION]

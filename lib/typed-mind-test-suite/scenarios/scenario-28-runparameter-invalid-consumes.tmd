@@ -1,0 +1,18 @@
+# Test invalid consumption - consuming non-existent or wrong type entities
+ErrorApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  -> [badFunction, anotherBadFunction]
+
+DATABASE_URL $env "Database connection"
+
+# This is a regular constant, not a RunParameter
+APP_CONFIG ! src/config.ts
+
+badFunction :: () => void
+  # Consuming non-existent parameter
+  $< [DATABASE_URL, NON_EXISTENT_PARAM]
+
+anotherBadFunction :: () => void
+  # Trying to consume a Constants entity instead of RunParameter
+  $< [APP_CONFIG]

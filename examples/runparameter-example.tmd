@@ -1,0 +1,74 @@
+# Example of RunParameter usage in TypedMind DSL
+# RunParameters represent runtime configuration like environment variables,
+# IAM roles, runtime settings, and other configuration parameters
+
+ServerlessApp -> MainFile v1.0.0
+
+MainFile @ src/index.ts:
+  -> [handler, init, cleanup, uploadToS3, runPythonScript]
+
+# Environment variables
+DATABASE_URL $env "PostgreSQL connection string" (required)
+API_KEY $env "External API authentication key"
+  = "default-dev-key"
+REDIS_URL $env "Redis cache connection string"
+  = "redis://localhost:6379"
+
+# IAM roles and permissions
+LAMBDA_EXECUTION_ROLE $iam "Lambda function execution role"
+S3_ACCESS_ROLE $iam "Role for S3 bucket access"
+
+# Runtime configuration
+NODE_VERSION $runtime "Node.js runtime version"
+  = "20.x"
+PYTHON_VERSION $runtime "Python runtime version"
+  = "3.11"
+
+# Application configuration
+MEMORY_SIZE $config "Memory allocation in MB"
+  = "512"
+TIMEOUT $config "Function timeout in seconds"
+  = "30"
+LOG_LEVEL $config "Application logging level"
+  = "info"
+MAX_CONNECTIONS $config "Maximum database connections"
+  = "10"
+
+# DTOs
+EventDTO % "Lambda event input"
+  - eventType: string "Type of the event"
+  - payload: any "Event payload data"
+  - timestamp: number "Event timestamp"
+
+ResponseDTO % "Lambda response output"
+  - statusCode: number "HTTP status code"
+  - body: string "Response body as JSON string"
+  - headers: object "Response headers" (optional)
+
+# Functions consuming parameters
+handler :: (event: EventDTO) => Promise<ResponseDTO>
+  <- EventDTO
+  -> ResponseDTO
+  $< [DATABASE_URL, API_KEY, LAMBDA_EXECUTION_ROLE, MEMORY_SIZE, TIMEOUT, LOG_LEVEL]
+  "Main Lambda handler function"
+
+init :: () => void
+  $< [DATABASE_URL, REDIS_URL, NODE_VERSION, MAX_CONNECTIONS]
+  "Initialize database connections and cache"
+
+cleanup :: () => Promise<void>
+  $< [DATABASE_URL, REDIS_URL]
+  "Clean up resources on shutdown"
+
+# S3 operations function consuming IAM role
+uploadToS3 :: (data: Buffer, key: string) => Promise<void>
+  $< [S3_ACCESS_ROLE]
+  "Upload data to S3 bucket"
+
+# Python runtime function (showing multi-runtime support)
+runPythonScript :: (scriptPath: string) => Promise<any>
+  $< [PYTHON_VERSION]
+  "Execute Python script for data processing"
+
+# Example showing that all RunParameters are consumed
+# Any RunParameter not consumed by a function would be marked as orphaned

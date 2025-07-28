@@ -5,6 +5,20 @@ exports[`scenario-15-function-affects-ui > should validate 15 function affects u
   "errors": [
     {
       "column": 1,
+      "line": 14,
+      "message": "Cannot use 'calls' to reference UIComponent 'TodoList'",
+      "severity": "error",
+      "suggestion": "'calls' can only reference: Function, Class",
+    },
+    {
+      "column": 1,
+      "line": 26,
+      "message": "Cannot use 'affects' to reference Function 'updateTodoList'",
+      "severity": "error",
+      "suggestion": "'affects' can only reference: UIComponent",
+    },
+    {
+      "column": 1,
       "line": 22,
       "message": "Orphaned entity 'refreshUI'",
       "severity": "error",

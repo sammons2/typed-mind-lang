@@ -27,10 +27,25 @@ export class ImportResolver {
     const errors: ValidationError[] = [];
 
     for (const importStmt of imports) {
+      // Check for circular import before processing
+      const fullPath = this.resolvePath(importStmt.path, basePath);
+      if (this.resolutionStack.includes(fullPath)) {
+        errors.push({
+          position: importStmt.position,
+          message: `Circular import detected: ${[...this.resolutionStack, fullPath].join(' -> ')}`,
+          severity: 'error',
+        });
+        continue;
+      }
+
+      // Push to stack before resolving
+      this.resolutionStack.push(fullPath);
+      
       const result = this.resolveImport(importStmt, basePath);
       
       if (result.errors) {
         errors.push(...result.errors);
+        this.resolutionStack.pop();
         continue;
       }
 
@@ -56,8 +71,7 @@ export class ImportResolver {
 
       // Recursively resolve nested imports
       if (result.imports.length > 0) {
-        const resolvedPath = this.resolvePath(importStmt.path, basePath);
-        const importDir = dirname(resolvedPath);
+        const importDir = dirname(fullPath);
         const nestedResult = this.resolveImports(result.imports, importDir);
         
         for (const [name, entity] of nestedResult.resolvedEntities) {
@@ -69,6 +83,9 @@ export class ImportResolver {
         
         errors.push(...nestedResult.errors);
       }
+      
+      // Pop from stack after all nested imports are resolved
+      this.resolutionStack.pop();
     }
 
     return { resolvedEntities: allEntities, errors };
@@ -79,25 +96,6 @@ export class ImportResolver {
     basePath: string
   ): ResolvedImport {
     const fullPath = this.resolvePath(importStmt.path, basePath);
-
-    // Check for circular imports before adding to stack
-    if (this.resolutionStack.includes(fullPath)) {
-      // Create a clean error without causing recursion
-      const cyclePath = [...this.resolutionStack, fullPath];
-      const cycleStart = cyclePath.indexOf(fullPath);
-      const cycle = cyclePath.slice(cycleStart).join(' -> ');
-      
-      return {
-        import: importStmt,
-        entities: new Map(),
-        imports: [],
-        errors: [{
-          position: importStmt.position,
-          message: `Circular import detected: ${cycle}`,
-          severity: 'error',
-        }],
-      };
-    }
 
     // Check if already resolved
     if (this.resolvedPaths.has(fullPath)) {
@@ -111,12 +109,10 @@ export class ImportResolver {
 
     try {
       // Read and parse the imported file
-      this.resolutionStack.push(fullPath);
       const content = readFileSync(fullPath, 'utf-8');
       const parseResult = this.parser.parse(content);
       
       this.resolvedPaths.set(fullPath, parseResult);
-      this.resolutionStack.pop();
 
       return {
         import: importStmt,
@@ -124,8 +120,6 @@ export class ImportResolver {
         imports: parseResult.imports,
       };
     } catch (error) {
-      this.resolutionStack.pop();
-      
       return {
         import: importStmt,
         entities: new Map(),

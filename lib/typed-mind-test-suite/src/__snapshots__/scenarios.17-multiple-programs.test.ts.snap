@@ -5,6 +5,13 @@ exports[`scenario-17-multiple-programs > should validate 17 multiple programs 1`
   "errors": [
     {
       "column": 1,
+      "line": 3,
+      "message": "Cannot use 'entry' to reference Asset 'IndexHTML'",
+      "severity": "error",
+      "suggestion": "'entry' can only reference: File",
+    },
+    {
+      "column": 1,
       "line": 20,
       "message": "Orphaned entity 'AppContainer'",
       "severity": "error",

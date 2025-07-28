@@ -1,0 +1,79 @@
+# Test ReferencedBy tracking functionality
+TestApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  <- [UserService, UserDTO, DatabaseConfig]
+  -> [startApp, AppUI, handler, Logo, HTMLAsset]
+
+# This file should have referencedBy: [MainFile]
+UserService @ src/services/user.ts:
+  <- [Database]
+  -> [createUser, getUser, Database]
+
+# These functions should have referencedBy: [UserService]
+createUser :: (data: UserDTO) => Promise<User>
+  <- UserDTO
+  -> User
+  ~> [Database.insert]
+
+getUser :: (id: string) => Promise<User>
+  -> User
+  ~> [Database.query]
+
+# DTOs should track references
+UserDTO % "User creation data"
+  - name: string "User name"
+  - email: string "User email"
+
+User % "User entity"
+  - id: string "User ID"
+  - name: string "User name"
+  - email: string "User email"
+
+# This should have referencedBy: [UserService, createUser, getUser]
+Database <:
+  => [insert, query]
+
+insert :: (data: any) => Promise<void>
+
+query :: (id: string) => Promise<any>
+
+# This should have referencedBy: [MainFile]
+DatabaseConfig ! src/config/database.ts
+
+# This should have referencedBy: [MainFile]
+startApp :: () => void
+  ~> [createUser]
+
+# Test UI component references
+AppUI &! "Main UI component"
+  > [UserList, UserForm]
+
+UserList & "List of users"
+  < [AppUI]
+
+UserForm & "Form to create users"
+  < [AppUI]
+
+# Test RunParameter references
+DATABASE_URL $env "Database connection string"
+
+API_KEY $env "API key"
+
+# These functions consume the parameters
+handler :: () => void
+  $< [DATABASE_URL, API_KEY]
+
+# Test Asset references
+Logo ~ "Company logo"
+
+# This program is contained by the HTMLAsset
+ClientProgram -> ClientMain v1.0.0
+
+ClientMain @ src/client.ts:
+  -> [initClient]
+
+initClient :: () => void
+
+HTMLAsset ~ "Main HTML file"
+  >> ClientProgram

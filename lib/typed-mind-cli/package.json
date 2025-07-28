@@ -16,7 +16,7 @@
     "build": "tsc --build && chmod +x dist/cli.js",
     "dev": "tsc --build --watch",
     "clean": "rm -rf dist *.tsbuildinfo",
-    "test": "vitest",
+    "test": "vitest --run",
     "test:watch": "vitest --watch",
     "lint": "eslint src"
   },

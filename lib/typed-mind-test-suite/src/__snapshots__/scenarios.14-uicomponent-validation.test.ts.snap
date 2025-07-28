@@ -12,27 +12,6 @@ exports[`scenario-14-uicomponent-validation > should validate 14 uicomponent val
     },
     {
       "column": 1,
-      "line": 17,
-      "message": "Orphaned entity 'MainContent'",
-      "severity": "error",
-      "suggestion": "Remove or reference this entity",
-    },
-    {
-      "column": 1,
-      "line": 32,
-      "message": "Orphaned entity 'Logo'",
-      "severity": "error",
-      "suggestion": "Remove or reference this entity",
-    },
-    {
-      "column": 1,
-      "line": 33,
-      "message": "Orphaned entity 'NavMenu'",
-      "severity": "error",
-      "suggestion": "Remove or reference this entity",
-    },
-    {
-      "column": 1,
       "line": 36,
       "message": "Orphaned entity 'UnexportedComponent'",
       "severity": "error",

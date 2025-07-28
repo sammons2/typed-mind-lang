@@ -1,17 +1,17 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`scenario-10-dto-validation > should validate 10 dto validation 1`] = `
+exports[`scenario-30-invalid-reference-types > should validate reference types 1`] = `
 {
   "errors": [
     {
       "column": 1,
-      "line": 19,
-      "message": "Orphaned entity 'UserFile'",
+      "line": 8,
+      "message": "Orphaned entity 'EntryFile'",
       "severity": "error",
       "suggestion": "Remove or reference this entity",
     },
   ],
-  "file": "scenario-10-dto-validation.tmd",
+  "file": "scenario-30-invalid-reference-types.tmd",
   "valid": false,
 }
 `;

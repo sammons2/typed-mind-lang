@@ -1,8 +1,32 @@
-export type EntityType = 'Program' | 'File' | 'Function' | 'Class' | 'Constants' | 'DTO' | 'Asset' | 'UIComponent';
+export type EntityType = 'Program' | 'File' | 'Function' | 'Class' | 'Constants' | 'DTO' | 'Asset' | 'UIComponent' | 'RunParameter';
 
 export interface Position {
   line: number;
   column: number;
+}
+
+export type ReferenceType = 
+  | 'imports'        // File imports entity
+  | 'exports'        // File exports entity
+  | 'calls'          // Function calls Function/Method
+  | 'extends'        // Class extends Class
+  | 'implements'     // Class implements Class (interface)
+  | 'contains'       // UIComponent contains UIComponent
+  | 'containedBy'    // UIComponent is contained by UIComponent
+  | 'affects'        // Function affects UIComponent
+  | 'affectedBy'     // UIComponent is affected by Function
+  | 'consumes'       // Function consumes RunParameter
+  | 'consumedBy'     // RunParameter is consumed by Function
+  | 'input'          // Function takes DTO as input
+  | 'output'         // Function returns DTO as output
+  | 'entry'          // Program has File as entry point
+  | 'containsProgram'// Asset contains Program
+  | 'schema';        // Constants has schema
+
+export interface Reference {
+  from: string;      // Name of referencing entity
+  type: ReferenceType;
+  fromType?: EntityType; // Type of referencing entity
 }
 
 export interface Entity {
@@ -11,6 +35,7 @@ export interface Entity {
   position: Position;
   raw: string;
   comment?: string;
+  referencedBy?: Reference[]; // Detailed references with types
 }
 
 export interface ProgramEntity extends Entity {
@@ -35,6 +60,7 @@ export interface FunctionEntity extends Entity {
   input?: string; // Can reference a DTO name
   output?: string; // Can reference a DTO name
   affects?: string[]; // UIComponents this function affects
+  consumes?: string[]; // RunParameters this function consumes
 }
 
 export interface ClassEntity extends Entity {
@@ -80,7 +106,16 @@ export interface UIComponentEntity extends Entity {
   affectedBy?: string[]; // Functions that affect this component
 }
 
-export type AnyEntity = ProgramEntity | FileEntity | FunctionEntity | ClassEntity | ConstantsEntity | DTOEntity | AssetEntity | UIComponentEntity;
+export interface RunParameterEntity extends Entity {
+  type: 'RunParameter';
+  paramType: 'env' | 'iam' | 'runtime' | 'config'; // Type of parameter
+  description: string;
+  defaultValue?: string;
+  required?: boolean;
+  consumedBy?: string[]; // Functions that consume this parameter
+}
+
+export type AnyEntity = ProgramEntity | FileEntity | FunctionEntity | ClassEntity | ConstantsEntity | DTOEntity | AssetEntity | UIComponentEntity | RunParameterEntity;
 
 export interface ValidationError {
   position: Position;

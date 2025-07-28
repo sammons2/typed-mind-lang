@@ -1,10 +1,81 @@
-import type { AnyEntity, ClassEntity, FunctionEntity, UIComponentEntity, AssetEntity, ValidationError, ValidationResult } from './types';
+import type { AnyEntity, ClassEntity, FunctionEntity, UIComponentEntity, AssetEntity, RunParameterEntity, ConstantsEntity, ValidationError, ValidationResult, EntityType, ReferenceType } from './types';
 
 export class DSLValidator {
   private errors: ValidationError[] = [];
 
+  // Define which entity types can be referenced by which reference types
+  private static readonly VALID_REFERENCES: Record<ReferenceType, { from: EntityType[], to: EntityType[] }> = {
+    imports: { 
+      from: ['File'], 
+      to: ['Function', 'Class', 'Constants', 'DTO', 'Asset', 'UIComponent', 'RunParameter', 'File'] 
+    },
+    exports: { 
+      from: ['File'], 
+      to: ['Function', 'Class', 'Constants', 'DTO', 'Asset', 'UIComponent', 'File'] 
+    },
+    calls: { 
+      from: ['Function'], 
+      to: ['Function', 'Class'] // Class is allowed because of method calls
+    },
+    extends: { 
+      from: ['Class'], 
+      to: ['Class'] 
+    },
+    implements: { 
+      from: ['Class'], 
+      to: ['Class'] // In TypedMind, interfaces are represented as Classes
+    },
+    contains: { 
+      from: ['UIComponent'], 
+      to: ['UIComponent'] 
+    },
+    containedBy: { 
+      from: ['UIComponent'], 
+      to: ['UIComponent'] 
+    },
+    affects: { 
+      from: ['Function'], 
+      to: ['UIComponent'] 
+    },
+    affectedBy: { 
+      from: ['UIComponent'], 
+      to: ['Function'] 
+    },
+    consumes: { 
+      from: ['Function'], 
+      to: ['RunParameter'] 
+    },
+    consumedBy: { 
+      from: ['RunParameter'], 
+      to: ['Function'] 
+    },
+    input: { 
+      from: ['Function'], 
+      to: ['DTO'] 
+    },
+    output: { 
+      from: ['Function'], 
+      to: ['DTO'] 
+    },
+    entry: { 
+      from: ['Program'], 
+      to: ['File'] 
+    },
+    containsProgram: { 
+      from: ['Asset'], 
+      to: ['Program'] 
+    },
+    schema: { 
+      from: ['Constants'], 
+      to: ['Class', 'DTO'] // Schema can reference a type definition
+    }
+  };
+
   validate(entities: Map<string, AnyEntity>): ValidationResult {
     this.errors = [];
+
+    // First populate referencedBy fields
+    this.populateReferencedBy(entities);
 
     this.checkOrphans(entities);
     this.checkImports(entities);
@@ -20,6 +91,7 @@ export class DSLValidator {
     this.checkFunctionUIComponentAffects(entities);
     this.checkAssetProgramRelationships(entities);
     this.checkUIComponentContainment(entities);
+    this.checkRunParameterConsumption(entities);
 
     return {
       valid: this.errors.length === 0,
@@ -56,6 +128,37 @@ export class DSLValidator {
       }
       if (entity.type === 'Program') {
         referenced.add(entity.entry);
+      }
+      if ('consumes' in entity) {
+        for (const param of entity.consumes) {
+          referenced.add(param);
+        }
+      }
+      // Track Function input/output DTOs
+      if (entity.type === 'Function') {
+        const funcEntity = entity as FunctionEntity;
+        if (funcEntity.input) {
+          referenced.add(funcEntity.input);
+        }
+        if (funcEntity.output) {
+          referenced.add(funcEntity.output);
+        }
+      }
+      // Track UIComponent contains
+      if (entity.type === 'UIComponent') {
+        const uiEntity = entity as UIComponentEntity;
+        if (uiEntity.contains) {
+          for (const child of uiEntity.contains) {
+            referenced.add(child);
+          }
+        }
+      }
+      // Track Asset contains program
+      if (entity.type === 'Asset') {
+        const assetEntity = entity as AssetEntity;
+        if (assetEntity.containsProgram) {
+          referenced.add(assetEntity.containsProgram);
+        }
       }
     }
 
@@ -615,6 +718,258 @@ export class DSLValidator {
             severity: 'error',
             suggestion: `Either add '${entity.name}' to another UIComponent's contains list, or mark it as a root component with &!`,
           });
+        }
+      }
+    }
+  }
+
+  private checkRunParameterConsumption(entities: Map<string, AnyEntity>): void {
+    // Check that Functions' consumes references exist and are RunParameters
+    for (const entity of entities.values()) {
+      if (entity.type === 'Function') {
+        const funcEntity = entity as FunctionEntity;
+        
+        if (funcEntity.consumes) {
+          for (const paramName of funcEntity.consumes) {
+            const paramEntity = entities.get(paramName);
+            
+            if (!paramEntity) {
+              this.addError({
+                position: entity.position,
+                message: `Function '${entity.name}' consumes unknown parameter '${paramName}'`,
+                severity: 'error',
+                suggestion: `Define '${paramName}' as a RunParameter`,
+              });
+            } else if (paramEntity.type !== 'RunParameter') {
+              this.addError({
+                position: entity.position,
+                message: `Function '${entity.name}' cannot consume '${paramName}' (it's a ${paramEntity.type})`,
+                severity: 'error',
+                suggestion: `Functions can only consume RunParameters`,
+              });
+            }
+          }
+        }
+      }
+    }
+
+    // Check that RunParameters' consumedBy matches Functions' consumes
+    for (const entity of entities.values()) {
+      if (entity.type === 'RunParameter') {
+        const paramEntity = entity as RunParameterEntity;
+        
+        if (paramEntity.consumedBy && paramEntity.consumedBy.length > 0) {
+          for (const funcName of paramEntity.consumedBy) {
+            const funcEntity = entities.get(funcName);
+            
+            if (!funcEntity) {
+              this.addError({
+                position: entity.position,
+                message: `RunParameter '${entity.name}' claims to be consumed by unknown function '${funcName}'`,
+                severity: 'error',
+              });
+            } else if (funcEntity.type !== 'Function') {
+              this.addError({
+                position: entity.position,
+                message: `RunParameter '${entity.name}' claims to be consumed by '${funcName}' which is not a Function`,
+                severity: 'error',
+              });
+            } else {
+              const func = funcEntity as FunctionEntity;
+              if (!func.consumes || !func.consumes.includes(entity.name)) {
+                this.addError({
+                  position: entity.position,
+                  message: `RunParameter '${entity.name}' claims to be consumed by '${funcName}', but that function doesn't consume it`,
+                  severity: 'error',
+                  suggestion: `Add '${entity.name}' to the consumes list of function '${funcName}'`,
+                });
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private populateReferencedBy(entities: Map<string, AnyEntity>): void {
+    // Clear any existing referencedBy arrays
+    for (const entity of entities.values()) {
+      entity.referencedBy = [];
+    }
+
+    // Helper to add a reference with validation
+    const addReference = (targetName: string, refType: ReferenceType, from: AnyEntity): void => {
+      const target = entities.get(targetName);
+      if (!target) return;
+
+      // Validate the reference type is allowed
+      const validRef = DSLValidator.VALID_REFERENCES[refType];
+      if (!validRef) {
+        this.addError({
+          position: from.position,
+          message: `Unknown reference type '${refType}'`,
+          severity: 'error',
+        });
+        return;
+      }
+
+      // Check if the 'from' entity type is allowed to make this reference
+      if (!validRef.from.includes(from.type)) {
+        this.addError({
+          position: from.position,
+          message: `${from.type} '${from.name}' cannot have '${refType}' references`,
+          severity: 'error',
+          suggestion: `Only ${validRef.from.join(', ')} entities can have '${refType}' references`,
+        });
+        return;
+      }
+
+      // Check if the 'to' entity type is allowed to be referenced this way
+      if (!validRef.to.includes(target.type)) {
+        this.addError({
+          position: from.position,
+          message: `Cannot use '${refType}' to reference ${target.type} '${targetName}'`,
+          severity: 'error',
+          suggestion: `'${refType}' can only reference: ${validRef.to.join(', ')}`,
+        });
+        return;
+      }
+
+      // Check if this reference already exists
+      const exists = target.referencedBy!.some(
+        ref => ref.from === from.name && ref.type === refType
+      );
+      
+      if (!exists) {
+        target.referencedBy!.push({
+          from: from.name,
+          type: refType,
+          fromType: from.type
+        });
+      }
+    };
+
+    // Populate referencedBy based on various references
+    for (const referencer of entities.values()) {
+      // Track imports
+      if ('imports' in referencer) {
+        for (const imp of referencer.imports) {
+          if (!imp.includes('*')) {
+            addReference(imp, 'imports', referencer);
+          }
+        }
+      }
+
+      // Track exports
+      if ('exports' in referencer) {
+        for (const exp of referencer.exports) {
+          addReference(exp, 'exports', referencer);
+        }
+      }
+
+      // Track function calls
+      if ('calls' in referencer) {
+        for (const call of referencer.calls) {
+          const callTarget = call.includes('.') ? call.split('.')[0] : call;
+          addReference(callTarget, 'calls', referencer);
+        }
+      }
+
+      // Track Program entry
+      if (referencer.type === 'Program') {
+        addReference(referencer.entry, 'entry', referencer);
+      }
+
+      // Track Function input/output DTOs
+      if (referencer.type === 'Function') {
+        const func = referencer as FunctionEntity;
+        if (func.input) {
+          addReference(func.input, 'input', referencer);
+        }
+        if (func.output) {
+          addReference(func.output, 'output', referencer);
+        }
+      }
+
+      // Track consumes (RunParameters)
+      if ('consumes' in referencer) {
+        const func = referencer as FunctionEntity;
+        if (func.consumes) {
+          for (const param of func.consumes) {
+            addReference(param, 'consumes', referencer);
+          }
+        }
+      }
+
+      // Track affects (UIComponents)
+      if ('affects' in referencer) {
+        const func = referencer as FunctionEntity;
+        if (func.affects) {
+          for (const comp of func.affects) {
+            addReference(comp, 'affects', referencer);
+          }
+        }
+      }
+
+      // Track Asset contains program
+      if (referencer.type === 'Asset') {
+        const asset = referencer as AssetEntity;
+        if (asset.containsProgram) {
+          addReference(asset.containsProgram, 'containsProgram', referencer);
+        }
+      }
+
+      // Track UIComponent contains/containedBy
+      if (referencer.type === 'UIComponent') {
+        const ui = referencer as UIComponentEntity;
+        if (ui.contains) {
+          for (const child of ui.contains) {
+            addReference(child, 'contains', referencer);
+          }
+        }
+        if (ui.containedBy) {
+          for (const parent of ui.containedBy) {
+            addReference(parent, 'containedBy', referencer);
+          }
+        }
+      }
+
+      // Track Class inheritance
+      if (referencer.type === 'Class') {
+        const cls = referencer as ClassEntity;
+        if (cls.extends) {
+          addReference(cls.extends, 'extends', referencer);
+        }
+        for (const intf of cls.implements) {
+          addReference(intf, 'implements', referencer);
+        }
+      }
+
+      // Track Constants schema
+      if (referencer.type === 'Constants') {
+        const cnst = referencer as ConstantsEntity;
+        if (cnst.schema) {
+          addReference(cnst.schema, 'schema', referencer);
+        }
+      }
+
+      // Track affectedBy reverse references
+      if (referencer.type === 'UIComponent') {
+        const ui = referencer as UIComponentEntity;
+        if (ui.affectedBy) {
+          for (const funcName of ui.affectedBy) {
+            addReference(funcName, 'affectedBy', referencer);
+          }
+        }
+      }
+
+      // Track consumedBy reverse references
+      if (referencer.type === 'RunParameter') {
+        const param = referencer as RunParameterEntity;
+        if (param.consumedBy) {
+          for (const funcName of param.consumedBy) {
+            addReference(funcName, 'consumedBy', referencer);
+          }
         }
       }
     }

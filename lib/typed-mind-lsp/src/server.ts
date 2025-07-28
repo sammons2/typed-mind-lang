@@ -92,11 +92,11 @@ export class TypedMindLanguageServer {
 
     try {
       // Parse the document
-      const entities = this.parser.parse(text);
-      this.documentEntities.set(textDocument.uri, entities);
+      const parseResult = this.parser.parse(text);
+      this.documentEntities.set(textDocument.uri, parseResult.entities);
 
       // Validate the parsed entities
-      const validationResult = this.validator.validate(entities);
+      const validationResult = this.validator.validate(parseResult.entities);
 
       // Convert validation errors to diagnostics
       for (const error of validationResult.errors) {
@@ -144,7 +144,7 @@ export class TypedMindLanguageServer {
     const items: CompletionItem[] = [];
 
     // Add entity types
-    const entityTypes = ['Program', 'File', 'Function', 'Class', 'Constants'] as const;
+    const entityTypes = ['Program', 'File', 'Function', 'Class', 'Constants', 'DTO', 'Asset', 'UIComponent', 'RunParameter'] as const;
     for (const type of entityTypes) {
       items.push({
         label: type,
@@ -163,6 +163,18 @@ export class TypedMindLanguageServer {
       { label: '<:', detail: 'Extends operator' },
       { label: '!', detail: 'Constants operator' },
       { label: '=>', detail: 'Methods operator' },
+      { label: '%', detail: 'DTO operator' },
+      { label: '~', detail: 'Asset operator' },
+      { label: '&', detail: 'UIComponent operator' },
+      { label: '&!', detail: 'Root UIComponent operator' },
+      { label: '$env', detail: 'Environment variable parameter' },
+      { label: '$iam', detail: 'IAM role parameter' },
+      { label: '$runtime', detail: 'Runtime configuration parameter' },
+      { label: '$config', detail: 'Application configuration parameter' },
+      { label: '$<', detail: 'Function consumes parameters' },
+      { label: '>>', detail: 'Asset contains program' },
+      { label: '>', detail: 'UIComponent contains' },
+      { label: '<', detail: 'UIComponent contained by' },
     ];
 
     for (const op of operators) {
@@ -197,6 +209,14 @@ export class TypedMindLanguageServer {
         return CompletionItemKind.Class;
       case 'Constants':
         return CompletionItemKind.Constant;
+      case 'DTO':
+        return CompletionItemKind.Interface;
+      case 'Asset':
+        return CompletionItemKind.File;
+      case 'UIComponent':
+        return CompletionItemKind.Class;
+      case 'RunParameter':
+        return CompletionItemKind.Property;
       default:
         return CompletionItemKind.Variable;
     }
@@ -227,6 +247,22 @@ export class TypedMindLanguageServer {
 
     if (entity.comment) {
       contents.push(`💬 *${entity.comment}*`);
+    }
+
+    if (entity.referencedBy && entity.referencedBy.length > 0) {
+      const refsByType = new Map<string, string[]>();
+      for (const ref of entity.referencedBy) {
+        if (!refsByType.has(ref.type)) {
+          refsByType.set(ref.type, []);
+        }
+        refsByType.get(ref.type)!.push(ref.from);
+      }
+      
+      const refStrings: string[] = [];
+      for (const [type, froms] of refsByType) {
+        refStrings.push(`${type}: ${froms.join(', ')}`);
+      }
+      contents.push(`**Referenced By**: ${refStrings.join(' | ')}`);
     }
 
     if ('path' in entity && entity.path) {
@@ -266,6 +302,66 @@ export class TypedMindLanguageServer {
           return `• \`${field.name}: ${field.type}\`${optional}${desc}`;
         }).join('\n');
         contents.push(`**Fields**:\n${fieldList}`);
+      }
+    }
+
+    // Asset-specific information
+    if (entity.type === 'Asset') {
+      const assetEntity = entity as any;
+      if (assetEntity.containsProgram) {
+        contents.push(`**Contains Program**: ${assetEntity.containsProgram}`);
+      }
+    }
+
+    // UIComponent-specific information
+    if (entity.type === 'UIComponent') {
+      const uiEntity = entity as any;
+      if (uiEntity.purpose) {
+        contents.push(`**Purpose**: ${uiEntity.purpose}`);
+      }
+      if (uiEntity.root) {
+        contents.push(`**Root Component**: ✓`);
+      }
+      if (uiEntity.contains && uiEntity.contains.length > 0) {
+        contents.push(`**Contains**: ${uiEntity.contains.join(', ')}`);
+      }
+      if (uiEntity.containedBy && uiEntity.containedBy.length > 0) {
+        contents.push(`**Contained By**: ${uiEntity.containedBy.join(', ')}`);
+      }
+      if (uiEntity.affectedBy && uiEntity.affectedBy.length > 0) {
+        contents.push(`**Affected By**: ${uiEntity.affectedBy.join(', ')}`);
+      }
+    }
+
+    // RunParameter-specific information
+    if (entity.type === 'RunParameter') {
+      const paramEntity = entity as any;
+      contents.push(`**Parameter Type**: ${paramEntity.paramType}`);
+      if (paramEntity.required) {
+        contents.push(`**Required**: ✓`);
+      }
+      if (paramEntity.defaultValue) {
+        contents.push(`**Default Value**: \`${paramEntity.defaultValue}\``);
+      }
+      if (paramEntity.consumedBy && paramEntity.consumedBy.length > 0) {
+        contents.push(`**Consumed By**: ${paramEntity.consumedBy.join(', ')}`);
+      }
+    }
+
+    // Function-specific information for new properties
+    if (entity.type === 'Function') {
+      const funcEntity = entity as any;
+      if (funcEntity.input) {
+        contents.push(`**Input**: ${funcEntity.input}`);
+      }
+      if (funcEntity.output) {
+        contents.push(`**Output**: ${funcEntity.output}`);
+      }
+      if (funcEntity.affects && funcEntity.affects.length > 0) {
+        contents.push(`**Affects**: ${funcEntity.affects.join(', ')}`);
+      }
+      if (funcEntity.consumes && funcEntity.consumes.length > 0) {
+        contents.push(`**Consumes**: ${funcEntity.consumes.join(', ')}`);
       }
     }
 

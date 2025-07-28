@@ -1,0 +1,73 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`scenario-29-referencedby-tracking > should track ReferencedBy relationships 1`] = `
+{
+  "errors": [],
+  "file": "scenario-29-referencedby-tracking.tmd",
+  "referencedByExamples": {
+    "ClientProgram": [
+      {
+        "from": "HTMLAsset",
+        "fromType": "Asset",
+        "type": "containsProgram",
+      },
+    ],
+    "DATABASE_URL": [
+      {
+        "from": "handler",
+        "fromType": "Function",
+        "type": "consumes",
+      },
+    ],
+    "Database": [
+      {
+        "from": "UserService",
+        "fromType": "File",
+        "type": "imports",
+      },
+      {
+        "from": "UserService",
+        "fromType": "File",
+        "type": "exports",
+      },
+      {
+        "from": "createUser",
+        "fromType": "Function",
+        "type": "calls",
+      },
+      {
+        "from": "getUser",
+        "fromType": "Function",
+        "type": "calls",
+      },
+    ],
+    "UserDTO": [
+      {
+        "from": "MainFile",
+        "fromType": "File",
+        "type": "imports",
+      },
+      {
+        "from": "createUser",
+        "fromType": "Function",
+        "type": "input",
+      },
+    ],
+    "UserList": [
+      {
+        "from": "AppUI",
+        "fromType": "UIComponent",
+        "type": "contains",
+      },
+    ],
+    "UserService": [
+      {
+        "from": "MainFile",
+        "fromType": "File",
+        "type": "imports",
+      },
+    ],
+  },
+  "valid": true,
+}
+`;

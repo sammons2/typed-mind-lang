@@ -1,0 +1,17 @@
+# Test orphaned RunParameter (not consumed by any function)
+TestApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  -> [processData]
+
+# These parameters are consumed
+API_KEY $env "API authentication key"
+DATABASE_URL $env "Database connection"
+
+# This parameter is orphaned - not consumed by any function
+UNUSED_PARAM $env "This parameter is never used"
+SECRET_KEY $config "Another unused parameter"
+  = "secret123"
+
+processData :: () => void
+  $< [API_KEY, DATABASE_URL]

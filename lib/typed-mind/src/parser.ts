@@ -9,6 +9,7 @@ import type {
   DTOField,
   AssetEntity,
   UIComponentEntity,
+  RunParameterEntity,
   Position,
   ImportStatement,
 } from './types';
@@ -72,12 +73,12 @@ export class DSLParser {
 
   private isEntityDeclaration(line: string): boolean {
     // Match various entity patterns - entities can start with any letter
-    return /^\w+\s*(->|@|<:|!|::|%|~|&|\s*:)/.test(line);
+    return /^\w+\s*(->|@|<:|!|::|%|~|&|\$|\s*:)/.test(line);
   }
 
   private isContinuation(line: string): boolean {
     // Lines starting with whitespace and specific operators are continuations
-    return /^\s+(->|<-|~>|=>|>>|>|<|~|"|#|-)/.test(line);
+    return /^\s+(->|<-|~>|=>|>>|>|<|~|"|#|-|=|\$<)/.test(line);
   }
 
   private parseEntity(line: string, lineNum: number): AnyEntity | null {
@@ -255,6 +256,25 @@ export class DSLParser {
       } as UIComponentEntity;
     }
 
+    // RunParameter: DATABASE_URL $env "PostgreSQL connection string" (required)
+    const runParamMatch = cleanLine.match(/^(\w+)\s*\$(\w+)\s*"([^"]+)"(?:\s*\((\w+)\))?$/);
+    if (runParamMatch) {
+      const paramType = runParamMatch[2] as 'env' | 'iam' | 'runtime' | 'config';
+      const isRequired = runParamMatch[4] === 'required';
+      
+      return {
+        name: runParamMatch[1] as string,
+        type: 'RunParameter',
+        paramType,
+        description: runParamMatch[3] as string,
+        required: isRequired || undefined,
+        consumedBy: [],
+        position,
+        raw: line,
+        comment,
+      } as RunParameterEntity;
+    }
+
     // Long form with explicit type
     const longFormMatch = cleanLine.match(/^(\w+)\s*:$/);
     if (longFormMatch) {
@@ -398,6 +418,36 @@ export class DSLParser {
         funcEntity.description = descMatch[1] as string;
         return;
       }
+    }
+
+    // RunParameter default value: = "default-value"
+    const defaultValueMatch = line.match(/^=\s*"([^"]+)"$/);
+    if (defaultValueMatch && entity.type === 'RunParameter') {
+      const paramEntity = entity as RunParameterEntity;
+      paramEntity.defaultValue = defaultValueMatch[1] as string;
+      return;
+    }
+
+    // Function consumes RunParameters: $< [DATABASE_URL, API_KEY]
+    const consumesMatch = line.match(/^\$<\s*\[([^\]]+)\]$/);
+    if (consumesMatch && entity.type === 'Function') {
+      const funcEntity = entity as FunctionEntity;
+      funcEntity.consumes = this.parseList(consumesMatch[1] as string);
+      
+      // Update consumed RunParameters' consumedBy list
+      for (const paramName of funcEntity.consumes) {
+        const param = this.entities.get(paramName);
+        if (param && param.type === 'RunParameter') {
+          const runParam = param as RunParameterEntity;
+          if (!runParam.consumedBy) {
+            runParam.consumedBy = [];
+          }
+          if (!runParam.consumedBy.includes(funcEntity.name)) {
+            runParam.consumedBy.push(funcEntity.name);
+          }
+        }
+      }
+      return;
     }
   }
 
