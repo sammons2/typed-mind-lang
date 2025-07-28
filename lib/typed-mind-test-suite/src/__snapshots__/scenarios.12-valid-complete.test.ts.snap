@@ -1,0 +1,66 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`scenario-12-valid-complete > should validate 12 valid complete 1`] = `
+{
+  "errors": [
+    {
+      "column": 1,
+      "line": 7,
+      "message": "Orphaned entity 'ControllerFile'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 11,
+      "message": "Orphaned entity 'ModelFile'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 15,
+      "message": "Orphaned entity 'DatabaseFile'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 88,
+      "message": "Orphaned entity 'TodoCreateDTO'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 93,
+      "message": "Orphaned entity 'TodoUpdateDTO'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 99,
+      "message": "Orphaned entity 'TodoDTO'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 108,
+      "message": "Orphaned entity 'UserCreateDTO'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 113,
+      "message": "Orphaned entity 'UserDTO'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+  ],
+  "file": "scenario-12-valid-complete.tmd",
+  "valid": false,
+}
+`;

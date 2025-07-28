@@ -1,0 +1,45 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`scenario-18-file-exports-ui-assets > should validate 18 file exports ui assets 1`] = `
+{
+  "errors": [
+    {
+      "column": 1,
+      "line": 6,
+      "message": "Orphaned entity 'ComponentsFile'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 9,
+      "message": "Orphaned entity 'AssetsFile'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 23,
+      "message": "UIComponent 'Button' is not contained by any other UIComponent",
+      "severity": "error",
+      "suggestion": "Either add 'Button' to another UIComponent's contains list, or mark it as a root component with &!",
+    },
+    {
+      "column": 1,
+      "line": 25,
+      "message": "UIComponent 'Input' is not contained by any other UIComponent",
+      "severity": "error",
+      "suggestion": "Either add 'Input' to another UIComponent's contains list, or mark it as a root component with &!",
+    },
+    {
+      "column": 1,
+      "line": 27,
+      "message": "UIComponent 'Modal' is not contained by any other UIComponent",
+      "severity": "error",
+      "suggestion": "Either add 'Modal' to another UIComponent's contains list, or mark it as a root component with &!",
+    },
+  ],
+  "file": "scenario-18-file-exports-ui-assets.tmd",
+  "valid": false,
+}
+`;

@@ -1,0 +1,23 @@
+TestApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  -> [RootApp, Sidebar, GraphCanvas, DetailsPanel, OrphanedComponent, AnotherRootApp]
+
+# Test UIComponent containment validation
+# RootApp is a root component (marked with &!)
+RootApp &! "Root application container"
+  > [GraphCanvas, DetailsPanel]  # Sidebar is NOT included
+
+# This component should trigger an error - it's not contained by any component
+Sidebar & "Entity list and search sidebar"
+
+# These components are properly contained and should NOT trigger errors
+GraphCanvas & "D3.js graph visualization area"
+
+DetailsPanel & "Selected entity details display"
+
+# This component should also trigger an error - not contained
+OrphanedComponent & "Component not contained by anything"
+
+# But this root component should NOT trigger an error
+AnotherRootApp &! "Another root application"

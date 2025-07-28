@@ -19,6 +19,7 @@ export class DSLValidator {
     this.checkUIComponentRelationships(entities);
     this.checkFunctionUIComponentAffects(entities);
     this.checkAssetProgramRelationships(entities);
+    this.checkUIComponentContainment(entities);
 
     return {
       valid: this.errors.length === 0,
@@ -576,6 +577,44 @@ export class DSLValidator {
               suggestion: `Assets can only contain Program entities`,
             });
           }
+        }
+      }
+    }
+  }
+
+  private checkUIComponentContainment(entities: Map<string, AnyEntity>): void {
+    // Build a set of all UIComponents that are contained by other UIComponents
+    const containedComponents = new Set<string>();
+    
+    for (const entity of entities.values()) {
+      if (entity.type === 'UIComponent') {
+        const uiEntity = entity as UIComponentEntity;
+        if (uiEntity.contains) {
+          for (const childName of uiEntity.contains) {
+            containedComponents.add(childName);
+          }
+        }
+      }
+    }
+    
+    // Check that all non-root UIComponents are contained by another component
+    for (const entity of entities.values()) {
+      if (entity.type === 'UIComponent') {
+        const uiEntity = entity as UIComponentEntity;
+        
+        // Skip root components - they don't need to be contained
+        if (uiEntity.root) {
+          continue;
+        }
+        
+        // Check if this non-root component is contained by any other component
+        if (!containedComponents.has(entity.name)) {
+          this.addError({
+            position: entity.position,
+            message: `UIComponent '${entity.name}' is not contained by any other UIComponent`,
+            severity: 'error',
+            suggestion: `Either add '${entity.name}' to another UIComponent's contains list, or mark it as a root component with &!`,
+          });
         }
       }
     }

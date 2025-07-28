@@ -1,0 +1,24 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`scenario-05-undefined-exports > should validate 05 undefined exports 1`] = `
+{
+  "errors": [
+    {
+      "column": 1,
+      "line": 3,
+      "message": "Export 'updateUser' is not defined anywhere in the codebase",
+      "severity": "error",
+      "suggestion": "Define 'updateUser' as a Function, Class, Constants, Asset, or UIComponent entity",
+    },
+    {
+      "column": 1,
+      "line": 3,
+      "message": "Export 'deleteUser' is not defined anywhere in the codebase",
+      "severity": "error",
+      "suggestion": "Define 'deleteUser' as a Function, Class, Constants, Asset, or UIComponent entity",
+    },
+  ],
+  "file": "scenario-05-undefined-exports.tmd",
+  "valid": false,
+}
+`;

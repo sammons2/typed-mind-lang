@@ -1,0 +1,59 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`scenario-14-uicomponent-validation > should validate 14 uicomponent validation 1`] = `
+{
+  "errors": [
+    {
+      "column": 1,
+      "line": 6,
+      "message": "Orphaned entity 'ComponentsFile'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 17,
+      "message": "Orphaned entity 'MainContent'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 32,
+      "message": "Orphaned entity 'Logo'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 33,
+      "message": "Orphaned entity 'NavMenu'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 36,
+      "message": "Orphaned entity 'UnexportedComponent'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 10,
+      "message": "UIComponent 'App' is not contained by any other UIComponent",
+      "severity": "error",
+      "suggestion": "Either add 'App' to another UIComponent's contains list, or mark it as a root component with &!",
+    },
+    {
+      "column": 1,
+      "line": 36,
+      "message": "UIComponent 'UnexportedComponent' is not contained by any other UIComponent",
+      "severity": "error",
+      "suggestion": "Either add 'UnexportedComponent' to another UIComponent's contains list, or mark it as a root component with &!",
+    },
+  ],
+  "file": "scenario-14-uicomponent-validation.tmd",
+  "valid": false,
+}
+`;

@@ -220,13 +220,15 @@ export class DSLParser {
       } as AssetEntity;
     }
 
-    // UIComponent: LoginForm & "User login form"
-    const uiComponentMatch = cleanLine.match(/^(\w+)\s*&\s*"([^"]+)"$/);
+    // UIComponent: LoginForm & "User login form" or RootApp &! "Root application"
+    const uiComponentMatch = cleanLine.match(/^(\w+)\s*(&!?)\s*"([^"]+)"$/);
     if (uiComponentMatch) {
+      const isRoot = uiComponentMatch[2] === '&!';
       return {
         name: uiComponentMatch[1] as string,
         type: 'UIComponent',
-        purpose: uiComponentMatch[2] as string,
+        purpose: uiComponentMatch[3] as string,
+        root: isRoot || undefined,
         contains: [],
         containedBy: [],
         affectedBy: [],

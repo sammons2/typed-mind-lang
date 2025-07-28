@@ -1,0 +1,17 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`scenario-03-circular-dependency > should validate 03 circular dependency 1`] = `
+{
+  "errors": [
+    {
+      "column": 1,
+      "line": 1,
+      "message": "Circular dependency detected: TestApp -> ServiceA -> ServiceB -> ServiceC -> ServiceA",
+      "severity": "error",
+      "suggestion": undefined,
+    },
+  ],
+  "file": "scenario-03-circular-dependency.tmd",
+  "valid": false,
+}
+`;

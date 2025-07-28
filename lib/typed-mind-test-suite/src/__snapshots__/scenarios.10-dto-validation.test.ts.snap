@@ -1,0 +1,24 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`scenario-10-dto-validation > should validate 10 dto validation 1`] = `
+{
+  "errors": [
+    {
+      "column": 1,
+      "line": 14,
+      "message": "Orphaned entity 'UserDTO'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 19,
+      "message": "Orphaned entity 'UserFile'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+  ],
+  "file": "scenario-10-dto-validation.tmd",
+  "valid": false,
+}
+`;

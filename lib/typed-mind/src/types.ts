@@ -74,6 +74,7 @@ export interface AssetEntity extends Entity {
 export interface UIComponentEntity extends Entity {
   type: 'UIComponent';
   purpose: string;
+  root?: boolean; // If true, this component doesn't need to be contained by another
   contains?: string[]; // Other UIComponents this contains
   containedBy?: string[]; // UIComponents that contain this
   affectedBy?: string[]; // Functions that affect this component

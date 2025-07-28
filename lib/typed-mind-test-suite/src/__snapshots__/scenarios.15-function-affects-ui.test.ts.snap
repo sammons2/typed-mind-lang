@@ -1,0 +1,59 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`scenario-15-function-affects-ui > should validate 15 function affects ui 1`] = `
+{
+  "errors": [
+    {
+      "column": 1,
+      "line": 22,
+      "message": "Orphaned entity 'refreshUI'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 26,
+      "message": "Orphaned entity 'invalidAffect'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 22,
+      "message": "Function 'refreshUI' is not exported by any file and is not a class method",
+      "severity": "error",
+      "suggestion": "Either add 'refreshUI' to the exports of a file entity or define it as a method of a class",
+    },
+    {
+      "column": 1,
+      "line": 26,
+      "message": "Function 'invalidAffect' is not exported by any file and is not a class method",
+      "severity": "error",
+      "suggestion": "Either add 'invalidAffect' to the exports of a file entity or define it as a method of a class",
+    },
+    {
+      "column": 1,
+      "line": 22,
+      "message": "Function 'refreshUI' affects unknown component 'NonExistentComponent'",
+      "severity": "error",
+      "suggestion": "Define 'NonExistentComponent' as a UIComponent",
+    },
+    {
+      "column": 1,
+      "line": 26,
+      "message": "Function 'invalidAffect' cannot affect 'updateTodoList' (it's a Function)",
+      "severity": "error",
+      "suggestion": "Functions can only affect UIComponents",
+    },
+    {
+      "column": 1,
+      "line": 7,
+      "message": "UIComponent 'TodoList' is not contained by any other UIComponent",
+      "severity": "error",
+      "suggestion": "Either add 'TodoList' to another UIComponent's contains list, or mark it as a root component with &!",
+    },
+  ],
+  "file": "scenario-15-function-affects-ui.tmd",
+  "valid": false,
+}
+`;
