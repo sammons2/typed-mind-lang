@@ -3,42 +3,42 @@ DragonQuestRPG -> MainFile v1.0.0 # 3D Action RPG with multiplayer support
 
 # Core game systems
 MainFile @ Assets/Scripts/Core/GameManager.cs:
-  <- [SceneManager, InputManager, SaveSystem, NetworkManager, SceneManagerFile, InputManagerFile, PlayerSystemFile, CombatSystemFile, AISystemFile, InventorySystemFile, WorldManagerFile, QuestSystemFile, NPCSystemFile, NetworkManagerFile, MultiplayerSyncFile, UIManagerFile, HUDFile, MenuSystemFile, AudioManagerFile, RenderingManagerFile, VFXManagerFile, SaveSystemFile, ResourceManagerFile]
+  <- [SceneManagerFile, InputManagerFile, SaveSystemFile, NetworkManagerFile, PlayerSystemFile, CombatSystemFile, AISystemFile, InventorySystemFile, WorldManagerFile, QuestSystemFile, NPCSystemFile, MultiplayerSyncFile, UIManagerFile, HUDFile, MenuSystemFile, AudioManagerFile, RenderingManagerFile, VFXManagerFile, ResourceManagerFile]
   -> [GameManager, GameState]
 
 SceneManagerFile @ Assets/Scripts/Core/SceneManager.cs:
   <- [LoadingScreen, SceneTransition]
-  -> [SceneManager, LoadScene, UnloadScene]
+  -> [SceneManager, LoadScene, UnloadScene, LoadSceneAsync, GetActiveScene]
 
 InputManagerFile @ Assets/Scripts/Core/InputManager.cs:
   <- [InputActions, ControllerSupport]
-  -> [InputManager, GetInput, RegisterAction]
+  -> [InputManager, GetInput, RegisterAction, GetAxis, GetButton, RemapControl]
 
 # Gameplay systems
 PlayerSystemFile @ Assets/Scripts/Player/PlayerController.cs:
-  <- [CharacterMovement, CombatSystem, InventorySystem, SkillSystem]
-  -> [PlayerController, PlayerStats]
+  <- [CharacterMovement, CombatSystemFile, InventorySystemFile, SkillSystem]
+  -> [PlayerController, PlayerStats, Move, Jump, Interact]
 
 CombatSystemFile @ Assets/Scripts/Combat/CombatSystem.cs:
   <- [DamageCalculator, StatusEffects, ComboSystem]
-  -> [CombatSystem, Attack, Defend, UseSkill]
+  -> [CombatSystem, Attack, Defend, UseSkill, DealDamage, TakeDamage, ApplyStatus, RemoveStatus]
 
 AISystemFile @ Assets/Scripts/AI/AIController.cs:
   <- [BehaviorTree, Pathfinding, SensorSystem]
-  -> [AIController, EnemyAI, CompanionAI]
+  -> [AIController, EnemyAI, CompanionAI, UpdateBehavior, SetTarget, Patrol, Chase]
 
 InventorySystemFile @ Assets/Scripts/Inventory/InventorySystem.cs:
   <- [ItemDatabase, EquipmentManager]
-  -> [InventorySystem, AddItem, RemoveItem, EquipItem]
+  -> [InventorySystem, AddItem, RemoveItem, UseItem, EquipItem, UnequipItem]
 
 # World systems
 WorldManagerFile @ Assets/Scripts/World/WorldManager.cs:
   <- [TerrainGenerator, WeatherSystem, DayNightCycle]
-  -> [WorldManager, GenerateWorld]
+  -> [WorldManager, GenerateWorld, GenerateTerrain, SetWeather, UpdateTime, SpawnEntities]
 
 QuestSystemFile @ Assets/Scripts/Quests/QuestManager.cs:
   <- [QuestDatabase, DialogueSystem]
-  -> [QuestManager, StartQuest, CompleteQuest]
+  -> [QuestManager, StartQuest, CompleteQuest, UpdateObjective, GetActiveQuests]
 
 NPCSystemFile @ Assets/Scripts/NPCs/NPCManager.cs:
   <- [NPCDatabase, DialogueSystem, ShopSystem]
@@ -47,7 +47,7 @@ NPCSystemFile @ Assets/Scripts/NPCs/NPCManager.cs:
 # Networking
 NetworkManagerFile @ Assets/Scripts/Network/NetworkManager.cs:
   <- [PhotonNetwork, MatchmakingService, MultiplayerSyncFile]
-  -> [NetworkManager, ConnectToServer, CreateRoom, JoinRoom]
+  -> [NetworkManager, ConnectToServer, CreateRoom, JoinRoom, Connect, Disconnect, SendData]
 
 MultiplayerSyncFile @ Assets/Scripts/Network/MultiplayerSync.cs:
   <- [PlayerSync, WorldSync]
@@ -56,7 +56,7 @@ MultiplayerSyncFile @ Assets/Scripts/Network/MultiplayerSync.cs:
 # UI Systems
 UIManagerFile @ Assets/Scripts/UI/UIManager.cs:
   <- [MainMenu, HUD, PauseMenu, InventoryUI, QuestLog, HUDFile, MenuSystemFile]
-  -> [UIManager, ShowUI, HideUI]
+  -> [UIManager, ShowUI, HideUI, UpdateUI, RegisterPanel]
 
 HUDFile @ Assets/Scripts/UI/HUD.cs:
   <- [HealthBar, ManaBar, Minimap, QuestTracker]
@@ -69,7 +69,7 @@ MenuSystemFile @ Assets/Scripts/UI/MenuSystem.cs:
 # Audio
 AudioManagerFile @ Assets/Scripts/Audio/AudioManager.cs:
   <- [MusicPlayer, SFXPlayer, VoicePlayer]
-  -> [AudioManager, PlayMusic, PlaySFX, PlayVoice]
+  -> [AudioManager, PlayMusic, PlaySFX, PlayVoice, StopMusic, SetVolume]
 
 # Graphics and Rendering
 RenderingManagerFile @ Assets/Scripts/Rendering/RenderingManager.cs:
@@ -83,12 +83,12 @@ VFXManagerFile @ Assets/Scripts/VFX/VFXManager.cs:
 # Save/Load system
 SaveSystemFile @ Assets/Scripts/SaveLoad/SaveSystem.cs:
   <- [SaveData, CloudSave]
-  -> [SaveSystem, SaveGame, LoadGame, DeleteSave]
+  -> [SaveSystem, SaveGame, LoadGame, DeleteSave, QuickSave, AutoSave]
 
 # Asset management
 ResourceManagerFile @ Assets/Scripts/Resources/ResourceManager.cs:
   <- [AssetBundles, AddressableAssets]
-  -> [ResourceManager, LoadAsset, UnloadAsset]
+  -> [ResourceManager, LoadAsset, UnloadAsset, PreloadAssets, ClearCache]
 
 # Environment variables
 UNITY_VERSION $env "Unity engine version" (required)
@@ -117,51 +117,62 @@ ENABLE_MODDING $config "Enable mod support"
 MAX_PLAYERS $config "Maximum players per session"
   = "4"
 
-# UI Components
-MainMenu & "Main menu screen"
+# UI Components (all marked as root components)
+MainMenu &! "Main menu screen"
   > [PlayButton, SettingsButton, QuitButton]
-  root
-  ~ [UIManagerFile]
+  ~ [StartGame, Connect, CreateRoom, JoinRoom]
 
-HUD & "In-game heads-up display"
+HUD &! "In-game heads-up display"
   > [HealthBar, ManaBar, Minimap, QuestTracker, SkillBar]
-  root
-  ~ [UIManagerFile]
+  ~ [UpdateHealth, UpdateMana, DealDamage, TakeDamage, UseSkill]
 
-PauseMenu & "Pause game menu"
+PauseMenu &! "Pause game menu"
   > [ResumeButton, SaveButton, SettingsButton, QuitButton]
+  ~ [PauseGame, SaveGame]
 
-InventoryUI & "Inventory management screen"
+InventoryUI &! "Inventory management screen"
   > [ItemGrid, EquipmentSlots, StatsPanel]
+  ~ [AddItem, RemoveItem, EquipItem]
 
-QuestLog & "Quest journal interface"
+QuestLog &! "Quest journal interface"
   > [QuestList, QuestDetails, MapMarkers]
+  ~ [StartQuest, CompleteQuest]
 
-CharacterCreation & "Character creation screen"
+CharacterCreation &! "Character creation screen"
   > [ClassSelection, AppearanceCustomizer, StatsAllocator]
 
-SettingsMenu & "Game settings interface"
+SettingsMenu &! "Game settings interface"
   > [GraphicsSettings, AudioSettings, ControlSettings]
+
+SaveLoadMenu &! "Save/Load game interface"
+  > [SaveSlotList, LoadButton, DeleteButton]
+  ~ [SaveGame, LoadGame, DeleteSave]
 
 # HUD Components
 HealthBar & "Player health display"
   < [HUD]
+  ~ [DealDamage, TakeDamage]
 
 ManaBar & "Player mana display"
   < [HUD]
+  ~ [UseSkill]
 
 Minimap & "World minimap"
   < [HUD]
+  ~ [StartQuest, CompleteQuest]
 
 QuestTracker & "Active quest tracker"
   < [HUD]
+  ~ [StartQuest, CompleteQuest]
 
 SkillBar & "Skill hotbar"
   < [HUD]
+  ~ [Attack, UseSkill]
 
 # Menu Components
 PlayButton & "Start game button"
   < [MainMenu]
+  ~ [StartGame]
 
 SettingsButton & "Open settings button"
   < [MainMenu, PauseMenu]
@@ -174,16 +185,20 @@ ResumeButton & "Resume game button"
 
 SaveButton & "Save game button"
   < [PauseMenu]
+  ~ [SaveGame]
 
 # Inventory Components
 ItemGrid & "Inventory item grid"
   < [InventoryUI]
+  ~ [AddItem, RemoveItem]
 
 EquipmentSlots & "Character equipment slots"
   < [InventoryUI]
+  ~ [EquipItem]
 
 StatsPanel & "Character stats display"
   < [InventoryUI]
+  ~ [EquipItem]
 
 # Quest Components
 QuestList & "List of quests"
@@ -215,44 +230,72 @@ AudioSettings & "Audio volume settings"
 ControlSettings & "Input control mapping"
   < [SettingsMenu]
 
+# Save/Load Components
+SaveSlotList & "List of save slots"
+  < [SaveLoadMenu]
+
+LoadButton & "Load save button"
+  < [SaveLoadMenu]
+  ~ [LoadGame]
+
+DeleteButton & "Delete save button"
+  < [SaveLoadMenu]
+  ~ [DeleteSave]
+
 # Assets
 LoadingScreen ~ "Loading screen backgrounds"
-  ~> [StartGame, LoadGame]
 SceneTransition ~ "Scene transition effects"
-  ~> [SceneManager]
 InputActions ~ "Input action maps"
-  ~> [InputManager]
 ControllerSupport ~ "Controller button prompts"
-  ~> [InputManager]
 ItemDatabase ~ "Item definition database"
-  ~> [InventorySystem]
 QuestDatabase ~ "Quest data storage"
-  ~> [QuestManager]
 NPCDatabase ~ "NPC character data"
-  ~> [NPCManager]
 SaveData ~ "Save game data structure"
-  ~> [SaveSystem]
 AssetBundles ~ "Downloadable content bundles"
-  ~> [ResourceManager]
 AddressableAssets ~ "Addressable asset catalog"
-  ~> [ResourceManager]
+CharacterMovement ~ "Character movement system"
+SkillSystem ~ "Character skill system"
+DamageCalculator ~ "Damage calculation logic"
+StatusEffects ~ "Status effect definitions"
+ComboSystem ~ "Combat combo system"
+BehaviorTree ~ "AI behavior trees"
+Pathfinding ~ "Pathfinding algorithms"
+SensorSystem ~ "AI sensory system"
+EquipmentManager ~ "Equipment management"
+TerrainGenerator ~ "Procedural terrain generation"
+WeatherSystem ~ "Dynamic weather"
+DayNightCycle ~ "Day/night cycle"
+DialogueSystem ~ "Dialogue trees"
+ShopSystem ~ "Shop interface"
+PhotonNetwork ~ "Photon networking wrapper"
+MatchmakingService ~ "Matchmaking logic"
+PlayerSync ~ "Player synchronization"
+WorldSync ~ "World state sync"
+MusicPlayer ~ "Background music player"
+SFXPlayer ~ "Sound effects player"
+VoicePlayer ~ "Voice line player"
+PostProcessing ~ "Post processing effects"
+LODSystem ~ "Level of detail system"
+OcclusionCulling ~ "Occlusion culling"
+ParticleSystem ~ "Particle effects"
+ShaderEffects ~ "Shader effects"
+CloudSave ~ "Cloud save integration"
 
 # Core Classes
 GameManager <:
-  => [StartGame, PauseGame, EndGame, ChangeState]
-  $< [UNITY_VERSION, BUILD_TARGET]
+  => [StartGame, PauseGame, EndGame, ChangeState, Initialize]
 
 SceneManager <:
   => [LoadScene, UnloadScene, LoadSceneAsync, GetActiveScene]
 
 InputManager <:
-  => [GetAxis, GetButton, RegisterAction, RemapControl]
+  => [GetAxis, GetButton, RegisterAction, RemapControl, GetInput]
 
 PlayerController <:
-  => [Move, Jump, Attack, UseItem, Interact]
+  => [Move, Jump, Interact]
 
 CombatSystem <:
-  => [DealDamage, TakeDamage, ApplyStatus, RemoveStatus]
+  => [DealDamage, TakeDamage, ApplyStatus, RemoveStatus, UseSkill, Attack, Defend]
 
 AIController <:
   => [UpdateBehavior, SetTarget, Patrol, Chase, Attack]
@@ -261,70 +304,127 @@ InventorySystem <:
   => [AddItem, RemoveItem, UseItem, EquipItem, UnequipItem]
 
 WorldManager <:
-  => [GenerateTerrain, SetWeather, UpdateTime, SpawnEntities]
-  $< [PHYSICS_TIMESTEP]
+  => [GenerateTerrain, SetWeather, UpdateTime, SpawnEntities, GenerateWorld, InitializePhysics]
 
 QuestManager <:
   => [StartQuest, UpdateObjective, CompleteQuest, GetActiveQuests]
 
+NPCManager <:
+  => [SpawnNPC, InteractWithNPC]
+
 NetworkManager <:
-  => [Connect, Disconnect, CreateRoom, JoinRoom, SendData]
-  $< [PHOTON_APP_ID, MAX_PLAYERS]
+  => [Connect, Disconnect, CreateRoom, JoinRoom, SendData, ConnectToServer, InitializeNetwork]
 
 UIManager <:
   => [ShowUI, HideUI, UpdateUI, RegisterPanel]
 
 AudioManager <:
-  => [PlayMusic, PlaySFX, StopMusic, SetVolume]
+  => [PlayMusic, PlaySFX, StopMusic, SetVolume, PlayVoice]
 
 SaveSystem <:
-  => [SaveGame, LoadGame, QuickSave, AutoSave]
+  => [SaveGame, LoadGame, QuickSave, AutoSave, DeleteSave, CloudSync]
 
 ResourceManager <:
   => [LoadAsset, UnloadAsset, PreloadAssets, ClearCache]
 
 RenderingManager <:
-  => [SetQuality, UpdateSettings]
-  $< [GRAPHICS_API, TARGET_FPS]
+  => [SetQuality, UpdateSettings, InitializeGraphics]
 
 VFXManager <:
   => [PlayEffect, StopEffect]
 
+MenuSystem <:
+  => [OpenMenu, CloseMenu]
+
+MultiplayerSync <:
+  => [SyncPosition, SyncState]
+
 # Game Functions
 StartGame :: () => void
   ~> [SceneManager.LoadScene, AudioManager.PlayMusic]
-  ~ [MainMenu, LoadingScreen]
+  ~ [MainMenu, PlayButton]
 
 PauseGame :: () => void
   ~ [HUD, PauseMenu]
 
+EndGame :: () => void
+  ~> [GameManager.ChangeState]
+  ~ [MainMenu]
+
+ChangeState :: (newState: GameState) => void
+  <- GameState
+
+LoadScene :: (sceneName: string) => void
+  ~> [ResourceManager.LoadAsset]
+
+UnloadScene :: (sceneName: string) => void
+  ~> [ResourceManager.UnloadAsset]
+
+LoadSceneAsync :: (sceneName: string) => void
+  ~> [ResourceManager.LoadAsset]
+
+GetActiveScene :: () => string
+
+GetAxis :: (axisName: string) => float
+
+GetButton :: (buttonName: string) => boolean
+
+GetInput :: () => InputData
+  -> InputData
+
+RegisterAction :: (action: string, callback: function) => void
+
+RemapControl :: (action: string, newKey: string) => void
+
 Move :: (direction: Vector3) => void
   <- Vector3
-  ~ [PlayerController]
 
 Jump :: () => void
-  ~ [PlayerController]
 
 Attack :: (target: GameObject) => void
   <- GameObject
   ~> [CombatSystem.DealDamage]
-  ~ [PlayerController, SkillBar]
+  ~ [SkillBar]
 
-UseSkill :: (skillId: string) => void
-  ~> [CombatSystem.UseSkill]
-  ~ [SkillBar, ManaBar]
+UseItem :: (itemId: string) => void
+  ~> [InventorySystem.UseItem]
 
 Interact :: (target: GameObject) => void
   <- GameObject
   ~> [NPCManager.InteractWithNPC, InventorySystem.AddItem]
-  ~ [PlayerController]
+
+Defend :: () => void
+  ~> [CombatSystem.ApplyStatus]
+
+UseSkill :: (skillId: string) => void
+  ~> [CombatSystem.ApplyStatus]
+  ~ [SkillBar, ManaBar]
+  $< [ENABLE_MODDING]
 
 DealDamage :: (target: GameObject, amount: float) => void
   <- GameObject
   ~ [HealthBar]
 
 TakeDamage :: (amount: float) => void
-  ~ [HealthBar, PlayerController]
+  ~ [HealthBar]
+
+ApplyStatus :: (status: StatusEffect) => void
+  <- StatusEffect
+
+RemoveStatus :: (statusId: string) => void
+
+UpdateBehavior :: () => void
+  ~> [AIController.SetTarget]
+
+SetTarget :: (target: GameObject) => void
+  <- GameObject
+
+Patrol :: (waypoints: Vector3[]) => void
+  <- Vector3Array
+
+Chase :: (target: GameObject) => void
+  <- GameObject
+  ~> [AIController.SetTarget]
 
 AddItem :: (item: Item) => void
   <- Item
@@ -337,26 +437,55 @@ EquipItem :: (item: Equipment) => void
   <- Equipment
   ~ [EquipmentSlots, StatsPanel]
 
+UnequipItem :: (slot: string) => void
+  ~ [EquipmentSlots, StatsPanel]
+
+GenerateTerrain :: (seed: int) => void
+  ~> [ResourceManager.LoadAsset]
+
+GenerateWorld :: () => void
+  ~> [WorldManager.GenerateTerrain, WorldManager.SpawnEntities]
+
+SetWeather :: (weather: string) => void
+
+UpdateTime :: (deltaTime: float) => void
+
+SpawnEntities :: () => void
+  ~> [NPCManager.SpawnNPC]
+
 StartQuest :: (questId: string) => void
   ~> [QuestManager.StartQuest]
   ~ [QuestLog, QuestTracker, Minimap]
 
-CompleteQuest :: (questId: string) => void
+UpdateObjective :: (questId: string, objective: QuestObjective) => void
+  <- QuestObjective
+  ~ [QuestTracker]
+
+CompleteQuest :: (questId: string) => QuestReward[]
   ~> [QuestManager.CompleteQuest]
   ~ [QuestLog, QuestTracker]
+  -> QuestReward
+  $< [ANALYTICS_KEY]
 
-SaveGame :: (slot: int) => void
-  ~> [SaveSystem.SaveGame]
-  ~ [SaveButton, PauseMenu]
+GetActiveQuests :: () => Quest[]
+  -> Quest
 
-LoadGame :: (slot: int) => void
-  ~> [SaveSystem.LoadGame, SceneManager.LoadScene]
-  ~ [MainMenu, LoadingScreen]
+SpawnNPC :: (npcId: string, position: Vector3) => GameObject
+  <- Vector3
+  -> GameObject
+
+InteractWithNPC :: (npcId: string) => void
 
 Connect :: () => void
   ~> [NetworkManager.Connect]
   ~ [MainMenu]
   $< [PHOTON_APP_ID]
+
+ConnectToServer :: (serverAddress: string) => void
+  ~> [NetworkManager.Connect]
+
+Disconnect :: () => void
+  ~> [NetworkManager.Disconnect]
 
 CreateRoom :: (roomName: string) => void
   ~> [NetworkManager.CreateRoom]
@@ -365,6 +494,121 @@ CreateRoom :: (roomName: string) => void
 JoinRoom :: (roomCode: string) => void
   ~> [NetworkManager.JoinRoom]
   ~ [MainMenu]
+
+SendData :: (data: object) => void
+
+SyncPosition :: (position: Vector3) => void
+  <- Vector3
+
+SyncState :: (state: object) => void
+
+ShowUI :: (panelName: string) => void
+  ~ [MainMenu, HUD, PauseMenu, InventoryUI, QuestLog]
+
+HideUI :: (panelName: string) => void
+  ~ [MainMenu, HUD, PauseMenu, InventoryUI, QuestLog]
+
+UpdateUI :: () => void
+  ~ [HUD]
+
+RegisterPanel :: (panelName: string, panel: object) => void
+
+UpdateHealth :: (health: float) => void
+  ~ [HealthBar]
+
+UpdateMana :: (mana: float) => void
+  ~ [ManaBar]
+
+OpenMenu :: (menuName: string) => void
+  ~ [SettingsMenu, SaveLoadMenu, CharacterCreation]
+
+CloseMenu :: () => void
+  ~ [SettingsMenu, SaveLoadMenu, CharacterCreation]
+
+PlayMusic :: (trackName: string) => void
+
+PlaySFX :: (soundName: string) => void
+
+PlayVoice :: (voiceLine: string) => void
+
+StopMusic :: () => void
+
+SetVolume :: (channel: string, volume: float) => void
+
+SaveGame :: (slot: int) => void
+  ~> [SaveSystem.SaveGame]
+  ~ [SaveButton, PauseMenu, SaveSlotList]
+  $< [BUILD_TYPE]
+
+LoadGame :: (slot: int) => void
+  ~> [SaveSystem.LoadGame, SceneManager.LoadScene]
+  ~ [MainMenu, LoadButton]
+
+DeleteSave :: (slot: int) => void
+  ~> [SaveSystem.DeleteSave]
+  ~ [DeleteButton]
+
+QuickSave :: () => void
+  ~> [SaveSystem.SaveGame]
+
+AutoSave :: () => void
+  ~> [SaveSystem.SaveGame]
+
+LoadAsset :: (assetPath: string) => object
+  ~> [ResourceManager.PreloadAssets]
+
+UnloadAsset :: (assetPath: string) => void
+  ~> [ResourceManager.ClearCache]
+
+PreloadAssets :: (assetPaths: string[]) => void
+
+ClearCache :: () => void
+
+SetQuality :: (level: string) => void
+  ~> [RenderingManager.UpdateSettings]
+
+UpdateSettings :: () => void
+
+PlayEffect :: (effectName: string, position: Vector3) => void
+  <- Vector3
+
+StopEffect :: (effectId: string) => void
+
+# Initialization functions that consume RunParameters
+Initialize :: () => void
+  ~> [GameManager.Initialize, WorldManager.InitializePhysics, RenderingManager.InitializeGraphics, NetworkManager.InitializeNetwork]
+  $< [UNITY_VERSION, BUILD_TARGET]
+
+InitializePhysics :: () => void
+  $< [PHYSICS_TIMESTEP]
+
+InitializeGraphics :: () => void
+  $< [GRAPHICS_API, TARGET_FPS]
+
+InitializeNetwork :: () => void
+  $< [PHOTON_APP_ID, MAX_PLAYERS, ENABLE_MULTIPLAYER]
+
+CloudSync :: () => void
+  $< [STEAM_APP_ID]
+
+# Enemy AI specific
+EnemyAI <: AIController
+  => [AttackPlayer, FleeWhenLowHealth]
+
+CompanionAI <: AIController
+  => [FollowPlayer, AssistInCombat]
+
+AttackPlayer :: () => void
+  ~> [AIController.Chase, CombatSystem.Attack]
+
+FleeWhenLowHealth :: () => void
+  ~> [AIController.Patrol]
+
+FollowPlayer :: () => void
+  ~> [AIController.SetTarget]
+
+AssistInCombat :: () => void
+  ~> [AIController.Attack]
 
 # Data Transfer Objects
 GameState % "Current game state"
@@ -384,6 +628,9 @@ Vector3 % "3D position/direction"
   - x: float "X coordinate"
   - y: float "Y coordinate"
   - z: float "Z coordinate"
+
+Vector3Array % "Array of 3D positions"
+  - positions: Vector3[] "Array of positions"
 
 GameObject % "Unity game object reference"
   - instanceId: int "Object instance ID"
@@ -421,30 +668,13 @@ QuestReward % "Quest reward"
   - itemId: string "Item ID" (optional)
   - amount: int "Reward amount"
 
-# Constants
-BehaviorTree {
-  NODE_TYPES: ["Selector", "Sequence", "Action", "Condition"]
-  TICK_RATE: "10"
-}
+StatusEffect % "Status effect data"
+  - id: string "Effect ID"
+  - name: string "Effect name"
+  - duration: float "Effect duration"
+  - stackable: boolean "Can stack"
 
-Pathfinding {
-  ALGORITHM: "A*"
-  GRID_SIZE: "1.0"
-  MAX_PATH_LENGTH: "100"
-}
-
-DamageCalculator {
-  DAMAGE_TYPES: ["Physical", "Magic", "Fire", "Ice", "Lightning"]
-  CRIT_MULTIPLIER: "2.0"
-}
-
-WeatherSystem {
-  WEATHER_TYPES: ["Clear", "Rain", "Storm", "Snow", "Fog"]
-  TRANSITION_TIME: "30.0"
-}
-
-DayNightCycle {
-  DAY_LENGTH: "1200"
-  SUNRISE_TIME: "6"
-  SUNSET_TIME: "18"
-}
+InputData % "Player input state"
+  - horizontal: float "Horizontal input"
+  - vertical: float "Vertical input"
+  - buttons: object "Button states"

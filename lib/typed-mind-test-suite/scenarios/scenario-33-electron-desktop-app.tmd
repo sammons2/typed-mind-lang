@@ -1,88 +1,120 @@
 # Electron Desktop Application - Code Editor
 CodeEditorApp -> MainFile v3.0.0 # Advanced code editor built with Electron
 
+# External dependencies
+electron ^ "Electron framework" v28.0.0
+@reduxjs/toolkit ^ "Redux toolkit for state management" v2.0.1
+react ^ "React framework" v18.2.0
+react-dom ^ "React DOM" v18.2.0
+fs-extra ^ "Enhanced file system operations" v11.2.0
+chokidar ^ "File watching library" v3.6.0
+simple-git ^ "Git integration library" v3.22.0
+node-pty ^ "Terminal emulation" v1.0.0
+@monaco-editor/react ^ "Monaco editor React wrapper" v4.6.0
+
 # Electron main process
 MainFile @ src/main/index.ts:
-  <- [app, BrowserWindow, Menu, dialog, ipcMain]
-  -> [createWindow, setupIPC]
+  <- [WindowManagerFile, MenuBuilderFile, IPCHandlerFile, TerminalServiceFile, PluginManagerFile, RendererFile, RendererServicesFile, SharedFile, AssetsFile]
+  -> [createWindow]
 
 WindowManagerFile @ src/main/window-manager.ts:
-  <- [BrowserWindow, screen]
+  <- []
   -> [WindowManager, createMainWindow, createSettingsWindow]
 
 MenuBuilderFile @ src/main/menu-builder.ts:
-  <- [Menu, app, dialog]
+  <- []
   -> [MenuBuilder, buildApplicationMenu]
 
 IPCHandlerFile @ src/main/ipc-handler.ts:
-  <- [ipcMain, fileSystem, gitIntegration]
+  <- [FileSystemFile, GitIntegrationFile]
   -> [setupIPC, handleFileOperations, handleGitOperations]
 
 # Main process services
 FileSystemFile @ src/main/services/file-system.ts:
-  <- [fs, path, chokidar]
-  -> [fileSystem, readFile, writeFile, watchDirectory]
+  <- []
+  -> [FileSystem, readFile, writeFile, watchDirectory, createFile, deleteFile]
 
 GitIntegrationFile @ src/main/services/git-integration.ts:
-  <- [simpleGit]
-  -> [gitIntegration, getStatus, commit, push, pull]
+  <- []
+  -> [GitIntegration, getStatus, commit, push, pull, getBranches, checkout]
 
 TerminalServiceFile @ src/main/services/terminal.ts:
-  <- [pty]
-  -> [terminalService, createTerminal, writeToTerminal]
+  <- []
+  -> [TerminalService, createTerminal, writeToTerminal, resizeTerminal]
 
 PluginManagerFile @ src/main/services/plugin-manager.ts:
-  <- [pluginRegistry]
-  -> [PluginManager, loadPlugin, unloadPlugin]
+  <- []
+  -> [PluginManager, loadPlugin, unloadPlugin, pluginRegistry]
 
 # Renderer process
 RendererFile @ src/renderer/index.tsx:
-  <- [App, store]
+  <- [AppRendererFile, StoreRendererFile]
   -> []
 
 AppRendererFile @ src/renderer/App.tsx:
-  <- [EditorView, SidebarView, StatusBarView, TerminalView]
+  <- [ComponentsFile]
   -> [App]
 
 # Renderer components
 ComponentsFile @ src/renderer/components/index.ts:
+  <- [EditorComponentsFile]
   -> [EditorView, SidebarView, StatusBarView, TerminalView, TabBar, FileTree, SearchPanel]
 
 # Editor components
 EditorComponentsFile @ src/renderer/components/editor/index.ts:
-  <- [ComponentsFile]
+  <- []
   -> [CodeEditor, LineNumbers, Minimap, AutoComplete, SyntaxHighlighter]
 
 # Renderer state management
 StoreRendererFile @ src/renderer/store/index.ts:
-  <- [editorSlice, fileSlice, gitSlice, terminalSlice, settingsSlice]
+  <- [EditorSliceFile, FileSliceFile, GitSliceFile, TerminalSliceFile, SettingsSliceFile]
   -> [store]
 
 EditorSliceFile @ src/renderer/store/editorSlice.ts:
+  <- []
   -> [editorSlice, setActiveFile, updateContent, setCursor]
 
 FileSliceFile @ src/renderer/store/fileSlice.ts:
+  <- []
   -> [fileSlice, openFile, closeFile, saveFile]
 
 GitSliceFile @ src/renderer/store/gitSlice.ts:
+  <- []
   -> [gitSlice, updateStatus, setCurrentBranch]
+
+TerminalSliceFile @ src/renderer/store/terminalSlice.ts:
+  <- []
+  -> [terminalSlice]
+
+SettingsSliceFile @ src/renderer/store/settingsSlice.ts:
+  <- []
+  -> [settingsSlice]
 
 # Renderer services
 RendererServicesFile @ src/renderer/services/index.ts:
-  -> [ipcService, themeService, keyboardService]
+  <- [IPCServiceFile, ThemeServiceFile, KeyboardServiceFile]
+  -> []
 
 IPCServiceFile @ src/renderer/services/ipc.ts:
-  <- [ipcRenderer]
+  <- []
   -> [ipcService]
+
+ThemeServiceFile @ src/renderer/services/theme.ts:
+  <- []
+  -> [themeService]
+
+KeyboardServiceFile @ src/renderer/services/keyboard.ts:
+  <- []
+  -> [keyboardService]
 
 # Shared utilities
 SharedFile @ src/shared/index.ts:
-  <- [MainFile, RendererFile]
+  <- []
   -> [FileType, GitStatus, Theme, KeyBinding]
 
 # Assets
 AssetsFile @ src/assets/index.ts:
-  <- [ComponentsFile]
+  <- []
   -> [AppIcon, FileIcons, ThemeIcons, Logo]
 
 # Environment variables
@@ -111,14 +143,12 @@ AUTO_UPDATE $config "Enable auto-updates"
   = "true"
 
 # UI Components
-App & "Main application component"
+App &! "Main application component"
   > [TabBar, EditorView, SidebarView, StatusBarView, TerminalView]
-  root
-  ~ [AssetsFile]
 
 TabBar & "Open files tab bar"
   < [App]
-  > [FileIcons]
+  > [TabIconDisplay]
 
 EditorView & "Code editor container"
   < [App]
@@ -154,38 +184,56 @@ SyntaxHighlighter & "Syntax highlighting"
 # Sidebar components
 FileTree & "File explorer tree"
   < [SidebarView]
-  > [FileIcons]
+  > [FileIconDisplay]
 
 SearchPanel & "Search and replace panel"
   < [SidebarView]
 
+# Additional UI Components for file icons
+FileIconDisplay & "File icon display component"
+  < [FileTree]
+
+TabIconDisplay & "Tab icon display component"
+  < [TabBar]
+
 # Assets
 AppIcon ~ "Application icon"
+  >> CodeEditorApp
+
 FileIcons ~ "File type icons"
+
 ThemeIcons ~ "Theme-specific icons"
+
 Logo ~ "Application logo"
 
 # Main process classes
 WindowManager <:
+  <- []
   => [createWindow, closeWindow, focusWindow, getAllWindows]
 
 MenuBuilder <:
+  <- []
   => [buildMenu, updateMenu, setEnabled]
 
-fileSystem <:
+FileSystem <:
+  <- []
   => [readFile, writeFile, readDirectory, watchDirectory, createFile, deleteFile]
 
-gitIntegration <:
+GitIntegration <:
+  <- []
   => [init, getStatus, stage, commit, push, pull, getBranches, checkout]
 
-terminalService <:
+TerminalService <:
+  <- []
   => [createTerminal, writeToTerminal, resizeTerminal, closeTerminal]
 
 PluginManager <:
+  <- []
   => [loadPlugin, unloadPlugin, getLoadedPlugins, callPluginMethod]
 
-# Renderer services
+# Renderer services classes
 ipcService <:
+  <- []
   => [invoke, send, on, off]
 
 themeService <:
@@ -196,65 +244,111 @@ keyboardService <:
 
 # Main process functions
 createWindow :: () => BrowserWindow
+  -> BrowserWindow
   ~> [WindowManager.createWindow]
-  $< [NODE_ENV]
+  $< [NODE_ENV, ELECTRON_VERSION, UPDATE_SERVER_URL]
 
 setupIPC :: () => void
   ~> [handleFileOperations, handleGitOperations]
+  $< [NODE_ENV]
 
 createMainWindow :: (options: WindowOptions) => BrowserWindow
   <- WindowOptions
   -> BrowserWindow
-  ~> [BrowserWindow.new]
+  ~> [WindowManager.createWindow]
+  $< [TARGET_PLATFORM, AUTO_UPDATE]
 
 createSettingsWindow :: () => BrowserWindow
   -> BrowserWindow
-  ~> [BrowserWindow.new]
+  ~> [WindowManager.createWindow]
 
 buildApplicationMenu :: () => Menu
   -> Menu
   ~> [MenuBuilder.buildMenu]
+  $< [NODE_ENV, TARGET_PLATFORM, CODE_SIGN_IDENTITY, NOTARIZE]
 
 # IPC handlers
 handleFileOperations :: () => void
-  ~> [fileSystem.readFile, fileSystem.writeFile]
+  ~> [FileSystem.readFile, FileSystem.writeFile, FileSystem.watchDirectory]
 
 handleGitOperations :: () => void
-  ~> [gitIntegration.getStatus, gitIntegration.commit]
+  ~> [GitIntegration.getStatus, GitIntegration.commit, GitIntegration.push]
+  $< [GITHUB_TOKEN]
 
 # File operations
 readFile :: (path: string) => Promise<FileContent>
   -> FileContent
+  ~> [FileSystem.readFile]
   ~ [EditorView, CodeEditor]
 
 writeFile :: (path: string, content: string) => Promise<void>
+  ~> [FileSystem.writeFile]
   ~ [EditorView]
 
 watchDirectory :: (path: string) => FSWatcher
   -> FSWatcher
+  ~> [FileSystem.watchDirectory]
+  ~ [FileTree]
+
+createFile :: (path: string) => Promise<void>
+  ~> [FileSystem.createFile]
+  ~ [FileTree]
+
+deleteFile :: (path: string) => Promise<void>
+  ~> [FileSystem.deleteFile]
   ~ [FileTree]
 
 # Git operations
 getStatus :: () => Promise<GitStatusResult>
   -> GitStatusResult
+  ~> [GitIntegration.getStatus]
   ~ [StatusBarView, SidebarView]
 
 commit :: (message: string, files: string[]) => Promise<void>
+  ~> [GitIntegration.commit]
   ~ [StatusBarView]
 
 push :: () => Promise<void>
+  ~> [GitIntegration.push]
   ~ [StatusBarView]
+  $< [GITHUB_TOKEN]
 
 pull :: () => Promise<void>
+  ~> [GitIntegration.pull]
+  ~ [StatusBarView]
+  $< [GITHUB_TOKEN]
+
+getBranches :: () => Promise<string[]>
+  ~> [GitIntegration.getBranches]
+  ~ [StatusBarView]
+
+checkout :: (branch: string) => Promise<void>
+  ~> [GitIntegration.checkout]
   ~ [StatusBarView]
 
 # Terminal operations
 createTerminal :: (shell: string) => Terminal
-  <- Terminal
+  -> Terminal
+  ~> [TerminalService.createTerminal]
   ~ [TerminalView]
+  $< [NODE_ENV]
 
 writeToTerminal :: (id: string, data: string) => void
+  ~> [TerminalService.writeToTerminal]
   ~ [TerminalView]
+  $< [ANALYTICS_ID]
+
+resizeTerminal :: (id: string, cols: number, rows: number) => void
+  ~> [TerminalService.resizeTerminal]
+  ~ [TerminalView]
+
+# Plugin operations
+loadPlugin :: (path: string) => Promise<void>
+  ~> [PluginManager.loadPlugin]
+  $< [NODE_ENV]
+
+unloadPlugin :: (name: string) => Promise<void>
+  ~> [PluginManager.unloadPlugin]
 
 # Editor state functions
 setActiveFile :: (file: OpenFile) => void
@@ -263,6 +357,7 @@ setActiveFile :: (file: OpenFile) => void
 
 updateContent :: (content: string) => void
   ~ [EditorView, CodeEditor]
+  $< [MONACO_VERSION, NODE_VERSION]
 
 setCursor :: (position: CursorPosition) => void
   <- CursorPosition
@@ -279,6 +374,13 @@ saveFile :: () => void
   ~> [writeFile]
   ~ [EditorView, StatusBarView]
 
+updateStatus :: (status: GitStatusResult) => void
+  <- GitStatusResult
+  ~ [StatusBarView]
+
+setCurrentBranch :: (branch: string) => void
+  ~ [StatusBarView]
+
 # Data Transfer Objects
 WindowOptions % "Window creation options"
   - width: number "Window width"
@@ -286,6 +388,13 @@ WindowOptions % "Window creation options"
   - x: number "X position" (optional)
   - y: number "Y position" (optional)
   - fullscreen: boolean "Fullscreen mode"
+
+BrowserWindow % "Electron browser window"
+  - id: number "Window ID"
+  - webContents: object "Web contents"
+
+Menu % "Application menu"
+  - items: object[] "Menu items"
 
 FileContent % "File content data"
   - path: string "File path"
@@ -342,7 +451,16 @@ KeyBinding % "Keyboard shortcut"
   - when: string "Context condition" (optional)
 
 # Constants
-pluginRegistry {
-  PLUGIN_DIR: "~/.codeeditor/plugins"
-  API_VERSION: "1.0.0"
-}
+pluginRegistry ! src/main/constants/plugin-registry.ts : object
+
+editorSlice ! src/renderer/store/editor-slice.ts : object
+
+fileSlice ! src/renderer/store/file-slice.ts : object
+
+gitSlice ! src/renderer/store/git-slice.ts : object
+
+terminalSlice ! src/renderer/store/terminal-slice.ts : object
+
+settingsSlice ! src/renderer/store/settings-slice.ts : object
+
+store ! src/renderer/store/store.ts : object

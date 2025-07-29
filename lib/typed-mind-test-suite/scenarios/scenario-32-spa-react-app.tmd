@@ -1,6 +1,22 @@
 # Single Page Application - E-commerce Platform
 EcommerceApp -> MainFile v2.1.0 # Modern e-commerce SPA
 
+# External Dependencies
+react ^ "Core React library" v18.2.0
+react-dom ^ "React DOM renderer" v18.2.0
+react-router-dom ^ "React routing library" v6.8.0
+@reduxjs/toolkit ^ "State management toolkit" v1.9.3
+redux ^ "State management library" v4.2.1
+react-redux ^ "React Redux bindings" v8.0.5
+axios ^ "HTTP client library" v1.3.4
+@stripe/stripe-js ^ "Stripe payment SDK" v1.46.0
+styled-components ^ "CSS-in-JS styling" v5.3.9
+react-query ^ "Data fetching library" v3.39.3
+react-hook-form ^ "Form management" v7.43.1
+yup ^ "Schema validation" v1.0.2
+date-fns ^ "Date utility library" v2.29.3
+@sentry/react ^ "Error tracking" v7.38.0
+
 # Main entry point
 MainFile @ src/index.tsx:
   <- [App, StoreFile, RouterFile, ServicesFile, ApiClientFile, ComponentsFile, PagesFile, UILibFile, HooksFile, AssetsFile, StylesFile, AppFile]
@@ -21,11 +37,11 @@ StoreFile @ src/store/index.ts:
   -> [useAppDispatch, useAppSelector]
 
 AuthSliceFile @ src/store/authSlice.ts:
-  <- [authService]
+  <- [authService, DTOFile]
   -> [login, logout, refreshToken]
 
 CartSliceFile @ src/store/cartSlice.ts:
-  <- [cartService]
+  <- [cartService, DTOFile]
   -> [addToCart, removeFromCart, updateQuantity, clearCart]
 
 ProductSliceFile @ src/store/productSlice.ts:
@@ -33,11 +49,12 @@ ProductSliceFile @ src/store/productSlice.ts:
   -> [fetchProducts, fetchProductById, searchProducts]
 
 OrderSliceFile @ src/store/orderSlice.ts:
-  <- [orderService]
+  <- [orderService, DTOFile]
   -> [createOrder, fetchOrders, fetchOrderById]
 
 # Services layer
 ServicesFile @ src/services/index.ts:
+  <- [ApiClientFile, DTOFile]
   -> [authService, cartService, productService, orderService, paymentService, AuthProvider, CartProvider]
 
 ApiClientFile @ src/services/api-client.ts:
@@ -46,27 +63,38 @@ ApiClientFile @ src/services/api-client.ts:
 
 # Component library
 ComponentsFile @ src/components/index.ts:
+  <- [DTOFile]
   -> [Header, Footer, ProductCard, CartItem, SearchBar, LoadingSpinner, ErrorBoundary, Modal]
 
 # Pages
 PagesFile @ src/pages/index.ts:
+  <- []
   -> [HomePage, ProductListPage, ProductDetailPage, CartPage, CheckoutPage, ProfilePage, AdminDashboard]
 
 # UI Component library
 UILibFile @ src/components/ui/index.ts:
+  <- []
   -> [Button, Input, Select, Card, Grid, Container, Typography, Icon]
 
 # Hooks
 HooksFile @ src/hooks/index.ts:
+  <- [DTOFile]
   -> [useAuth, useCart, useProducts, useDebounce, useInfiniteScroll, useLocalStorage]
 
 # Assets
 AssetsFile @ src/assets/index.ts:
+  <- []
   -> [Logo, EmptyCartIcon, UserIcon, SearchIcon, CartIcon, productPlaceholder]
 
 # Styles
 StylesFile @ src/styles/index.ts:
+  <- []
   -> [ThemeProvider]
+
+# DTO Files
+DTOFile @ src/types/dto.ts:
+  <- []
+  -> [LoginDTO, AuthResponseDTO, UserDTO, ProductDTO, ProductQueryDTO, ProductListDTO, CreateOrderDTO, OrderItemDTO, OrderDTO, OrderListDTO, AddressDTO, AuthState, CartState, CartItemDTO, ProductsHookResult]
 
 # Environment configuration
 API_URL $env "Backend API endpoint" (required)
@@ -187,22 +215,28 @@ productPlaceholder ~ "Product placeholder image"
 
 # Service classes
 authService <:
+  <- [apiClient]
   => [login, logout, register, refreshToken, validateToken]
 
 cartService <:
+  <- [apiClient]
   => [getCart, addItem, removeItem, updateQuantity, clearCart]
 
 productService <:
+  <- [apiClient]
   => [getProducts, getProductById, searchProducts, getCategories]
 
 orderService <:
+  <- [apiClient]
   => [createOrder, getOrders, getOrderById, updateOrderStatus]
 
 paymentService <:
+  <- [apiClient]
   => [processPayment, validateCard, getPaymentMethods]
 
 # API client
 apiClient <:
+  <- []
   => [get, post, put, delete, setAuthToken]
 
 # State management functions
@@ -258,7 +292,7 @@ searchProducts :: (query: string) => Promise<ProductListDTO>
   $< [API_URL, REACT_VERSION, NODE_VERSION]
 
 createOrder :: (order: CreateOrderDTO) => Promise<OrderDTO>
-  <- CreateOrderDTO
+  <- CreateOrderDTO, AddressDTO
   -> OrderDTO
   ~> [orderService.createOrder, paymentService.processPayment]
   ~ [CheckoutPage]

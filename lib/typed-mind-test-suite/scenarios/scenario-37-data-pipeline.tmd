@@ -3,141 +3,119 @@ AnalyticsPipeline -> OrchestratorFile v3.0.0 # Distributed data processing pipel
 
 # Pipeline orchestration
 OrchestratorFile @ src/orchestrator/index.py:
-  <- [DAGBuilder, TaskScheduler, WorkflowEngine, DAGBuilderFile, TaskSchedulerFile, WorkflowEngineFile, IngestorsFile, TransformersFile, ProcessingFile, QualityFile, StorageFile, MonitoringFile, ConfigFile, UtilsFile]
-  -> [PipelineOrchestrator, runPipeline]
+  <- [UtilsFile]
+  -> [PipelineOrchestrator, runPipeline, createPipeline, startPipeline, stopPipeline, getPipelineStatus]
 
 DAGBuilderFile @ src/orchestrator/dag-builder.py:
-  <- [TaskRegistry, DependencyGraph]
-  -> [DAGBuilder, buildDAG, validateDAG]
+  -> [DAGBuilder, TaskRegistry, DependencyGraph, buildDAG, validateDAG]
 
 TaskSchedulerFile @ src/orchestrator/scheduler.py:
-  <- [CronScheduler, EventScheduler]
-  -> [TaskScheduler, scheduleTask, cancelSchedule]
+  -> [TaskScheduler, CronScheduler, EventScheduler, scheduleTask, cancelSchedule]
 
 WorkflowEngineFile @ src/orchestrator/workflow.py:
-  <- [StateManager, RetryPolicy]
-  -> [WorkflowEngine, executeWorkflow]
+  -> [WorkflowEngine, StateManager, RetryPolicy, executeWorkflow]
 
 # Data ingestion
 IngestorsFile @ src/ingestion/index.py:
-  <- [KafkaIngestorFile, S3IngestorFile, APIIngestorFile, DatabaseIngestorFile]
-  -> [KafkaIngestor, S3Ingestor, APIIngestor, DatabaseIngestor, FileIngestor]
+  <- [DAGBuilderFile, TaskSchedulerFile, WorkflowEngineFile]
+  -> [FileIngestor]
 
 KafkaIngestorFile @ src/ingestion/kafka.py:
-  <- [KafkaConsumer, SchemaRegistry]
-  -> [KafkaIngestor, consumeMessages]
+  -> [KafkaIngestor, KafkaConsumer, SchemaRegistry, consumeMessages]
 
 S3IngestorFile @ src/ingestion/s3.py:
-  <- [S3Client, FileParser]
-  -> [S3Ingestor, ingestBatch]
+  -> [S3Ingestor, S3Client, FileParser, ingestBatch]
 
 APIIngestorFile @ src/ingestion/api.py:
-  <- [HTTPClient, RateLimiter]
-  -> [APIIngestor, fetchData]
+  -> [APIIngestor, HTTPClient, RateLimiter, fetchData]
 
 DatabaseIngestorFile @ src/ingestion/database.py:
-  <- [DBConnector, QueryBuilder]
-  -> [DatabaseIngestor, extractData]
+  -> [DatabaseIngestor, DBConnector, QueryBuilder, extractData]
 
 # Data transformation
 TransformersFile @ src/transform/index.py:
-  <- [DataCleanerFile, SchemaValidatorFile, AggregatorFile, EnricherFile]
-  -> [DataCleaner, SchemaValidator, Aggregator, Enricher, Normalizer]
+  <- [IngestorsFile, KafkaIngestorFile, S3IngestorFile, APIIngestorFile, DatabaseIngestorFile]
+  -> [Normalizer]
 
 DataCleanerFile @ src/transform/cleaner.py:
-  <- [ValidationRules, CleansingStrategies]
-  -> [DataCleaner, cleanData]
+  -> [DataCleaner, ValidationRules, CleansingStrategies, cleanData]
 
 SchemaValidatorFile @ src/transform/validator.py:
-  <- [SchemaDefinitions, ValidationEngine]
-  -> [SchemaValidator, validateSchema]
+  -> [SchemaValidator, SchemaDefinitions, ValidationEngine, validateSchema]
 
 AggregatorFile @ src/transform/aggregator.py:
-  <- [AggregationFunctions, WindowFunctions]
-  -> [Aggregator, aggregate]
+  -> [Aggregator, AggregationFunctions, WindowFunctions, aggregate]
 
 EnricherFile @ src/transform/enricher.py:
-  <- [LookupTables, ExternalAPIs]
-  -> [Enricher, enrichData]
+  -> [Enricher, LookupTables, ExternalAPIs, enrichData]
 
 # Data processing engines
 ProcessingFile @ src/processing/index.py:
-  <- [SparkProcessorFile, FlinkProcessorFile, BeamProcessorFile]
-  -> [SparkProcessor, FlinkProcessor, BeamProcessor]
+  <- [TransformersFile, DataCleanerFile, SchemaValidatorFile, AggregatorFile, EnricherFile]
+  -> []
 
 SparkProcessorFile @ src/processing/spark.py:
-  <- [SparkSession, DataFrameOps]
-  -> [SparkProcessor, processBatch]
+  -> [SparkProcessor, SparkSession, DataFrameOps, processBatch]
 
 FlinkProcessorFile @ src/processing/flink.py:
-  <- [FlinkEnvironment, StreamOperators]
-  -> [FlinkProcessor, processStream]
+  -> [FlinkProcessor, FlinkEnvironment, StreamOperators, processStream]
 
 BeamProcessorFile @ src/processing/beam.py:
-  <- [BeamPipeline, Transforms]
-  -> [BeamProcessor, runPipeline]
+  -> [BeamProcessor, BeamPipeline, Transforms]
 
 # Data quality
 QualityFile @ src/quality/index.py:
-  <- [DataProfilerFile, AnomalyDetectorFile, QualityMonitorFile]
-  -> [DataProfiler, AnomalyDetector, QualityMonitor]
+  <- [ProcessingFile, SparkProcessorFile, FlinkProcessorFile, BeamProcessorFile]
+  -> []
 
 DataProfilerFile @ src/quality/profiler.py:
-  <- [StatisticalAnalyzer, PatternDetector]
-  -> [DataProfiler, profileData]
+  -> [DataProfiler, StatisticalAnalyzer, PatternDetector, profileData]
 
 AnomalyDetectorFile @ src/quality/anomaly.py:
-  <- [MLModels, ThresholdRules]
-  -> [AnomalyDetector, detectAnomalies]
+  -> [AnomalyDetector, MLModels, ThresholdRules, detectAnomalies]
 
 QualityMonitorFile @ src/quality/monitor.py:
-  <- [MetricsCollector, AlertManager]
-  -> [QualityMonitor, monitorQuality]
+  -> [QualityMonitor, MetricsCollector, AlertManager, monitorQuality]
 
 # Data storage
 StorageFile @ src/storage/index.py:
-  <- [DataLakeWriterFile, WarehouseWriterFile, CacheWriterFile, StreamWriterFile]
-  -> [DataLakeWriter, WarehouseWriter, CacheWriter, StreamWriter]
+  <- [QualityFile, DataProfilerFile, AnomalyDetectorFile, QualityMonitorFile]
+  -> []
 
 DataLakeWriterFile @ src/storage/datalake.py:
-  <- [ParquetWriter, DeltaWriter]
-  -> [DataLakeWriter, writeToLake]
+  -> [DataLakeWriter, ParquetWriter, DeltaWriter, writeToLake]
 
 WarehouseWriterFile @ src/storage/warehouse.py:
-  <- [RedshiftClient, BigQueryClient, SnowflakeClient]
-  -> [WarehouseWriter, loadToWarehouse]
+  -> [WarehouseWriter, RedshiftClient, BigQueryClient, SnowflakeClient, loadToWarehouse]
 
 CacheWriterFile @ src/storage/cache.py:
-  <- [RedisClient, MemcachedClient]
-  -> [CacheWriter, writeToCache]
+  -> [CacheWriter, RedisClient, MemcachedClient, writeToCache]
 
 StreamWriterFile @ src/storage/stream.py:
-  <- [KafkaProducer, KinesisClient]
-  -> [StreamWriter, publishToStream]
+  -> [StreamWriter, KafkaProducer, KinesisClient, publishToStream]
 
 # Monitoring and observability
 MonitoringFile @ src/monitoring/index.py:
-  <- [MetricsExporterFile, LogAggregatorFile, TraceCollectorFile]
-  -> [MetricsExporter, LogAggregator, TraceCollector, Dashboard]
+  <- [StorageFile, DataLakeWriterFile, WarehouseWriterFile, CacheWriterFile, StreamWriterFile]
+  -> [Dashboard]
 
 MetricsExporterFile @ src/monitoring/metrics.py:
-  <- [PrometheusClient, DatadogClient]
-  -> [MetricsExporter, exportMetrics]
+  -> [MetricsExporter, PrometheusClient, DatadogClient, exportMetrics]
 
 LogAggregatorFile @ src/monitoring/logging.py:
-  <- [FluentdClient, LogstashClient]
-  -> [LogAggregator, aggregateLogs]
+  -> [LogAggregator, FluentdClient, LogstashClient, aggregateLogs]
 
 TraceCollectorFile @ src/monitoring/tracing.py:
-  <- [JaegerClient, ZipkinClient]
-  -> [TraceCollector, collectTraces]
+  -> [TraceCollector, JaegerClient, ZipkinClient, collectTraces]
 
 # Configuration management
 ConfigFile @ src/config/index.py:
+  <- [MonitoringFile, MetricsExporterFile, LogAggregatorFile, TraceCollectorFile]
   -> [PipelineConfig, ConnectionConfig, SecurityConfig]
 
 # Utilities
 UtilsFile @ src/utils/index.py:
+  <- [ConfigFile]
   -> [Serializer, Compressor, Encryptor, RetryHandler]
 
 # Environment variables
@@ -175,13 +153,155 @@ ERROR_TOLERANCE $config "Error tolerance percentage"
 RETENTION_DAYS $config "Data retention in days"
   = "90"
 
+# Main pipeline functions
+runPipeline :: (pipelineId: string) => Promise<PipelineResult>
+  -> PipelineResult
+  ~> [DAGBuilder.addNode, DAGBuilder.addEdge, WorkflowEngine.execute]
+  $< [PARALLELISM, BATCH_SIZE]
+
+createPipeline :: (config: PipelineConfig) => Pipeline
+  <- PipelineConfig
+  -> Pipeline
+  ~> [DAGBuilder.addTask, TaskScheduler.schedule]
+  $< [ERROR_TOLERANCE]
+
+startPipeline :: (pipelineId: string) => void
+  ~> [WorkflowEngine.execute, MetricsExporter.recordMetric]
+  $< [CHECKPOINT_INTERVAL]
+
+stopPipeline :: (pipelineId: string) => void
+  ~> [WorkflowEngine.pause, LogAggregator.collectLogs]
+
+getPipelineStatus :: (pipelineId: string) => PipelineStatus
+  -> PipelineStatus
+  ~> [StateManager.getState]
+
+# Task management functions
+buildDAG :: (tasks: object[]) => DAG
+  -> DAG
+  ~> [TaskRegistry.register, DependencyGraph.addNode, DependencyGraph.addEdge]
+  $< [PYTHON_VERSION]
+
+validateDAG :: (dag: DAG) => ValidationResult
+  <- DAG
+  -> ValidationResult
+  ~> [DependencyGraph.validate]
+
+scheduleTask :: (taskId: string, schedule: string) => void
+  ~> [CronScheduler.schedule, EventScheduler.register]
+
+cancelSchedule :: (taskId: string) => void
+  ~> [CronScheduler.cancel, EventScheduler.unregister]
+
+executeWorkflow :: (workflowId: string) => Promise<WorkflowResult>
+  -> WorkflowResult
+  ~> [StateManager.setState, RetryPolicy.apply]
+  $< [RETENTION_DAYS]
+
+# Ingestion functions
+consumeMessages :: (topic: string) => AsyncGenerator<Message>
+  -> Message
+  ~> [KafkaConsumer.poll, SchemaRegistry.decode]
+  $< [KAFKA_BROKERS, SCHEMA_REGISTRY_URL]
+
+ingestBatch :: (prefix: string) => Promise<Dataset>
+  -> Dataset
+  ~> [S3Client.listObjects, FileParser.parse]
+  $< [S3_BUCKET, BATCH_SIZE, DATA_LAKE_ROLE]
+
+fetchData :: (endpoint: string, params: APIParams) => Promise<APIResponse>
+  <- APIParams
+  -> APIResponse
+  ~> [HTTPClient.get, RateLimiter.checkLimit]
+
+extractData :: (query: string) => Promise<Dataset>
+  -> Dataset
+  ~> [DBConnector.connect, QueryBuilder.build]
+
+# Transformation functions
+cleanData :: (data: Dataset, rules: object) => Dataset
+  <- Dataset
+  -> Dataset
+  ~> [ValidationRules.apply, CleansingStrategies.execute]
+
+validateSchema :: (data: Dataset, schema: object) => ValidationResult
+  <- Dataset
+  -> ValidationResult
+  ~> [SchemaDefinitions.load, ValidationEngine.validate]
+
+aggregate :: (data: Dataset, groupBy: string[], metrics: object[]) => Dataset
+  <- Dataset
+  -> Dataset
+  ~> [AggregationFunctions.apply, WindowFunctions.compute]
+
+enrichData :: (data: Dataset, enrichmentConfig: object) => Dataset
+  <- Dataset
+  -> Dataset
+  ~> [LookupTables.join, ExternalAPIs.fetch]
+
+# Processing functions
+processBatch :: (data: Dataset) => Promise<ProcessedData>
+  <- Dataset
+  -> ProcessedData
+  ~> [SparkSession.createDataFrame, DataFrameOps.transform]
+  $< [SPARK_VERSION, PARALLELISM, JAVA_VERSION]
+
+processStream :: (stream: DataStream) => void
+  <- DataStream
+  ~> [FlinkEnvironment.addSource, StreamOperators.apply]
+  $< [FLINK_VERSION, CHECKPOINT_INTERVAL, JAVA_VERSION]
+
+# Quality functions
+profileData :: (data: Dataset) => DataProfile
+  <- Dataset
+  -> DataProfile
+  ~> [StatisticalAnalyzer.analyze, PatternDetector.detect]
+
+detectAnomalies :: (data: Dataset, model: object) => AnomalyReport
+  <- Dataset
+  -> AnomalyReport
+  ~> [MLModels.predict, ThresholdRules.check]
+
+monitorQuality :: (metrics: QualityMetrics) => void
+  <- QualityMetrics
+  ~> [MetricsCollector.collect, AlertManager.checkThresholds]
+
+# Storage functions
+writeToLake :: (data: Dataset, path: string) => Promise<void>
+  <- Dataset
+  ~> [ParquetWriter.write, DeltaWriter.merge]
+  $< [S3_BUCKET, DATA_LAKE_ROLE]
+
+loadToWarehouse :: (data: Dataset, table: string) => Promise<void>
+  <- Dataset
+  ~> [RedshiftClient.copy, BigQueryClient.load, SnowflakeClient.insert]
+  $< [REDSHIFT_CLUSTER, WAREHOUSE_ROLE]
+
+writeToCache :: (key: string, value: any, ttl: number) => Promise<void>
+  ~> [RedisClient.set, MemcachedClient.set]
+
+publishToStream :: (topic: string, messages: Message[]) => Promise<void>
+  <- Message[]
+  ~> [KafkaProducer.send, KinesisClient.putRecords]
+  $< [KAFKA_BROKERS, STREAMING_ROLE]
+
+# Monitoring functions
+exportMetrics :: (metrics: object[]) => Promise<void>
+  ~> [PrometheusClient.push, DatadogClient.send]
+  $< [MONITORING_ENDPOINT]
+
+aggregateLogs :: (logs: object[]) => Promise<void>
+  ~> [FluentdClient.forward, LogstashClient.send]
+
+collectTraces :: (spans: object[]) => Promise<void>
+  ~> [JaegerClient.report, ZipkinClient.send]
+
 # Pipeline orchestrator
 PipelineOrchestrator <:
   => [createPipeline, startPipeline, stopPipeline, getPipelineStatus]
-  $< [KAFKA_BROKERS, S3_BUCKET]
 
 DAGBuilder <:
-  => [addTask, addDependency, build, validate]
+  => [addTask, addDependency, build, validate, addNode, addEdge]
 
 TaskScheduler <:
   => [schedule, unschedule, getSchedule, triggerNow]
@@ -192,11 +312,9 @@ WorkflowEngine <:
 # Ingestion classes
 KafkaIngestor <:
   => [connect, consume, commit, close]
-  $< [KAFKA_BROKERS, SCHEMA_REGISTRY_URL]
 
 S3Ingestor <:
   => [listFiles, downloadFile, parseFile, markProcessed]
-  $< [S3_BUCKET, DATA_LAKE_ROLE]
 
 APIIngestor <:
   => [authenticate, fetch, paginate, handleRateLimit]
@@ -206,6 +324,49 @@ DatabaseIngestor <:
 
 FileIngestor <:
   => [watchDirectory, readFile, parseFormat]
+
+# Helper classes
+TaskRegistry <:
+  => [register, unregister, get, list]
+
+DependencyGraph <:
+  => [addNode, addEdge, validate, topologicalSort]
+
+CronScheduler <:
+  => [schedule, cancel, list, getNextRun]
+
+EventScheduler <:
+  => [register, unregister, trigger, list]
+
+StateManager <:
+  => [setState, getState, clearState, getAllStates]
+
+RetryPolicy <:
+  => [apply, shouldRetry, getDelay, reset]
+
+KafkaConsumer <:
+  => [connect, poll, commit, close]
+
+SchemaRegistry <:
+  => [register, get, decode, validate]
+
+S3Client <:
+  => [listObjects, getObject, putObject, deleteObject]
+
+FileParser <:
+  => [parse, detectFormat, validate]
+
+HTTPClient <:
+  => [get, post, put, delete]
+
+RateLimiter <:
+  => [checkLimit, wait, reset]
+
+DBConnector <:
+  => [connect, execute, close]
+
+QueryBuilder <:
+  => [select, where, join, build]
 
 # Transformation classes
 DataCleaner <:
@@ -223,17 +384,57 @@ Enricher <:
 Normalizer <:
   => [normalize, denormalize, flatten, unflatten]
 
+ValidationRules <:
+  => [apply, validate, getErrors]
+
+CleansingStrategies <:
+  => [execute, selectStrategy, apply]
+
+SchemaDefinitions <:
+  => [load, save, validate, merge]
+
+ValidationEngine <:
+  => [validate, getErrors, getWarnings]
+
+AggregationFunctions <:
+  => [sum, avg, min, max, count, apply]
+
+WindowFunctions <:
+  => [tumbling, sliding, session, compute]
+
+LookupTables <:
+  => [load, join, refresh, cache]
+
+ExternalAPIs <:
+  => [fetch, cache, retry, validate]
+
 # Processing classes
 SparkProcessor <:
   => [createSession, loadData, transform, saveResult]
-  $< [SPARK_VERSION, PARALLELISM]
 
 FlinkProcessor <:
   => [createEnvironment, addSource, addOperator, addSink]
-  $< [FLINK_VERSION, CHECKPOINT_INTERVAL]
 
 BeamProcessor <:
   => [createPipeline, applyTransform, run]
+
+SparkSession <:
+  => [createDataFrame, sql, read, write]
+
+DataFrameOps <:
+  => [select, filter, join, aggregate, transform]
+
+FlinkEnvironment <:
+  => [addSource, addSink, setParallelism, enableCheckpointing]
+
+StreamOperators <:
+  => [map, filter, keyBy, window, apply]
+
+BeamPipeline <:
+  => [apply, run, wait, getState]
+
+Transforms <:
+  => [map, filter, groupByKey, combine]
 
 # Quality classes
 DataProfiler <:
@@ -245,26 +446,67 @@ AnomalyDetector <:
 QualityMonitor <:
   => [checkCompleteness, checkAccuracy, checkTimeliness, reportMetrics]
 
+StatisticalAnalyzer <:
+  => [analyze, computeStats, detectOutliers]
+
+PatternDetector <:
+  => [detect, extractPatterns, validate]
+
+MLModels <:
+  => [train, predict, evaluate, update]
+
+ThresholdRules <:
+  => [check, update, alert, getViolations]
+
+MetricsCollector <:
+  => [collect, aggregate, store, query]
+
+AlertManager <:
+  => [checkThresholds, sendAlert, acknowledge, escalate]
+
 # Storage classes
 DataLakeWriter <:
   => [createPartition, writeParquet, writeDelta, updateMetadata]
-  $< [S3_BUCKET, DATA_LAKE_ROLE]
 
 WarehouseWriter <:
   => [createTable, insertBatch, upsert, vacuum]
-  $< [REDSHIFT_CLUSTER, WAREHOUSE_ROLE]
 
 CacheWriter <:
   => [set, setWithTTL, invalidate, flush]
 
 StreamWriter <:
   => [produce, flush, close]
-  $< [STREAMING_ROLE]
+
+ParquetWriter <:
+  => [write, compress, encrypt, validate]
+
+DeltaWriter <:
+  => [write, merge, compact, vacuum]
+
+RedshiftClient <:
+  => [connect, copy, unload, vacuum]
+
+BigQueryClient <:
+  => [load, query, export, getSchema]
+
+SnowflakeClient <:
+  => [connect, insert, merge, unload]
+
+RedisClient <:
+  => [connect, get, set, expire, delete]
+
+MemcachedClient <:
+  => [connect, get, set, delete, flush]
+
+KafkaProducer <:
+  => [connect, send, flush, close]
+
+KinesisClient <:
+  => [putRecord, putRecords, describeStream, listShards]
 
 # Monitoring classes
 MetricsExporter <:
   => [recordMetric, recordHistogram, recordGauge, export]
-  $< [MONITORING_ENDPOINT]
 
 LogAggregator <:
   => [collectLogs, parseLog, enrichLog, forward]
@@ -275,128 +517,42 @@ TraceCollector <:
 Dashboard <:
   => [updateChart, createAlert, generateReport]
 
-# Main pipeline functions
-runPipeline :: (pipelineId: string) => Promise<PipelineResult>
-  -> PipelineResult
-  ~> [DAGBuilder.build, WorkflowEngine.execute]
-  $< [PARALLELISM]
+PrometheusClient <:
+  => [register, push, query]
 
-createPipeline :: (config: PipelineConfig) => Pipeline
-  <- PipelineConfig
-  -> Pipeline
-  ~> [DAGBuilder.addTask, TaskScheduler.schedule]
+DatadogClient <:
+  => [send, query, createAlert]
 
-startPipeline :: (pipelineId: string) => void
-  ~> [WorkflowEngine.execute, MetricsExporter.recordMetric]
+FluentdClient <:
+  => [connect, forward, flush]
 
-stopPipeline :: (pipelineId: string) => void
-  ~> [WorkflowEngine.pause, LogAggregator.collectLogs]
+LogstashClient <:
+  => [connect, send, close]
 
-# Ingestion functions
-consumeMessages :: (topic: string) => AsyncGenerator<Message>
-  -> Message
-  ~> [KafkaConsumer.poll, SchemaRegistry.decode]
-  $< [KAFKA_BROKERS]
+JaegerClient <:
+  => [startSpan, finishSpan, report]
 
-ingestBatch :: (prefix: string) => Promise<Dataset>
-  -> Dataset
-  ~> [S3Client.listObjects, FileParser.parse]
-  $< [S3_BUCKET, BATCH_SIZE]
+ZipkinClient <:
+  => [record, send, flush]
 
-fetchData :: (endpoint: string, params: APIParams) => Promise<APIResponse>
-  <- APIParams
-  -> APIResponse
-  ~> [HTTPClient.get, RateLimiter.checkLimit]
+# Utility classes
+Serializer <:
+  => [serialize, deserialize, compress, decompress]
 
-extractData :: (query: string) => Promise<Dataset>
-  -> Dataset
-  ~> [DBConnector.connect, QueryBuilder.build]
+Compressor <:
+  => [compress, decompress, getCompressionRatio]
 
-# Transformation functions
-cleanData :: (data: Dataset, rules: CleaningRules) => Dataset
-  <- Dataset, CleaningRules
-  -> Dataset
-  ~> [ValidationRules.apply, CleansingStrategies.execute]
+Encryptor <:
+  => [encrypt, decrypt, generateKey, rotateKeys]
 
-validateSchema :: (data: Dataset, schema: Schema) => ValidationResult
-  <- Dataset, Schema
-  -> ValidationResult
-  ~> [SchemaDefinitions.load, ValidationEngine.validate]
-
-aggregate :: (data: Dataset, groupBy: string[], metrics: AggregateMetric[]) => Dataset
-  <- Dataset, AggregateMetric[]
-  -> Dataset
-  ~> [AggregationFunctions.apply, WindowFunctions.compute]
-
-enrichData :: (data: Dataset, enrichmentConfig: EnrichmentConfig) => Dataset
-  <- Dataset, EnrichmentConfig
-  -> Dataset
-  ~> [LookupTables.join, ExternalAPIs.fetch]
-
-# Processing functions
-processBatch :: (data: Dataset) => Promise<ProcessedData>
-  <- Dataset
-  -> ProcessedData
-  ~> [SparkSession.createDataFrame, DataFrameOps.transform]
-  $< [SPARK_VERSION, PARALLELISM]
-
-processStream :: (stream: DataStream) => void
-  <- DataStream
-  ~> [FlinkEnvironment.addSource, StreamOperators.apply]
-  $< [FLINK_VERSION, CHECKPOINT_INTERVAL]
-
-# Quality functions
-profileData :: (data: Dataset) => DataProfile
-  <- Dataset
-  -> DataProfile
-  ~> [StatisticalAnalyzer.analyze, PatternDetector.detect]
-
-detectAnomalies :: (data: Dataset, model: AnomalyModel) => AnomalyReport
-  <- Dataset, AnomalyModel
-  -> AnomalyReport
-  ~> [MLModels.predict, ThresholdRules.check]
-
-monitorQuality :: (metrics: QualityMetrics) => void
-  <- QualityMetrics
-  ~> [MetricsCollector.collect, AlertManager.checkThresholds]
-
-# Storage functions
-writeToLake :: (data: Dataset, path: string) => Promise<void>
-  <- Dataset
-  ~> [ParquetWriter.write, DeltaWriter.merge]
-  $< [S3_BUCKET, DATA_LAKE_ROLE]
-
-loadToWarehouse :: (data: Dataset, table: string) => Promise<void>
-  <- Dataset
-  ~> [RedshiftClient.copy, BigQueryClient.load]
-  $< [REDSHIFT_CLUSTER, WAREHOUSE_ROLE]
-
-writeToCache :: (key: string, value: any, ttl: number) => Promise<void>
-  ~> [RedisClient.set, MemcachedClient.set]
-
-publishToStream :: (topic: string, messages: Message[]) => Promise<void>
-  <- Message[]
-  ~> [KafkaProducer.send, KinesisClient.putRecords]
-  $< [KAFKA_BROKERS, STREAMING_ROLE]
+RetryHandler <:
+  => [retry, backoff, reset, getAttempts]
 
 # Data Transfer Objects
 PipelineConfig % "Pipeline configuration"
   - name: string "Pipeline name"
   - description: string "Pipeline description"
   - schedule: string "Cron schedule"
-  - tasks: TaskConfig[] "Task configurations"
-  - dependencies: Dependency[] "Task dependencies"
-
-TaskConfig % "Task configuration"
-  - id: string "Task ID"
-  - type: string "Task type"
-  - config: object "Task-specific config"
-  - retries: number "Retry count"
-  - timeout: number "Timeout seconds"
-
-Dependency % "Task dependency"
-  - upstream: string "Upstream task ID"
-  - downstream: string "Downstream task ID"
 
 Pipeline % "Pipeline instance"
   - id: string "Pipeline ID"
@@ -410,13 +566,20 @@ PipelineResult % "Pipeline execution result"
   - status: string "Execution status"
   - startTime: Date "Start time"
   - endTime: Date "End time" (optional)
-  - metrics: ExecutionMetrics "Execution metrics"
 
-ExecutionMetrics % "Pipeline execution metrics"
-  - recordsProcessed: number "Records processed"
-  - recordsFailed: number "Records failed"
-  - duration: number "Duration in seconds"
-  - throughput: number "Records per second"
+PipelineStatus % "Pipeline status information"
+  - pipelineId: string "Pipeline ID"
+  - status: string "Current status"
+  - lastRun: Date "Last run time" (optional)
+  - nextRun: Date "Next scheduled run" (optional)
+
+DAG % "Directed Acyclic Graph"
+  - tasks: object[] "Task nodes"
+  - edges: object[] "Dependencies"
+
+WorkflowResult % "Workflow execution result"
+  - workflowId: string "Workflow ID"
+  - status: string "Execution status"
 
 Message % "Stream message"
   - key: string "Message key"
@@ -425,26 +588,9 @@ Message % "Stream message"
   - headers: object "Message headers"
 
 Dataset % "Data collection"
-  - schema: Schema "Data schema"
   - records: object[] "Data records"
-  - metadata: DatasetMetadata "Dataset metadata"
-
-DatasetMetadata % "Dataset metadata"
   - source: string "Data source"
   - timestamp: Date "Creation time"
-  - recordCount: number "Number of records"
-  - sizeBytes: number "Size in bytes"
-
-Schema % "Data schema"
-  - fields: Field[] "Schema fields"
-  - primaryKey: string[] "Primary key fields"
-  - partitionKey: string[] "Partition fields" (optional)
-
-Field % "Schema field"
-  - name: string "Field name"
-  - type: string "Field type"
-  - nullable: boolean "Is nullable"
-  - metadata: object "Field metadata" (optional)
 
 APIParams % "API request parameters"
   - endpoint: string "API endpoint"
@@ -458,101 +604,26 @@ APIResponse % "API response"
   - data: object "Response data"
   - headers: object "Response headers"
 
-CleaningRules % "Data cleaning rules"
-  - nullHandling: string "Null handling strategy"
-  - deduplication: string "Deduplication key"
-  - outlierMethod: string "Outlier detection method"
-
 ValidationResult % "Schema validation result"
   - valid: boolean "Is valid"
-  - errors: ValidationError[] "Validation errors"
-  - warnings: ValidationWarning[] "Validation warnings"
-
-ValidationError % "Validation error"
-  - field: string "Field name"
-  - error: string "Error message"
-  - record: number "Record number"
-
-ValidationWarning % "Validation warning"
-  - field: string "Field name"
-  - warning: string "Warning message"
-
-AggregateMetric % "Aggregation metric"
-  - name: string "Metric name"
-  - function: string "Aggregate function"
-  - field: string "Field to aggregate"
-
-EnrichmentConfig % "Data enrichment config"
-  - lookups: LookupConfig[] "Lookup configurations"
-  - apis: APIEnrichment[] "API enrichments"
-
-LookupConfig % "Lookup configuration"
-  - table: string "Lookup table"
-  - key: string "Join key"
-  - fields: string[] "Fields to add"
-
-APIEnrichment % "API enrichment"
-  - endpoint: string "API endpoint"
-  - inputField: string "Input field"
-  - outputFields: string[] "Output fields"
+  - errors: object[] "Validation errors"
+  - warnings: object[] "Validation warnings"
 
 ProcessedData % "Processed dataset"
   - data: Dataset "Processed data"
-  - statistics: ProcessingStats "Processing statistics"
-
-ProcessingStats % "Processing statistics"
-  - inputRecords: number "Input record count"
-  - outputRecords: number "Output record count"
-  - errors: number "Error count"
-  - duration: number "Processing duration"
 
 DataStream % "Streaming data"
   - source: string "Stream source"
   - format: string "Data format"
-  - schema: Schema "Stream schema"
 
 DataProfile % "Data profiling result"
-  - statistics: FieldStatistics[] "Field statistics"
-  - patterns: DataPattern[] "Data patterns"
-  - quality: QualityScore "Quality score"
-
-FieldStatistics % "Field statistics"
-  - field: string "Field name"
-  - count: number "Non-null count"
-  - unique: number "Unique values"
-  - min: any "Minimum value" (optional)
-  - max: any "Maximum value" (optional)
-  - mean: number "Mean value" (optional)
-
-DataPattern % "Detected pattern"
-  - field: string "Field name"
-  - pattern: string "Pattern regex"
-  - coverage: number "Pattern coverage"
-
-QualityScore % "Data quality score"
-  - completeness: number "Completeness score"
-  - accuracy: number "Accuracy score"
-  - consistency: number "Consistency score"
-  - overall: number "Overall score"
-
-AnomalyModel % "Anomaly detection model"
-  - modelType: string "Model type"
-  - parameters: object "Model parameters"
-  - threshold: number "Anomaly threshold"
+  - statistics: object[] "Field statistics"
+  - patterns: object[] "Data patterns"
+  - quality: object "Quality score"
 
 AnomalyReport % "Anomaly detection report"
-  - anomalies: Anomaly[] "Detected anomalies"
-  - summary: AnomalySummary "Summary statistics"
-
-Anomaly % "Detected anomaly"
-  - record: object "Anomalous record"
-  - score: number "Anomaly score"
-  - reason: string "Anomaly reason"
-
-AnomalySummary % "Anomaly summary"
-  - totalAnomalies: number "Total anomalies"
-  - anomalyRate: number "Anomaly rate"
-  - topReasons: object "Top anomaly reasons"
+  - anomalies: object[] "Detected anomalies"
+  - summary: object "Summary statistics"
 
 QualityMetrics % "Data quality metrics"
   - completeness: number "Data completeness"
@@ -560,24 +631,13 @@ QualityMetrics % "Data quality metrics"
   - nulls: number "Null count"
   - schemaViolations: number "Schema violations"
 
-# Constants
-StateManager {
-  PIPELINE_STATES: ["CREATED", "RUNNING", "PAUSED", "COMPLETED", "FAILED"]
-  TASK_STATES: ["PENDING", "RUNNING", "SUCCESS", "FAILED", "SKIPPED"]
-}
+ConnectionConfig % "Connection configuration"
+  - type: string "Connection type"
+  - host: string "Host address"
+  - port: number "Port number"
+  - credentials: object "Connection credentials"
 
-RetryPolicy {
-  MAX_RETRIES: "3"
-  BACKOFF_MULTIPLIER: "2"
-  INITIAL_DELAY: "1000"
-}
-
-SchemaRegistry {
-  COMPATIBILITY_MODE: "BACKWARD"
-  CACHE_SIZE: "1000"
-}
-
-MetricsCollector {
-  COLLECTION_INTERVAL: "60"
-  RETENTION_PERIOD: "7d"
-}
+SecurityConfig % "Security configuration"
+  - encryption: boolean "Enable encryption"
+  - authentication: string "Authentication method"
+  - authorization: object "Authorization rules"

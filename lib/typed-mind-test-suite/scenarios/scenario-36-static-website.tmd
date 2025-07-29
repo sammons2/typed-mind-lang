@@ -1,433 +1,565 @@
-# Static Website with Build Pipeline - Documentation Site
-TechDocsHub -> BuildFile v2.0.0 # Technical documentation static site generator
+# Modern Static Website - Portfolio & Blog
+PortfolioSite -> BuildFile v1.0.0 # Modern portfolio and blog with edge deployment
 
-# Build system entry point
-BuildFile @ build/index.js:
-  <- [gulp, webpack, sass, postcss]
-  -> [build, watch, serve]
+# External Dependencies
+next ^ "React framework for static generation" v14.0.0
+react ^ "UI library" v18.2.0
+react-dom ^ "React DOM renderer" v18.2.0
+tailwindcss ^ "Utility-first CSS framework" v3.4.0
+@mdx-js/loader ^ "MDX loader for webpack" v3.0.0
+@mdx-js/react ^ "React components for MDX" v3.0.0
+gray-matter ^ "Front matter parser" v4.0.3
+reading-time ^ "Calculate reading time" v1.5.0
+sharp ^ "Image optimization" v0.33.0
+@vercel/analytics ^ "Vercel analytics" v1.1.0
+@vercel/og ^ "Open Graph image generation" v0.5.0
+feed ^ "RSS feed generator" v4.2.2
+sitemap ^ "Sitemap generator" v7.1.1
+rehype-highlight ^ "Syntax highlighting" v7.0.0
+rehype-slug ^ "Add IDs to headings" v6.0.0
+remark-gfm ^ "GitHub Flavored Markdown" v4.0.0
+clsx ^ "Conditional classNames" v2.1.0
+framer-motion ^ "Animation library" v10.16.0
+zod ^ "Schema validation" v3.22.0
+resend ^ "Email API for contact forms" v2.0.0
+@plaiceholder/next ^ "Image placeholders" v3.0.0
 
-# Build tasks
-GulpTasksFile @ build/tasks/gulp-tasks.js:
-  <- [htmlTask, cssTask, jsTask, imageTask, copyTask]
-  -> [registerTasks]
+# Build system files
+BuildFile @ next.config.mjs:
+  <- [nextConfig, MDXProcessorFile, ImageOptimizerFile, RSSGeneratorFile, SitemapGeneratorFile, ContentLoaderFile, SchemaFile, SEOFile, SiteConfigFile, HomePageFile, BlogPageFile, BlogPostFile, ProjectsPageFile, AboutPageFile, ContactPageFile, ContactAPIFile, OGImageAPIFile, RootLayoutFile, HeaderFile, FooterFile, NavigationFile, ThemeToggleFile, BlogCardFile, AuthorBioFile, TableOfContentsFile, ProjectCardFile, TechStackFile, ContactFormFile, NewsletterFile, ButtonFile, CardFile, MDXComponentsFile, UtilsFile, HooksFile, AssetImportsFile, PostCSSConfigFile, TailwindConfigFile]
+  -> [build]
 
-WebpackConfigFile @ build/webpack.config.js:
-  <- [babelLoader, tsLoader, cssLoader]
-  -> [webpackConfig]
+PostCSSConfigFile @ postcss.config.js:
+  -> [postcssConfig]
 
-# Content processing
-MarkdownProcessorFile @ build/processors/markdown.js:
-  <- [markdownIt, frontMatter, highlightJs]
-  -> [processMarkdown, extractMetadata]
+TailwindConfigFile @ tailwind.config.ts:
+  -> [tailwindConfig]
 
-TemplateEngineFile @ build/processors/templates.js:
-  <- [nunjucks, handlebars]
-  -> [renderTemplate, registerHelpers]
-
-# Asset pipeline
-AssetPipelineFile @ build/pipeline/assets.js:
-  <- [imageOptimizer, svgOptimizer, fontProcessor]
-  -> [processAssets, optimizeImages]
-
-StyleProcessorFile @ build/pipeline/styles.js:
-  <- [sass, postcss, autoprefixer, cssnano]
-  -> [compileStyles, processPostCSS]
-
-ScriptBundlerFile @ build/pipeline/scripts.js:
-  <- [webpack, babel, terser]
-  -> [bundleScripts, transpileJS]
-
-# Static site generator
-GeneratorFile @ build/generator/index.js:
-  <- [siteConfig, contentLoader, pageBuilder]
-  -> [generateSite, generatePage]
-
-ContentLoaderFile @ build/generator/content-loader.js:
-  <- [glob, grayMatter]
-  -> [loadContent, loadData, loadPartials]
-
-PageBuilderFile @ build/generator/page-builder.js:
-  <- [templateEngine, markdownProcessor]
-  -> [buildPage, buildIndex, buildSitemap]
-
-NavigationBuilderFile @ build/generator/navigation.js:
-  <- [contentTree]
-  -> [buildNavigation, buildBreadcrumbs]
-
-SearchIndexFile @ build/generator/search-index.js:
-  <- [lunr, elasticlunr]
-  -> [buildSearchIndex, indexContent]
-
-# Development server
-DevServerFile @ build/server/dev-server.js:
-  <- [browserSync, chokidar]
-  -> [startServer, reloadBrowser]
-
-# Deployment
-DeploymentFile @ build/deploy/index.js:
-  <- [s3Deploy, netlifyDeploy, ghPagesPublish]
-  -> [deploy, validateBuild]
-
-# Source content files
-ContentFile @ src/content/index.md:
+# Page files
+HomePageFile @ app/page.tsx:
+  <- [HomePage, getAllPosts, getProjects, ContentLoaderFile]
   -> []
 
-DocsFile @ src/content/docs/getting-started.md:
+BlogPageFile @ app/blog/page.tsx:
+  <- [BlogListPage, getAllPosts, ContentLoaderFile, UtilsFile]
   -> []
 
-BlogFile @ src/content/blog/2024-01-15-launch.md:
+BlogPostFile @ app/blog/[slug]/page.tsx:
+  <- [BlogPostPage, getPostBySlug, getAllPosts, ContentLoaderFile, MDXComponentsFile]
+  -> [generateStaticParams]
+
+ProjectsPageFile @ app/projects/page.tsx:
+  <- [ProjectsPage, getProjects, ContentLoaderFile]
   -> []
 
-# Templates
-LayoutsFile @ src/templates/layouts/default.njk:
+AboutPageFile @ app/about/page.tsx:
+  <- [AboutPage]
   -> []
 
-PartialsFile @ src/templates/partials/header.njk:
+ContactPageFile @ app/contact/page.tsx:
+  <- [ContactPage, ContactForm]
   -> []
 
-# Styles
-MainStyleFile @ src/styles/main.scss:
-  <- [variables, mixins, base, components]
+# API Routes
+ContactAPIFile @ app/api/contact/route.ts:
+  <- [validateContact, SchemaFile, EmailClient]
+  -> [POST, EmailClient]
+
+OGImageAPIFile @ app/api/og/route.tsx:
+  <- [AssetImportsFile, defaultOG, OGImageGenerator]
+  -> [GET, OGImageGenerator]
+
+# Layout files
+RootLayoutFile @ app/layout.tsx:
+  <- [Header, Footer, logoSvg, interFont, monoFont, AssetImportsFile, Analytics]
   -> []
 
-# Scripts
-MainScriptFile @ src/scripts/main.js:
-  <- [search, navigation, codeHighlight]
-  -> []
+# Component files
+HeaderFile @ components/header.tsx:
+  <- [Navigation, ThemeToggle, Logo, logoSvg, AssetImportsFile]
+  -> [Header]
 
-# Configuration
-ConfigFile @ config/site.config.js:
-  -> [siteConfig]
+FooterFile @ components/footer.tsx:
+  <- [SocialLinks, Newsletter]
+  -> [Footer]
 
-# Assets management
-AssetsFile @ src/assets/index.js:
-  -> [logo, favicon, fonts, illustrations]
+NavigationFile @ components/navigation.tsx:
+  <- [NavLink, MobileMenu]
+  -> [Navigation]
 
-# Environment variables
-NODE_ENV $env "Build environment"
-  = "development"
-SITE_URL $env "Production site URL" (required)
-API_ENDPOINT $env "API endpoint for dynamic content" (optional)
-CDN_URL $env "CDN base URL" (optional)
-ANALYTICS_ID $env "Analytics tracking ID" (optional)
-
-# Build configuration
-OUTPUT_DIR $config "Build output directory"
-  = "dist"
-SOURCE_DIR $config "Source directory"
-  = "src"
-ENABLE_MINIFICATION $config "Enable asset minification"
-  = "true"
-ENABLE_SOURCE_MAPS $config "Generate source maps"
-  = "false"
-IMAGE_QUALITY $config "Image optimization quality"
-  = "85"
-
-# Deployment configuration
-DEPLOY_TARGET $config "Deployment target"
-  = "s3"
-S3_BUCKET $config "S3 bucket name" (optional)
-NETLIFY_SITE_ID $config "Netlify site ID" (optional)
-GH_PAGES_BRANCH $config "GitHub Pages branch"
-  = "gh-pages"
-
-# Runtime configuration
-NODE_VERSION $runtime "Node.js version"
-  = "20.x"
-NPM_VERSION $runtime "NPM version"
-  = "10.x"
-
-# UI Components (generated static HTML)
-HomePage & "Landing page"
-  > [Header, HeroSection, FeatureGrid, Footer]
-  root
-
-DocumentationPage & "Documentation page template"
-  > [Header, Sidebar, ContentArea, TableOfContents, Footer]
-  root
-
-BlogPostPage & "Blog post template"
-  > [Header, ArticleHeader, ArticleContent, AuthorBio, Footer]
-  root
-
-SearchPage & "Search results page"
-  > [Header, SearchBar, SearchResults, Footer]
-  root
-
-# Page components
-Header & "Site header"
-  < [HomePage, DocumentationPage, BlogPostPage, SearchPage]
-  > [Logo, MainNav, SearchToggle]
-
-Footer & "Site footer"
-  < [HomePage, DocumentationPage, BlogPostPage, SearchPage]
-  > [FooterNav, SocialLinks, Copyright]
-
-Sidebar & "Documentation sidebar"
-  < [DocumentationPage]
-  > [NavigationTree, VersionSelector]
-
-# Home page components
-HeroSection & "Hero banner"
-  < [HomePage]
-  > [CTAButton]
-
-FeatureGrid & "Feature showcase grid"
-  < [HomePage]
-  > [FeatureCard]
-
-FeatureCard & "Individual feature card"
-  < [FeatureGrid]
-
-# Documentation components
-ContentArea & "Main content area"
-  < [DocumentationPage, BlogPostPage]
-
-TableOfContents & "Page table of contents"
-  < [DocumentationPage]
-
-NavigationTree & "Documentation navigation"
-  < [Sidebar]
-
-VersionSelector & "Documentation version selector"
-  < [Sidebar]
+ThemeToggleFile @ components/theme-toggle.tsx:
+  <- [useTheme, HooksFile]
+  -> [ThemeToggle]
 
 # Blog components
-ArticleHeader & "Blog article header"
-  < [BlogPostPage]
-  > [PublishDate, ReadingTime, Tags]
+BlogCardFile @ components/blog-card.tsx:
+  <- [formatDate, Card]
+  -> [BlogCard]
 
-ArticleContent & "Blog article content"
-  < [BlogPostPage]
-  > [CodeBlock, ImageGallery]
+AuthorBioFile @ components/author-bio.tsx:
+  -> [AuthorBio]
 
-AuthorBio & "Article author bio"
-  < [BlogPostPage]
+TableOfContentsFile @ components/table-of-contents.tsx:
+  <- [useScrollSpy]
+  -> [TableOfContents]
 
-# Search components
-SearchBar & "Search input"
-  < [SearchPage]
+# Portfolio components
+ProjectCardFile @ components/project-card.tsx:
+  <- [TechStack, Card]
+  -> [ProjectCard]
 
-SearchResults & "Search results list"
-  < [SearchPage]
-  > [SearchResultItem]
+TechStackFile @ components/tech-stack.tsx:
+  <- [cn, UtilsFile]
+  -> [TechStack]
 
-SearchResultItem & "Individual search result"
-  < [SearchResults]
+# Form components
+ContactFormFile @ components/contact-form.tsx:
+  <- [useForm, validateContact, Button]
+  -> [ContactForm]
 
-SearchToggle & "Search toggle button"
-  < [Header]
+NewsletterFile @ components/newsletter-form.tsx:
+  <- [useNewsletter]
+  -> [Newsletter]
 
-# Common components
+# UI components
+ButtonFile @ components/ui/button.tsx:
+  -> []
+
+Button &! "Button component"
+
+CardFile @ components/ui/card.tsx:
+  -> []
+
+Card &! "Card component"
+
+# Utility files
+ContentLoaderFile @ lib/content.ts:
+  -> [getAllPosts, getPostBySlug, getProjects, getAllMDXFiles]
+
+MDXComponentsFile @ lib/mdx-components.tsx:
+  -> [mdxComponents]
+
+UtilsFile @ lib/utils.ts:
+  -> [formatDate, slugify, cn]
+
+SEOFile @ lib/seo.ts:
+  -> [generateSEOMetadata, generateJSONLD]
+
+# Schema files
+SchemaFile @ lib/schemas.ts:
+  -> [contactSchema, postSchema, projectSchema, validateContact]
+
+# Hook files
+HooksFile @ lib/hooks.ts:
+  -> [useScrollSpy, useTheme, useForm, useNewsletter]
+
+# Config files
+SiteConfigFile @ config/site.ts:
+  -> []
+
+# Content processing
+MDXProcessorFile @ lib/mdx-processor.ts:
+  <- [MDXProcessor]
+  -> [processMDX, serializeMDX, MDXProcessor]
+
+ImageOptimizerFile @ lib/image-optimizer.ts:
+  <- [ImageOptimizer]
+  -> [optimizeImage, getBlurDataURL, ImageOptimizer]
+
+# Feed generators
+RSSGeneratorFile @ lib/feeds/rss.ts:
+  <- [getAllPosts, ContentLoaderFile, RSSGenerator]
+  -> [generateRSSFeed, RSSGenerator]
+
+SitemapGeneratorFile @ lib/feeds/sitemap.ts:
+  <- [getAllPosts, getProjects, ContentLoaderFile, SitemapGenerator]
+  -> [generateSitemap, SitemapGenerator]
+
+Analytics &! "Analytics component"
+
+# Environment variables
+NEXT_PUBLIC_SITE_URL $env "Production site URL" (required)
+RESEND_API_KEY $env "Resend API key for contact form" (required)
+
+# Configuration parameters
+ENABLE_DRAFTS $config "Show draft posts in development"
+  = "false"
+IMAGE_QUALITY $config "Sharp image quality"
+  = "85"
+OG_IMAGE_WIDTH $config "Open Graph image width"
+  = "1200"
+OG_IMAGE_HEIGHT $config "Open Graph image height"
+  = "630"
+
+# Runtime parameters
+NODE_VERSION $runtime "Node.js version"
+  = "20.x"
+DEPLOYMENT_TARGET $runtime "Deployment platform"
+  = "vercel"
+
+# UI Components with proper hierarchy
+HomePage &! "Portfolio homepage"
+  > [HeroSection, FeaturedProjects, RecentPosts, SkillsSection]
+
+BlogListPage &! "Blog listing page"
+  > [BlogGrid, Pagination]
+
+BlogPostPage &! "Individual blog post"
+  > [ArticleHeader, ArticleContent, AuthorBio, RelatedPosts]
+
+ProjectsPage &! "Projects showcase"
+  > [ProjectGrid, FilterBar]
+
+AboutPage &! "About me page"
+  > [AboutHero, ExperienceTimeline, SkillsGrid]
+
+ContactPage &! "Contact page"
+  > [ContactInfo, ContactForm, LocationMap]
+
+# Shared components
+Header &! "Site header"
+  > [Logo, Navigation, ThemeToggle]
+
+Footer &! "Site footer"
+  > [SocialLinks, Newsletter, Copyright]
+
+Navigation & "Main navigation"
+  > [NavLinkComponent, MobileMenu]
+
+# Homepage sections
+HeroSection & "Hero banner"
+  > [AnimatedHeading, CTAButtons, HeroImage]
+
+FeaturedProjects & "Featured projects showcase"
+  > [ProjectCard]
+
+RecentPosts & "Recent blog posts"
+  > [BlogCard]
+
+SkillsSection & "Skills overview"
+  > [SkillCategory]
+
+# Blog components
+BlogGrid & "Blog posts grid"
+  > [BlogCard]
+
+BlogCard & "Blog post preview card"
+  > [PostThumbnail, PostMeta]
+
+ArticleHeader & "Article header section"
+  > [Breadcrumbs, ReadingTime, ShareButtons]
+
+ArticleContent & "Article body content"
+  > [MDXContent, TableOfContents]
+
+AuthorBio & "Author biography section"
+  > [ProfileImage, Bio]
+
+TableOfContents & "Table of contents navigation"
+
+RelatedPosts & "Related posts section"
+  > [BlogCard]
+
+Pagination & "Pagination controls"
+
+# Project components
+ProjectGrid & "Projects grid layout"
+  > [ProjectCard]
+
+ProjectCard & "Project showcase card"
+  > [ProjectImage, TechStack, ProjectLinks]
+
+FilterBar & "Project filter controls"
+  > [CategoryFilter, TechFilter]
+
+# About components
+AboutHero & "About hero section"
+  > [ProfileImage, Bio]
+
+ExperienceTimeline & "Work experience timeline"
+  > [TimelineItem]
+
+SkillsGrid & "Skills grid display"
+  > [SkillCategory]
+
+# Contact components
+ContactInfo & "Contact information"
+  > [EmailLink, SocialLinks]
+
+ContactForm & "Contact form"
+  > [FormField, SubmitButton]
+
+LocationMap & "Location map embed"
+
+# Shared UI elements
 Logo & "Site logo"
-  < [Header]
-
-MainNav & "Main navigation"
-  < [Header]
-
-FooterNav & "Footer navigation"
-  < [Footer]
-
+NavLinkComponent & "Navigation link component"
+MobileMenu & "Mobile navigation menu"
+ThemeToggle & "Dark mode toggle"
 SocialLinks & "Social media links"
-  < [Footer]
-
+Newsletter & "Newsletter signup form"
 Copyright & "Copyright notice"
-  < [Footer]
 
-CTAButton & "Call to action button"
-  < [HeroSection]
-
-PublishDate & "Article publish date"
-  < [ArticleHeader]
-
+# Content elements
+AnimatedHeading & "Animated hero heading"
+CTAButtons & "Call to action buttons"
+HeroImage & "Hero section image"
+PostThumbnail & "Blog post thumbnail"
+PostMeta & "Post metadata"
+Breadcrumbs & "Breadcrumb navigation"
 ReadingTime & "Estimated reading time"
-  < [ArticleHeader]
+ShareButtons & "Social share buttons"
+MDXContent & "MDX rendered content"
+ProjectImage & "Project preview image"
+TechStack & "Technology stack badges"
+ProjectLinks & "Project external links"
+CategoryFilter & "Category filter dropdown"
+TechFilter & "Technology filter"
+ProfileImage & "Profile photo"
+Bio & "Biography text"
+TimelineItem & "Timeline entry"
+SkillCategory & "Skill category group"
+EmailLink & "Email contact link"
+FormField & "Form input field"
+SubmitButton & "Form submit button"
 
-Tags & "Article tags"
-  < [ArticleHeader]
-
-CodeBlock & "Code syntax highlighting"
-  < [ArticleContent]
-
-ImageGallery & "Image gallery"
-  < [ArticleContent]
-
-# Assets
+# Image assets
 logo ~ "Site logo SVG"
+
 favicon ~ "Site favicon"
-fonts ~ "Web fonts (Inter, Fira Code)"
-illustrations ~ "Hero and feature illustrations"
 
-# Build classes
-gulp <:
-  => [task, series, parallel, watch, src, dest]
+ogDefaultImage ~ "Default Open Graph image"
 
-webpack <:
-  => [compile, watch, bundle]
+# Icon assets
+icons ~ "Icon sprite sheet"
 
-sass <:
-  => [compile, watch]
+# Font assets
+fontInter ~ "Inter variable font"
 
-postcss <:
-  => [process]
+fontMono ~ "JetBrains Mono font"
 
-markdownIt <:
-  => [render, parse]
+# Asset constants
+logoSvg ! : string
+faviconIco ! : string 
+defaultOG ! : string
+iconSprite ! : string
+interFont ! : string
+monoFont ! : string
 
-nunjucks <:
-  => [render, compile, configure]
+# Asset files (importing Assets to use them)
+AssetImportsFile @ lib/assets.ts:
+  <- [logo, favicon, ogDefaultImage, icons, fontInter, fontMono]
+  -> [logoSvg, faviconIco, defaultOG, iconSprite, interFont, monoFont]
 
-browserSync <:
-  => [init, reload, stream]
+# Functions
+build :: () => void
+  ~> [generateRSSFeed, generateSitemap]
+  $< [NODE_VERSION, DEPLOYMENT_TARGET]
 
-# Build functions
-build :: () => Promise<void>
-  ~> [clean, compileStyles, bundleScripts, processMarkdown, generateSite]
-  $< [NODE_ENV, OUTPUT_DIR]
+getAllPosts :: () => Promise<Post[]>
+  ~> [getAllMDXFiles, processMDX]
+  -> Post[]
+  $< [ENABLE_DRAFTS]
 
-watch :: () => void
-  ~> [gulp.watch, webpack.watch, browserSync.init]
+getPostBySlug :: (slug: string) => Promise<Post>
+  <- PostParams
+  ~> [readFile, processMDX]
+  -> Post
 
-serve :: () => void
-  ~> [startServer, watch]
+getProjects :: () => Promise<object[]>
+  ~> [getAllMDXFiles, processMDX]
+  -> object[]
 
-registerTasks :: () => void
-  ~> [gulp.task]
+getAllMDXFiles :: (directory: string) => string[]
+  ~> [readdirSync]
 
-processMarkdown :: (file: string) => ProcessedContent
-  -> ProcessedContent
-  ~> [markdownIt.render, extractMetadata]
+processMDX :: (content: string) => ProcessedMDX
+  <- MDXSource
+  ~> [serializeMDX]
+  -> ProcessedMDX
 
-extractMetadata :: (content: string) => ContentMetadata
-  -> ContentMetadata
+serializeMDX :: (source: string) => SerializedMDX
+  ~> [MDXProcessor.serialize]
+  -> SerializedMDX
 
-renderTemplate :: (template: string, data: TemplateData) => string
-  <- TemplateData
-  ~> [nunjucks.render]
-
-compileStyles :: () => Promise<void>
-  ~> [sass.compile, processPostCSS]
-  $< [ENABLE_MINIFICATION]
-
-processPostCSS :: (css: string) => string
-  ~> [postcss.process]
-
-bundleScripts :: () => Promise<void>
-  ~> [webpack.compile]
-  $< [ENABLE_SOURCE_MAPS]
-
-optimizeImages :: () => Promise<void>
-  ~> [imageOptimizer.optimize]
+optimizeImage :: (src: string) => Promise<OptimizedImage>
+  ~> [ImageOptimizer.resize, ImageOptimizer.toFormat]
+  -> OptimizedImage
   $< [IMAGE_QUALITY]
 
-generateSite :: () => Promise<void>
-  ~> [loadContent, buildPage, buildIndex, buildSitemap]
-  $< [SITE_URL]
+getBlurDataURL :: (src: string) => Promise<string>
+  ~> [ImageOptimizer.getPlaiceholder]
 
-generatePage :: (content: ProcessedContent) => void
-  <- ProcessedContent
-  ~> [renderTemplate, writeFile]
-  ~ [DocumentationPage, BlogPostPage]
+generateRSSFeed :: () => Promise<void>
+  ~> [getAllPosts, RSSGenerator.createFeed, RSSGenerator.addItem, RSSGenerator.writeRSS]
+  $< [NEXT_PUBLIC_SITE_URL]
 
-buildNavigation :: (pages: Page[]) => Navigation
-  <- Page[]
-  -> Navigation
-  ~ [Sidebar, NavigationTree]
+generateSitemap :: () => Promise<void>
+  ~> [getAllPosts, getProjects, SitemapGenerator.createSitemap, SitemapGenerator.addURL, SitemapGenerator.write]
+  $< [NEXT_PUBLIC_SITE_URL]
 
-buildBreadcrumbs :: (page: Page) => Breadcrumb[]
-  <- Page
-  -> Breadcrumb[]
+generateSEOMetadata :: (params: SEOParams) => Metadata
+  <- SEOParams
+  -> Metadata
 
-buildSearchIndex :: (pages: Page[]) => SearchIndex
-  <- Page[]
-  -> SearchIndex
-  ~ [SearchPage, SearchBar]
+generateJSONLD :: (type: string, data: any) => object
+  -> JSONLDSchema
 
-startServer :: () => void
-  ~> [browserSync.init]
-  ~ [HomePage]
+formatDate :: (date: Date) => string
+slugify :: (text: string) => string
+cn :: (...classes: string[]) => string
 
-deploy :: (target: string) => Promise<void>
-  ~> [validateBuild, s3Deploy.upload]
-  $< [DEPLOY_TARGET, S3_BUCKET, CDN_URL]
+useScrollSpy :: (ids: string[]) => string
+useTheme :: () => ThemeContext
+  -> ThemeContext
+useForm :: (schema: ZodSchema) => FormContext
+  <- ZodSchema
+  -> FormContext
+useNewsletter :: () => NewsletterContext
+  -> NewsletterContext
 
-clean :: () => Promise<void>
-  $< [OUTPUT_DIR]
+POST :: (request: Request) => Promise<Response>
+  <- ContactRequest
+  ~> [validateContact, EmailClient.send]
+  -> ContactResponse
+  $< [RESEND_API_KEY]
+
+validateContact :: (data: any) => ContactRequest
+  ~> [contactSchemaValidation]
+  -> ContactRequest
+
+GET :: (request: Request) => Promise<Response>
+  ~> [OGImageGenerator.generate]
+  -> ImageResponse
+  $< [OG_IMAGE_WIDTH, OG_IMAGE_HEIGHT]
+
+
+generateStaticParams :: () => Promise<object[]>
+  ~> [getAllPosts]
+  -> object[]
 
 # Data Transfer Objects
-ProcessedContent % "Processed markdown content"
-  - html: string "Rendered HTML"
-  - metadata: ContentMetadata "Front matter data"
-  - toc: TOCEntry[] "Table of contents"
-
-ContentMetadata % "Content front matter"
-  - title: string "Page title"
+Post % "Blog post data"
+  - slug: string "URL slug"
+  - title: string "Post title"
   - description: string "Meta description"
-  - date: Date "Publish date" (optional)
-  - author: string "Author name" (optional)
-  - tags: string[] "Content tags" (optional)
+  - date: Date "Publish date"
+  - author: string "Author name"
+  - tags: string[] "Post tags"
+  - content: string "Post content"
+  - readingTime: number "Minutes to read"
+  - image: string "Featured image" (optional)
 
-TemplateData % "Template rendering data"
-  - site: SiteConfig "Site configuration"
-  - page: Page "Current page data"
-  - navigation: Navigation "Site navigation"
 
-Page % "Page data"
-  - url: string "Page URL"
+PostParams % "Post query parameters"
+  - slug: string "Post slug"
+
+MDXSource % "MDX source content"
+  - content: string "Raw MDX content"
+  - data: object "Front matter data"
+
+ProcessedMDX % "Processed MDX data"
+  - content: SerializedMDX "Serialized MDX"
+  - frontmatter: object "Front matter"
+  - readingTime: number "Reading time"
+
+SerializedMDX % "Serialized MDX content"
+  - compiledSource: string "Compiled source"
+  - scope: object "MDX scope"
+
+OptimizedImage % "Optimized image data"
+  - src: string "Image source"
+  - width: number "Image width"
+  - height: number "Image height"
+  - blurDataURL: string "Blur placeholder"
+
+SEOParams % "SEO metadata parameters"
   - title: string "Page title"
-  - content: string "Page content"
-  - metadata: ContentMetadata "Page metadata"
+  - description: string "Page description"
+  - image: string "OG image" (optional)
+  - article: boolean "Is article" (optional)
 
-Navigation % "Navigation structure"
-  - items: NavItem[] "Navigation items"
-  - active: string "Active page URL"
+Metadata % "Next.js metadata"
+  - title: string "Page title"
+  - description: string "Page description"
+  - openGraph: object "OG metadata"
+  - twitter: object "Twitter metadata"
 
-NavItem % "Navigation item"
-  - title: string "Item title"
-  - url: string "Item URL"
-  - children: NavItem[] "Child items" (optional)
+ThemeContext % "Theme context data"
+  - theme: string "Current theme"
+  - toggleTheme: function "Theme toggle function"
 
-Breadcrumb % "Breadcrumb item"
-  - title: string "Item title"
-  - url: string "Item URL"
+FormContext % "Form context data"
+  - register: function "Register field"
+  - handleSubmit: function "Submit handler"
+  - errors: object "Validation errors"
+  - isSubmitting: boolean "Submission state"
 
-TOCEntry % "Table of contents entry"
-  - title: string "Heading text"
-  - level: number "Heading level"
-  - id: string "Anchor ID"
+NewsletterContext % "Newsletter context"
+  - subscribe: function "Subscribe function"
+  - isSubscribed: boolean "Subscription state"
 
-SearchIndex % "Search index data"
-  - documents: SearchDocument[] "Indexed documents"
-  - index: object "Lunr index"
+ContactRequest % "Contact form request"
+  - name: string "Sender name"
+  - email: string "Sender email"
+  - message: string "Message content"
 
-SearchDocument % "Searchable document"
-  - id: string "Document ID"
-  - title: string "Document title"
-  - content: string "Document content"
-  - url: string "Document URL"
+ContactResponse % "Contact form response"
+  - success: boolean "Success status"
+  - message: string "Response message"
 
-SiteConfig % "Site configuration"
-  - title: string "Site title"
-  - description: string "Site description"
-  - url: string "Site URL"
-  - author: string "Site author"
+
+ImageResponse % "OG image response"
+  - image: Buffer "Image buffer"
+  - contentType: string "Image MIME type"
+
+JSONLDSchema % "JSON-LD structured data"
+  - @context: string "Schema context"
+  - @type: string "Schema type"
+  - properties: object "Schema properties"
+
+ZodSchema % "Zod validation schema"
+  - shape: object "Schema shape"
+  - parse: function "Parse function"
 
 # Constants
-siteConfig {
-  TITLE: "TechDocs Hub"
-  DESCRIPTION: "Technical documentation made easy"
-  AUTHOR: "TechDocs Team"
-  LANGUAGE: "en"
-  THEME_COLOR: "#2563eb"
-}
+nextConfig ! : object
+postcssConfig ! : object
+tailwindConfig ! : object
+mdxComponents ! : object
+contactSchema ! : object
+postSchema ! : object
+projectSchema ! : object
 
-imageOptimizer {
-  FORMATS: ["webp", "avif", "jpg"]
-  SIZES: [320, 640, 1280, 1920]
-}
+# Type definitions for constants
 
-webpackConfig {
-  MODE: "production"
-  DEVTOOL: "source-map"
-  TARGET: "web"
-}
+NavLink % "Navigation link"
+  - label: string "Link label"
+  - href: string "Link URL"
+
+
+# Classes for external dependency wrappers
+MDXProcessor <:
+  <- [@mdx-js/react, rehype-highlight, rehype-slug, remark-gfm]
+  => [evaluate, serialize]
+
+ImageOptimizer <:
+  <- [sharp, @plaiceholder/next]
+  => [resize, toFormat, getPlaiceholder]
+
+RSSGenerator <:
+  <- [feed]
+  => [createFeed, addItem, writeRSS]
+
+SitemapGenerator <:
+  <- [sitemap]
+  => [createSitemap, addURL, write]
+
+
+EmailClient <:
+  <- [resend]
+  => [send]
+
+OGImageGenerator <:
+  <- [@vercel/og]
+  => [generate]
