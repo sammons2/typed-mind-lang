@@ -1,0 +1,46 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`scenario-38-dependency-validation > should validate dependency entities 1`] = `
+{
+  "errors": [
+    {
+      "message": "Cannot use 'calls' to reference Dependency 'axios'",
+      "position": {
+        "column": 1,
+        "line": 29,
+      },
+      "severity": "error",
+      "suggestion": "'calls' can only reference: Function, Class",
+    },
+    {
+      "message": "Orphaned entity 'User'",
+      "position": {
+        "column": 1,
+        "line": 43,
+      },
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "message": "Class 'AuthService' is not exported by any file",
+      "position": {
+        "column": 1,
+        "line": 21,
+      },
+      "severity": "error",
+      "suggestion": "Add 'AuthService' to the exports of a file entity",
+    },
+    {
+      "message": "Cannot call method 'post' on Dependency 'axios'. Only Classes can have methods",
+      "position": {
+        "column": 1,
+        "line": 29,
+      },
+      "severity": "error",
+      "suggestion": "Either define 'axios' as a Class or use a different call syntax",
+    },
+  ],
+  "file": "scenario-38-dependency-validation.tmd",
+  "valid": false,
+}
+`;

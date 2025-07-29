@@ -10,6 +10,7 @@ import type {
   AssetEntity,
   UIComponentEntity,
   RunParameterEntity,
+  DependencyEntity,
   Position,
 } from './types';
 
@@ -32,7 +33,7 @@ export class LongformParser {
     const firstLine = this.lines[startLine];
     if (!firstLine) return null;
 
-    const match = firstLine.trim().match(/^(program|file|function|class|dto|component|asset|constants|parameter)\s+(\w+)\s*\{?$/);
+    const match = firstLine.trim().match(/^(program|file|function|class|dto|component|asset|constants|parameter|dependency)\s+(\w+)\s*\{?$/);
     if (!match) return null;
 
     const [_, type, name] = match;
@@ -211,6 +212,7 @@ export class LongformParser {
           extends: properties.get('extends'),
           implements: properties.get('implements') || [],
           methods: properties.get('methods') || [],
+          imports: properties.get('imports') || [],
           position,
           raw,
           comment
@@ -290,6 +292,18 @@ export class LongformParser {
           raw,
           comment
         } as RunParameterEntity;
+
+      case 'dependency':
+        return {
+          name,
+          type: 'Dependency',
+          purpose: properties.get('purpose') || properties.get('description') || '',
+          version: properties.get('version'),
+          importedBy: [],
+          position,
+          raw,
+          comment
+        } as DependencyEntity;
 
       default:
         return null;

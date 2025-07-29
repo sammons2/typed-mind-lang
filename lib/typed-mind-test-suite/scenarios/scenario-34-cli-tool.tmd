@@ -1,0 +1,367 @@
+# CLI Tool - Task Runner and Build System
+TaskMaster -> MainFile v1.5.0 # Modern task runner and build tool
+
+# Entry point
+MainFile @ src/index.ts:
+  <- [cli, taskRunner, configLoader, CLIFile, TaskRunnerFile, ConfigLoaderFile, CommandsFile]
+  -> [main]
+
+# CLI framework
+CLIFile @ src/cli/index.ts:
+  <- [commander, chalk, ora, CommandsFile]
+  -> [cli, parseArgs, displayHelp]
+
+CommandsFile @ src/cli/commands.ts:
+  <- [runCommand, buildCommand, watchCommand, testCommand, deployCommand]
+  -> [registerCommands]
+
+# Core functionality
+TaskRunnerFile @ src/core/task-runner.ts:
+  <- [taskRegistry, taskScheduler, dependencyResolver, TaskRegistryFile, TaskSchedulerFile, DependencyResolverFile]
+  -> [taskRunner, runTask, runParallel, runSequential]
+
+TaskRegistryFile @ src/core/task-registry.ts:
+  <- [taskDefinitions]
+  -> [taskRegistry, registerTask, getTask, listTasks]
+
+DependencyResolverFile @ src/core/dependency-resolver.ts:
+  -> [dependencyResolver, resolveDependencies, detectCycles]
+
+TaskSchedulerFile @ src/core/task-scheduler.ts:
+  <- [workerPool]
+  -> [taskScheduler, scheduleTask, cancelTask]
+
+# Task types
+TasksFile @ src/tasks/index.ts:
+  <- [TaskRunnerFile]
+  -> [ShellTask, FileTask, HttpTask, DockerTask, K8sTask]
+
+# Plugins
+PluginsFile @ src/plugins/index.ts:
+  <- [pluginLoader, pluginAPI, PluginAPIFile]
+  -> [loadPlugins, registerPlugin]
+
+PluginAPIFile @ src/plugins/api.ts:
+  -> [pluginAPI, createContext, exposeAPI]
+
+# Configuration
+ConfigLoaderFile @ src/config/config-loader.ts:
+  <- [yaml, json5, cosmiconfig, SchemaValidatorFile]
+  -> [configLoader, loadConfig, validateConfig]
+
+SchemaValidatorFile @ src/config/schema-validator.ts:
+  <- [ajv]
+  -> [schemaValidator, validateTaskSchema]
+
+# Utils
+UtilsFile @ src/utils/index.ts:
+  <- [LoggerFile, FileUtilsFile, ProcessUtilsFile]
+  -> [logger, fileUtils, processUtils, networkUtils]
+
+LoggerFile @ src/utils/logger.ts:
+  <- [winston, chalk]
+  -> [logger, createLogger]
+
+FileUtilsFile @ src/utils/file-utils.ts:
+  <- [glob, fs]
+  -> [fileUtils, findFiles, copyFiles, cleanDirectory]
+
+ProcessUtilsFile @ src/utils/process-utils.ts:
+  <- [execa, crossSpawn]
+  -> [processUtils, spawn, exec, shell]
+
+# Worker pool
+WorkerPoolFile @ src/workers/worker-pool.ts:
+  <- [workerThreads, WorkerFile]
+  -> [workerPool, createWorker, executeInWorker]
+
+WorkerFile @ src/workers/worker.ts:
+  -> [taskWorker]
+
+# Environment variables
+NODE_ENV $env "Node environment"
+  = "development"
+TASKMASTER_HOME $env "TaskMaster home directory"
+  = "~/.taskmaster"
+PARALLEL_JOBS $env "Maximum parallel jobs"
+  = "4"
+LOG_LEVEL $env "Logging level"
+  = "info"
+NO_COLOR $env "Disable colored output"
+  = "false"
+
+# Runtime configuration
+NODE_VERSION $runtime "Node.js version"
+  = "20.x"
+NPM_VERSION $runtime "NPM version"
+  = "10.x"
+
+# Configuration
+CONFIG_FILE $config "Configuration file name"
+  = "taskmaster.yml"
+PLUGIN_DIR $config "Plugin directory"
+  = "./plugins"
+CACHE_DIR $config "Cache directory"
+  = ".taskmaster-cache"
+DEFAULT_SHELL $config "Default shell for commands"
+  = "/bin/bash"
+
+# Main CLI class
+cli <:
+  => [parse, run, showVersion, showHelp]
+  $< [NODE_ENV, LOG_LEVEL, NO_COLOR]
+
+# Core classes
+taskRunner <:
+  => [run, runTask, runTasks, stopAll]
+  $< [PARALLEL_JOBS]
+
+taskRegistry <:
+  => [register, get, list, clear]
+
+dependencyResolver <:
+  => [resolve, buildGraph, detectCycles]
+
+taskScheduler <:
+  => [schedule, cancel, getStatus, waitForCompletion]
+
+configLoader <:
+  => [load, reload, watch]
+  $< [CONFIG_FILE, TASKMASTER_HOME]
+
+schemaValidator <:
+  => [validate, getErrors]
+
+pluginAPI <:
+  => [registerTask, registerCommand, emit, on]
+
+workerPool <:
+  => [execute, terminate, getWorkerCount]
+  $< [PARALLEL_JOBS]
+
+logger <:
+  => [info, warn, error, debug, setLevel]
+  $< [LOG_LEVEL, NO_COLOR]
+
+fileUtils <:
+  => [glob, read, write, copy, remove, ensureDir]
+
+processUtils <:
+  => [spawn, exec, shell, kill]
+  $< [DEFAULT_SHELL]
+
+# Task classes
+ShellTask <:
+  => [execute, validate]
+
+FileTask <:
+  => [execute, validate]
+
+HttpTask <:
+  => [execute, validate]
+
+DockerTask <:
+  => [execute, validate]
+
+K8sTask <:
+  => [execute, validate]
+
+# Main function
+main :: (argv: string[]) => Promise<void>
+  ~> [parseArgs, runCommand]
+  $< [NODE_ENV]
+
+# CLI functions
+parseArgs :: (argv: string[]) => CLIArgs
+  -> CLIArgs
+  ~> [cli.parse]
+
+displayHelp :: () => void
+  ~> [cli.showHelp]
+
+registerCommands :: () => void
+  ~> [cli.command]
+
+# Command functions
+runCommand :: (taskName: string, options: RunOptions) => Promise<void>
+  <- RunOptions
+  ~> [taskRunner.runTask, logger.info]
+  $< [PARALLEL_JOBS, NODE_VERSION]
+
+buildCommand :: (options: BuildOptions) => Promise<void>
+  <- BuildOptions
+  ~> [taskRunner.runTasks, fileUtils.cleanDirectory]
+  $< [NPM_VERSION]
+
+watchCommand :: (pattern: string, options: WatchOptions) => Promise<void>
+  <- WatchOptions
+  ~> [fileUtils.glob, taskRunner.runTask]
+
+testCommand :: (options: TestOptions) => Promise<void>
+  <- TestOptions
+  ~> [taskRunner.runTask]
+
+deployCommand :: (target: string, options: DeployOptions) => Promise<void>
+  <- DeployOptions
+  ~> [taskRunner.runTasks]
+
+# Core functions
+runTask :: (name: string, context: TaskContext) => Promise<TaskResult>
+  <- TaskContext
+  -> TaskResult
+  ~> [taskRegistry.get, dependencyResolver.resolve, taskScheduler.schedule]
+
+runParallel :: (tasks: string[], context: TaskContext) => Promise<TaskResult[]>
+  <- TaskContext
+  -> TaskResult[]
+  ~> [workerPool.execute]
+
+runSequential :: (tasks: string[], context: TaskContext) => Promise<TaskResult[]>
+  <- TaskContext
+  -> TaskResult[]
+  ~> [runTask]
+
+# Task registry functions
+registerTask :: (name: string, definition: TaskDefinition) => void
+  <- TaskDefinition
+  ~> [schemaValidator.validate]
+
+getTask :: (name: string) => TaskDefinition
+  -> TaskDefinition
+
+listTasks :: () => TaskInfo[]
+  -> TaskInfo[]
+
+# Config functions
+loadConfig :: (path: string) => Promise<Config>
+  -> Config
+  ~> [fileUtils.read, schemaValidator.validate]
+  $< [TASKMASTER_HOME]
+
+validateConfig :: (config: Config) => ValidationResult
+  <- Config
+  -> ValidationResult
+
+# Plugin functions
+loadPlugins :: () => Promise<void>
+  ~> [fileUtils.glob, registerPlugin]
+  $< [PLUGIN_DIR]
+
+registerPlugin :: (plugin: Plugin) => void
+  <- Plugin
+  ~> [pluginAPI.registerTask]
+
+# Worker functions
+createWorker :: () => Worker
+  -> Worker
+
+executeInWorker :: (task: Task, context: TaskContext) => Promise<TaskResult>
+  <- Task, TaskContext
+  -> TaskResult
+
+taskWorker :: (message: WorkerMessage) => Promise<WorkerResult>
+  <- WorkerMessage
+  -> WorkerResult
+
+# Data Transfer Objects
+CLIArgs % "Parsed CLI arguments"
+  - command: string "Command to run"
+  - args: string[] "Command arguments"
+  - options: object "Command options"
+
+RunOptions % "Run command options"
+  - watch: boolean "Watch mode"
+  - parallel: boolean "Run in parallel"
+  - env: object "Environment variables" (optional)
+  - cwd: string "Working directory" (optional)
+
+BuildOptions % "Build command options"
+  - clean: boolean "Clean before build"
+  - production: boolean "Production build"
+  - target: string "Build target" (optional)
+
+WatchOptions % "Watch command options"
+  - task: string "Task to run"
+  - debounce: number "Debounce delay"
+
+TestOptions % "Test command options"
+  - coverage: boolean "Generate coverage"
+  - watch: boolean "Watch mode"
+  - filter: string "Test filter" (optional)
+
+DeployOptions % "Deploy command options"
+  - dry: boolean "Dry run"
+  - force: boolean "Force deploy"
+  - tag: string "Deployment tag" (optional)
+
+TaskContext % "Task execution context"
+  - env: object "Environment variables"
+  - cwd: string "Working directory"
+  - vars: object "Task variables"
+  - secrets: object "Secret values"
+
+TaskResult % "Task execution result"
+  - success: boolean "Success flag"
+  - duration: number "Execution time"
+  - output: string "Task output" (optional)
+  - error: string "Error message" (optional)
+
+TaskDefinition % "Task definition"
+  - name: string "Task name"
+  - type: string "Task type"
+  - description: string "Task description" (optional)
+  - depends: string[] "Dependencies" (optional)
+  - config: object "Task configuration"
+
+TaskInfo % "Task information"
+  - name: string "Task name"
+  - type: string "Task type"
+  - description: string "Description" (optional)
+  - dependencies: string[] "Task dependencies"
+
+Config % "Configuration object"
+  - version: string "Config version"
+  - tasks: TaskDefinition[] "Task definitions"
+  - variables: object "Global variables"
+  - plugins: string[] "Plugin list" (optional)
+
+ValidationResult % "Validation result"
+  - valid: boolean "Validation status"
+  - errors: ValidationError[] "Validation errors"
+
+ValidationError % "Validation error"
+  - path: string "Error path"
+  - message: string "Error message"
+
+Plugin % "Plugin definition"
+  - name: string "Plugin name"
+  - version: string "Plugin version"
+  - register: Function "Registration function"
+
+Task % "Task instance"
+  - definition: TaskDefinition "Task definition"
+  - status: string "Task status"
+
+Worker % "Worker instance"
+  - id: string "Worker ID"
+  - status: string "Worker status"
+
+WorkerMessage % "Worker message"
+  - type: string "Message type"
+  - task: Task "Task to execute"
+  - context: TaskContext "Execution context"
+
+WorkerResult % "Worker result"
+  - taskId: string "Task ID"
+  - result: TaskResult "Task result"
+
+# Constants
+taskDefinitions {
+  TASK_TYPES: ["shell", "file", "http", "docker", "k8s", "custom"]
+  TASK_STATUS: ["pending", "running", "success", "failed", "cancelled"]
+}
+
+workerThreads {
+  WORKER_STATUS: ["idle", "busy", "error", "terminated"]
+  MAX_WORKER_MEMORY: "512MB"
+}

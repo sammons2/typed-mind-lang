@@ -1,0 +1,348 @@
+# Electron Desktop Application - Code Editor
+CodeEditorApp -> MainFile v3.0.0 # Advanced code editor built with Electron
+
+# Electron main process
+MainFile @ src/main/index.ts:
+  <- [app, BrowserWindow, Menu, dialog, ipcMain]
+  -> [createWindow, setupIPC]
+
+WindowManagerFile @ src/main/window-manager.ts:
+  <- [BrowserWindow, screen]
+  -> [WindowManager, createMainWindow, createSettingsWindow]
+
+MenuBuilderFile @ src/main/menu-builder.ts:
+  <- [Menu, app, dialog]
+  -> [MenuBuilder, buildApplicationMenu]
+
+IPCHandlerFile @ src/main/ipc-handler.ts:
+  <- [ipcMain, fileSystem, gitIntegration]
+  -> [setupIPC, handleFileOperations, handleGitOperations]
+
+# Main process services
+FileSystemFile @ src/main/services/file-system.ts:
+  <- [fs, path, chokidar]
+  -> [fileSystem, readFile, writeFile, watchDirectory]
+
+GitIntegrationFile @ src/main/services/git-integration.ts:
+  <- [simpleGit]
+  -> [gitIntegration, getStatus, commit, push, pull]
+
+TerminalServiceFile @ src/main/services/terminal.ts:
+  <- [pty]
+  -> [terminalService, createTerminal, writeToTerminal]
+
+PluginManagerFile @ src/main/services/plugin-manager.ts:
+  <- [pluginRegistry]
+  -> [PluginManager, loadPlugin, unloadPlugin]
+
+# Renderer process
+RendererFile @ src/renderer/index.tsx:
+  <- [App, store]
+  -> []
+
+AppRendererFile @ src/renderer/App.tsx:
+  <- [EditorView, SidebarView, StatusBarView, TerminalView]
+  -> [App]
+
+# Renderer components
+ComponentsFile @ src/renderer/components/index.ts:
+  -> [EditorView, SidebarView, StatusBarView, TerminalView, TabBar, FileTree, SearchPanel]
+
+# Editor components
+EditorComponentsFile @ src/renderer/components/editor/index.ts:
+  <- [ComponentsFile]
+  -> [CodeEditor, LineNumbers, Minimap, AutoComplete, SyntaxHighlighter]
+
+# Renderer state management
+StoreRendererFile @ src/renderer/store/index.ts:
+  <- [editorSlice, fileSlice, gitSlice, terminalSlice, settingsSlice]
+  -> [store]
+
+EditorSliceFile @ src/renderer/store/editorSlice.ts:
+  -> [editorSlice, setActiveFile, updateContent, setCursor]
+
+FileSliceFile @ src/renderer/store/fileSlice.ts:
+  -> [fileSlice, openFile, closeFile, saveFile]
+
+GitSliceFile @ src/renderer/store/gitSlice.ts:
+  -> [gitSlice, updateStatus, setCurrentBranch]
+
+# Renderer services
+RendererServicesFile @ src/renderer/services/index.ts:
+  -> [ipcService, themeService, keyboardService]
+
+IPCServiceFile @ src/renderer/services/ipc.ts:
+  <- [ipcRenderer]
+  -> [ipcService]
+
+# Shared utilities
+SharedFile @ src/shared/index.ts:
+  <- [MainFile, RendererFile]
+  -> [FileType, GitStatus, Theme, KeyBinding]
+
+# Assets
+AssetsFile @ src/assets/index.ts:
+  <- [ComponentsFile]
+  -> [AppIcon, FileIcons, ThemeIcons, Logo]
+
+# Environment variables
+NODE_ENV $env "Node environment"
+  = "development"
+GITHUB_TOKEN $env "GitHub API token" (optional)
+UPDATE_SERVER_URL $env "Auto-update server URL"
+  = "https://updates.codeeditor.app"
+ANALYTICS_ID $env "Analytics tracking ID" (optional)
+
+# Runtime configuration
+ELECTRON_VERSION $runtime "Electron version"
+  = "28.0.0"
+NODE_VERSION $runtime "Node.js version"
+  = "20.x"
+MONACO_VERSION $runtime "Monaco editor version"
+  = "0.45.0"
+
+# Build configuration
+TARGET_PLATFORM $config "Target platform"
+  = "darwin"
+CODE_SIGN_IDENTITY $config "Code signing identity" (optional)
+NOTARIZE $config "Notarize macOS builds"
+  = "false"
+AUTO_UPDATE $config "Enable auto-updates"
+  = "true"
+
+# UI Components
+App & "Main application component"
+  > [TabBar, EditorView, SidebarView, StatusBarView, TerminalView]
+  root
+  ~ [AssetsFile]
+
+TabBar & "Open files tab bar"
+  < [App]
+  > [FileIcons]
+
+EditorView & "Code editor container"
+  < [App]
+  > [CodeEditor, LineNumbers, Minimap]
+
+SidebarView & "Sidebar with file tree and search"
+  < [App]
+  > [FileTree, SearchPanel]
+
+StatusBarView & "Status bar with git info"
+  < [App]
+
+TerminalView & "Integrated terminal"
+  < [App]
+
+# Editor components
+CodeEditor & "Monaco editor wrapper"
+  < [EditorView]
+  > [AutoComplete, SyntaxHighlighter]
+
+LineNumbers & "Line number gutter"
+  < [EditorView]
+
+Minimap & "Code minimap"
+  < [EditorView]
+
+AutoComplete & "Autocomplete suggestions"
+  < [CodeEditor]
+
+SyntaxHighlighter & "Syntax highlighting"
+  < [CodeEditor]
+
+# Sidebar components
+FileTree & "File explorer tree"
+  < [SidebarView]
+  > [FileIcons]
+
+SearchPanel & "Search and replace panel"
+  < [SidebarView]
+
+# Assets
+AppIcon ~ "Application icon"
+FileIcons ~ "File type icons"
+ThemeIcons ~ "Theme-specific icons"
+Logo ~ "Application logo"
+
+# Main process classes
+WindowManager <:
+  => [createWindow, closeWindow, focusWindow, getAllWindows]
+
+MenuBuilder <:
+  => [buildMenu, updateMenu, setEnabled]
+
+fileSystem <:
+  => [readFile, writeFile, readDirectory, watchDirectory, createFile, deleteFile]
+
+gitIntegration <:
+  => [init, getStatus, stage, commit, push, pull, getBranches, checkout]
+
+terminalService <:
+  => [createTerminal, writeToTerminal, resizeTerminal, closeTerminal]
+
+PluginManager <:
+  => [loadPlugin, unloadPlugin, getLoadedPlugins, callPluginMethod]
+
+# Renderer services
+ipcService <:
+  => [invoke, send, on, off]
+
+themeService <:
+  => [loadTheme, applyTheme, getAvailableThemes]
+
+keyboardService <:
+  => [registerShortcut, unregisterShortcut, handleKeyPress]
+
+# Main process functions
+createWindow :: () => BrowserWindow
+  ~> [WindowManager.createWindow]
+  $< [NODE_ENV]
+
+setupIPC :: () => void
+  ~> [handleFileOperations, handleGitOperations]
+
+createMainWindow :: (options: WindowOptions) => BrowserWindow
+  <- WindowOptions
+  -> BrowserWindow
+  ~> [BrowserWindow.new]
+
+createSettingsWindow :: () => BrowserWindow
+  -> BrowserWindow
+  ~> [BrowserWindow.new]
+
+buildApplicationMenu :: () => Menu
+  -> Menu
+  ~> [MenuBuilder.buildMenu]
+
+# IPC handlers
+handleFileOperations :: () => void
+  ~> [fileSystem.readFile, fileSystem.writeFile]
+
+handleGitOperations :: () => void
+  ~> [gitIntegration.getStatus, gitIntegration.commit]
+
+# File operations
+readFile :: (path: string) => Promise<FileContent>
+  -> FileContent
+  ~ [EditorView, CodeEditor]
+
+writeFile :: (path: string, content: string) => Promise<void>
+  ~ [EditorView]
+
+watchDirectory :: (path: string) => FSWatcher
+  -> FSWatcher
+  ~ [FileTree]
+
+# Git operations
+getStatus :: () => Promise<GitStatusResult>
+  -> GitStatusResult
+  ~ [StatusBarView, SidebarView]
+
+commit :: (message: string, files: string[]) => Promise<void>
+  ~ [StatusBarView]
+
+push :: () => Promise<void>
+  ~ [StatusBarView]
+
+pull :: () => Promise<void>
+  ~ [StatusBarView]
+
+# Terminal operations
+createTerminal :: (shell: string) => Terminal
+  <- Terminal
+  ~ [TerminalView]
+
+writeToTerminal :: (id: string, data: string) => void
+  ~ [TerminalView]
+
+# Editor state functions
+setActiveFile :: (file: OpenFile) => void
+  <- OpenFile
+  ~ [EditorView, TabBar]
+
+updateContent :: (content: string) => void
+  ~ [EditorView, CodeEditor]
+
+setCursor :: (position: CursorPosition) => void
+  <- CursorPosition
+  ~ [CodeEditor, LineNumbers]
+
+openFile :: (path: string) => void
+  ~> [readFile]
+  ~ [FileTree, TabBar, EditorView]
+
+closeFile :: (path: string) => void
+  ~ [TabBar, EditorView]
+
+saveFile :: () => void
+  ~> [writeFile]
+  ~ [EditorView, StatusBarView]
+
+# Data Transfer Objects
+WindowOptions % "Window creation options"
+  - width: number "Window width"
+  - height: number "Window height"
+  - x: number "X position" (optional)
+  - y: number "Y position" (optional)
+  - fullscreen: boolean "Fullscreen mode"
+
+FileContent % "File content data"
+  - path: string "File path"
+  - content: string "File content"
+  - encoding: string "File encoding"
+  - language: string "Programming language"
+
+GitStatusResult % "Git repository status"
+  - branch: string "Current branch"
+  - ahead: number "Commits ahead"
+  - behind: number "Commits behind"
+  - staged: string[] "Staged files"
+  - modified: string[] "Modified files"
+  - untracked: string[] "Untracked files"
+
+Terminal % "Terminal instance"
+  - id: string "Terminal ID"
+  - shell: string "Shell path"
+  - cols: number "Terminal columns"
+  - rows: number "Terminal rows"
+
+OpenFile % "Open file info"
+  - path: string "File path"
+  - content: string "File content"
+  - isDirty: boolean "Has unsaved changes"
+  - language: string "File language"
+
+CursorPosition % "Cursor position"
+  - line: number "Line number"
+  - column: number "Column number"
+
+FSWatcher % "File system watcher"
+  - path: string "Watched path"
+  - recursive: boolean "Watch recursively"
+
+# Type definitions
+FileType % "File type enumeration"
+  - name: string "Type name"
+  - extensions: string[] "File extensions"
+  - icon: string "Icon identifier"
+
+GitStatus % "Git file status"
+  - path: string "File path"
+  - status: string "Status code"
+
+Theme % "Editor theme"
+  - name: string "Theme name"
+  - isDark: boolean "Dark theme flag"
+  - colors: object "Color definitions"
+
+KeyBinding % "Keyboard shortcut"
+  - key: string "Key combination"
+  - command: string "Command ID"
+  - when: string "Context condition" (optional)
+
+# Constants
+pluginRegistry {
+  PLUGIN_DIR: "~/.codeeditor/plugins"
+  API_VERSION: "1.0.0"
+}

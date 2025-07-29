@@ -1,0 +1,433 @@
+# Static Website with Build Pipeline - Documentation Site
+TechDocsHub -> BuildFile v2.0.0 # Technical documentation static site generator
+
+# Build system entry point
+BuildFile @ build/index.js:
+  <- [gulp, webpack, sass, postcss]
+  -> [build, watch, serve]
+
+# Build tasks
+GulpTasksFile @ build/tasks/gulp-tasks.js:
+  <- [htmlTask, cssTask, jsTask, imageTask, copyTask]
+  -> [registerTasks]
+
+WebpackConfigFile @ build/webpack.config.js:
+  <- [babelLoader, tsLoader, cssLoader]
+  -> [webpackConfig]
+
+# Content processing
+MarkdownProcessorFile @ build/processors/markdown.js:
+  <- [markdownIt, frontMatter, highlightJs]
+  -> [processMarkdown, extractMetadata]
+
+TemplateEngineFile @ build/processors/templates.js:
+  <- [nunjucks, handlebars]
+  -> [renderTemplate, registerHelpers]
+
+# Asset pipeline
+AssetPipelineFile @ build/pipeline/assets.js:
+  <- [imageOptimizer, svgOptimizer, fontProcessor]
+  -> [processAssets, optimizeImages]
+
+StyleProcessorFile @ build/pipeline/styles.js:
+  <- [sass, postcss, autoprefixer, cssnano]
+  -> [compileStyles, processPostCSS]
+
+ScriptBundlerFile @ build/pipeline/scripts.js:
+  <- [webpack, babel, terser]
+  -> [bundleScripts, transpileJS]
+
+# Static site generator
+GeneratorFile @ build/generator/index.js:
+  <- [siteConfig, contentLoader, pageBuilder]
+  -> [generateSite, generatePage]
+
+ContentLoaderFile @ build/generator/content-loader.js:
+  <- [glob, grayMatter]
+  -> [loadContent, loadData, loadPartials]
+
+PageBuilderFile @ build/generator/page-builder.js:
+  <- [templateEngine, markdownProcessor]
+  -> [buildPage, buildIndex, buildSitemap]
+
+NavigationBuilderFile @ build/generator/navigation.js:
+  <- [contentTree]
+  -> [buildNavigation, buildBreadcrumbs]
+
+SearchIndexFile @ build/generator/search-index.js:
+  <- [lunr, elasticlunr]
+  -> [buildSearchIndex, indexContent]
+
+# Development server
+DevServerFile @ build/server/dev-server.js:
+  <- [browserSync, chokidar]
+  -> [startServer, reloadBrowser]
+
+# Deployment
+DeploymentFile @ build/deploy/index.js:
+  <- [s3Deploy, netlifyDeploy, ghPagesPublish]
+  -> [deploy, validateBuild]
+
+# Source content files
+ContentFile @ src/content/index.md:
+  -> []
+
+DocsFile @ src/content/docs/getting-started.md:
+  -> []
+
+BlogFile @ src/content/blog/2024-01-15-launch.md:
+  -> []
+
+# Templates
+LayoutsFile @ src/templates/layouts/default.njk:
+  -> []
+
+PartialsFile @ src/templates/partials/header.njk:
+  -> []
+
+# Styles
+MainStyleFile @ src/styles/main.scss:
+  <- [variables, mixins, base, components]
+  -> []
+
+# Scripts
+MainScriptFile @ src/scripts/main.js:
+  <- [search, navigation, codeHighlight]
+  -> []
+
+# Configuration
+ConfigFile @ config/site.config.js:
+  -> [siteConfig]
+
+# Assets management
+AssetsFile @ src/assets/index.js:
+  -> [logo, favicon, fonts, illustrations]
+
+# Environment variables
+NODE_ENV $env "Build environment"
+  = "development"
+SITE_URL $env "Production site URL" (required)
+API_ENDPOINT $env "API endpoint for dynamic content" (optional)
+CDN_URL $env "CDN base URL" (optional)
+ANALYTICS_ID $env "Analytics tracking ID" (optional)
+
+# Build configuration
+OUTPUT_DIR $config "Build output directory"
+  = "dist"
+SOURCE_DIR $config "Source directory"
+  = "src"
+ENABLE_MINIFICATION $config "Enable asset minification"
+  = "true"
+ENABLE_SOURCE_MAPS $config "Generate source maps"
+  = "false"
+IMAGE_QUALITY $config "Image optimization quality"
+  = "85"
+
+# Deployment configuration
+DEPLOY_TARGET $config "Deployment target"
+  = "s3"
+S3_BUCKET $config "S3 bucket name" (optional)
+NETLIFY_SITE_ID $config "Netlify site ID" (optional)
+GH_PAGES_BRANCH $config "GitHub Pages branch"
+  = "gh-pages"
+
+# Runtime configuration
+NODE_VERSION $runtime "Node.js version"
+  = "20.x"
+NPM_VERSION $runtime "NPM version"
+  = "10.x"
+
+# UI Components (generated static HTML)
+HomePage & "Landing page"
+  > [Header, HeroSection, FeatureGrid, Footer]
+  root
+
+DocumentationPage & "Documentation page template"
+  > [Header, Sidebar, ContentArea, TableOfContents, Footer]
+  root
+
+BlogPostPage & "Blog post template"
+  > [Header, ArticleHeader, ArticleContent, AuthorBio, Footer]
+  root
+
+SearchPage & "Search results page"
+  > [Header, SearchBar, SearchResults, Footer]
+  root
+
+# Page components
+Header & "Site header"
+  < [HomePage, DocumentationPage, BlogPostPage, SearchPage]
+  > [Logo, MainNav, SearchToggle]
+
+Footer & "Site footer"
+  < [HomePage, DocumentationPage, BlogPostPage, SearchPage]
+  > [FooterNav, SocialLinks, Copyright]
+
+Sidebar & "Documentation sidebar"
+  < [DocumentationPage]
+  > [NavigationTree, VersionSelector]
+
+# Home page components
+HeroSection & "Hero banner"
+  < [HomePage]
+  > [CTAButton]
+
+FeatureGrid & "Feature showcase grid"
+  < [HomePage]
+  > [FeatureCard]
+
+FeatureCard & "Individual feature card"
+  < [FeatureGrid]
+
+# Documentation components
+ContentArea & "Main content area"
+  < [DocumentationPage, BlogPostPage]
+
+TableOfContents & "Page table of contents"
+  < [DocumentationPage]
+
+NavigationTree & "Documentation navigation"
+  < [Sidebar]
+
+VersionSelector & "Documentation version selector"
+  < [Sidebar]
+
+# Blog components
+ArticleHeader & "Blog article header"
+  < [BlogPostPage]
+  > [PublishDate, ReadingTime, Tags]
+
+ArticleContent & "Blog article content"
+  < [BlogPostPage]
+  > [CodeBlock, ImageGallery]
+
+AuthorBio & "Article author bio"
+  < [BlogPostPage]
+
+# Search components
+SearchBar & "Search input"
+  < [SearchPage]
+
+SearchResults & "Search results list"
+  < [SearchPage]
+  > [SearchResultItem]
+
+SearchResultItem & "Individual search result"
+  < [SearchResults]
+
+SearchToggle & "Search toggle button"
+  < [Header]
+
+# Common components
+Logo & "Site logo"
+  < [Header]
+
+MainNav & "Main navigation"
+  < [Header]
+
+FooterNav & "Footer navigation"
+  < [Footer]
+
+SocialLinks & "Social media links"
+  < [Footer]
+
+Copyright & "Copyright notice"
+  < [Footer]
+
+CTAButton & "Call to action button"
+  < [HeroSection]
+
+PublishDate & "Article publish date"
+  < [ArticleHeader]
+
+ReadingTime & "Estimated reading time"
+  < [ArticleHeader]
+
+Tags & "Article tags"
+  < [ArticleHeader]
+
+CodeBlock & "Code syntax highlighting"
+  < [ArticleContent]
+
+ImageGallery & "Image gallery"
+  < [ArticleContent]
+
+# Assets
+logo ~ "Site logo SVG"
+favicon ~ "Site favicon"
+fonts ~ "Web fonts (Inter, Fira Code)"
+illustrations ~ "Hero and feature illustrations"
+
+# Build classes
+gulp <:
+  => [task, series, parallel, watch, src, dest]
+
+webpack <:
+  => [compile, watch, bundle]
+
+sass <:
+  => [compile, watch]
+
+postcss <:
+  => [process]
+
+markdownIt <:
+  => [render, parse]
+
+nunjucks <:
+  => [render, compile, configure]
+
+browserSync <:
+  => [init, reload, stream]
+
+# Build functions
+build :: () => Promise<void>
+  ~> [clean, compileStyles, bundleScripts, processMarkdown, generateSite]
+  $< [NODE_ENV, OUTPUT_DIR]
+
+watch :: () => void
+  ~> [gulp.watch, webpack.watch, browserSync.init]
+
+serve :: () => void
+  ~> [startServer, watch]
+
+registerTasks :: () => void
+  ~> [gulp.task]
+
+processMarkdown :: (file: string) => ProcessedContent
+  -> ProcessedContent
+  ~> [markdownIt.render, extractMetadata]
+
+extractMetadata :: (content: string) => ContentMetadata
+  -> ContentMetadata
+
+renderTemplate :: (template: string, data: TemplateData) => string
+  <- TemplateData
+  ~> [nunjucks.render]
+
+compileStyles :: () => Promise<void>
+  ~> [sass.compile, processPostCSS]
+  $< [ENABLE_MINIFICATION]
+
+processPostCSS :: (css: string) => string
+  ~> [postcss.process]
+
+bundleScripts :: () => Promise<void>
+  ~> [webpack.compile]
+  $< [ENABLE_SOURCE_MAPS]
+
+optimizeImages :: () => Promise<void>
+  ~> [imageOptimizer.optimize]
+  $< [IMAGE_QUALITY]
+
+generateSite :: () => Promise<void>
+  ~> [loadContent, buildPage, buildIndex, buildSitemap]
+  $< [SITE_URL]
+
+generatePage :: (content: ProcessedContent) => void
+  <- ProcessedContent
+  ~> [renderTemplate, writeFile]
+  ~ [DocumentationPage, BlogPostPage]
+
+buildNavigation :: (pages: Page[]) => Navigation
+  <- Page[]
+  -> Navigation
+  ~ [Sidebar, NavigationTree]
+
+buildBreadcrumbs :: (page: Page) => Breadcrumb[]
+  <- Page
+  -> Breadcrumb[]
+
+buildSearchIndex :: (pages: Page[]) => SearchIndex
+  <- Page[]
+  -> SearchIndex
+  ~ [SearchPage, SearchBar]
+
+startServer :: () => void
+  ~> [browserSync.init]
+  ~ [HomePage]
+
+deploy :: (target: string) => Promise<void>
+  ~> [validateBuild, s3Deploy.upload]
+  $< [DEPLOY_TARGET, S3_BUCKET, CDN_URL]
+
+clean :: () => Promise<void>
+  $< [OUTPUT_DIR]
+
+# Data Transfer Objects
+ProcessedContent % "Processed markdown content"
+  - html: string "Rendered HTML"
+  - metadata: ContentMetadata "Front matter data"
+  - toc: TOCEntry[] "Table of contents"
+
+ContentMetadata % "Content front matter"
+  - title: string "Page title"
+  - description: string "Meta description"
+  - date: Date "Publish date" (optional)
+  - author: string "Author name" (optional)
+  - tags: string[] "Content tags" (optional)
+
+TemplateData % "Template rendering data"
+  - site: SiteConfig "Site configuration"
+  - page: Page "Current page data"
+  - navigation: Navigation "Site navigation"
+
+Page % "Page data"
+  - url: string "Page URL"
+  - title: string "Page title"
+  - content: string "Page content"
+  - metadata: ContentMetadata "Page metadata"
+
+Navigation % "Navigation structure"
+  - items: NavItem[] "Navigation items"
+  - active: string "Active page URL"
+
+NavItem % "Navigation item"
+  - title: string "Item title"
+  - url: string "Item URL"
+  - children: NavItem[] "Child items" (optional)
+
+Breadcrumb % "Breadcrumb item"
+  - title: string "Item title"
+  - url: string "Item URL"
+
+TOCEntry % "Table of contents entry"
+  - title: string "Heading text"
+  - level: number "Heading level"
+  - id: string "Anchor ID"
+
+SearchIndex % "Search index data"
+  - documents: SearchDocument[] "Indexed documents"
+  - index: object "Lunr index"
+
+SearchDocument % "Searchable document"
+  - id: string "Document ID"
+  - title: string "Document title"
+  - content: string "Document content"
+  - url: string "Document URL"
+
+SiteConfig % "Site configuration"
+  - title: string "Site title"
+  - description: string "Site description"
+  - url: string "Site URL"
+  - author: string "Site author"
+
+# Constants
+siteConfig {
+  TITLE: "TechDocs Hub"
+  DESCRIPTION: "Technical documentation made easy"
+  AUTHOR: "TechDocs Team"
+  LANGUAGE: "en"
+  THEME_COLOR: "#2563eb"
+}
+
+imageOptimizer {
+  FORMATS: ["webp", "avif", "jpg"]
+  SIZES: [320, 640, 1280, 1920]
+}
+
+webpackConfig {
+  MODE: "production"
+  DEVTOOL: "source-map"
+  TARGET: "web"
+}

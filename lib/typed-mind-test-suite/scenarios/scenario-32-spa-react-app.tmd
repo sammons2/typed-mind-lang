@@ -1,0 +1,419 @@
+# Single Page Application - E-commerce Platform
+EcommerceApp -> MainFile v2.1.0 # Modern e-commerce SPA
+
+# Main entry point
+MainFile @ src/index.tsx:
+  <- [App, StoreFile, RouterFile, ServicesFile, ApiClientFile, ComponentsFile, PagesFile, UILibFile, HooksFile, AssetsFile, StylesFile, AppFile]
+  -> []
+
+# Core application files
+AppFile @ src/App.tsx:
+  <- [Router, ThemeProvider, AuthProvider, CartProvider]
+  -> [App, serviceWorker]
+
+RouterFile @ src/router/index.ts:
+  <- [HomePage, ProductListPage, ProductDetailPage, CartPage, CheckoutPage, ProfilePage, AdminDashboard]
+  -> [Router, ProtectedRoute]
+
+# State management
+StoreFile @ src/store/index.ts:
+  <- [AuthSliceFile, CartSliceFile, ProductSliceFile, OrderSliceFile]
+  -> [useAppDispatch, useAppSelector]
+
+AuthSliceFile @ src/store/authSlice.ts:
+  <- [authService]
+  -> [login, logout, refreshToken]
+
+CartSliceFile @ src/store/cartSlice.ts:
+  <- [cartService]
+  -> [addToCart, removeFromCart, updateQuantity, clearCart]
+
+ProductSliceFile @ src/store/productSlice.ts:
+  <- [productService]
+  -> [fetchProducts, fetchProductById, searchProducts]
+
+OrderSliceFile @ src/store/orderSlice.ts:
+  <- [orderService]
+  -> [createOrder, fetchOrders, fetchOrderById]
+
+# Services layer
+ServicesFile @ src/services/index.ts:
+  -> [authService, cartService, productService, orderService, paymentService, AuthProvider, CartProvider]
+
+ApiClientFile @ src/services/api-client.ts:
+  <- []
+  -> [apiClient]
+
+# Component library
+ComponentsFile @ src/components/index.ts:
+  -> [Header, Footer, ProductCard, CartItem, SearchBar, LoadingSpinner, ErrorBoundary, Modal]
+
+# Pages
+PagesFile @ src/pages/index.ts:
+  -> [HomePage, ProductListPage, ProductDetailPage, CartPage, CheckoutPage, ProfilePage, AdminDashboard]
+
+# UI Component library
+UILibFile @ src/components/ui/index.ts:
+  -> [Button, Input, Select, Card, Grid, Container, Typography, Icon]
+
+# Hooks
+HooksFile @ src/hooks/index.ts:
+  -> [useAuth, useCart, useProducts, useDebounce, useInfiniteScroll, useLocalStorage]
+
+# Assets
+AssetsFile @ src/assets/index.ts:
+  -> [Logo, EmptyCartIcon, UserIcon, SearchIcon, CartIcon, productPlaceholder]
+
+# Styles
+StylesFile @ src/styles/index.ts:
+  -> [ThemeProvider]
+
+# Environment configuration
+API_URL $env "Backend API endpoint" (required)
+STRIPE_PUBLIC_KEY $env "Stripe public key" (required)
+GOOGLE_ANALYTICS_ID $env "Google Analytics tracking ID" (optional)
+  = "GA-XXXXXXXXX"
+SENTRY_DSN $env "Sentry error tracking DSN" (optional)
+NODE_ENV $env "Node environment"
+  = "development"
+
+# Build configuration
+
+# Runtime configuration
+REACT_VERSION $runtime "React version" (optional)
+  = "18.2.0"
+NODE_VERSION $runtime "Node.js version" (optional)
+  = "20.x"
+
+# UI Components
+App &! "Root application component"
+  > [Header, Router, Footer]
+  $< [NODE_ENV]
+
+Header & "Main navigation header"
+  < [App]
+  > [SearchBar]
+
+Footer & "Application footer"
+  < [App]
+
+Router & "Main application router"
+  < [App]
+  > [HomePage, ProductListPage, ProductDetailPage, CartPage, CheckoutPage, ProfilePage]
+
+# Page Components
+HomePage & "Landing page with featured products"
+  < [Router]
+  > [ProductCard, Container, Grid]
+
+ProductListPage & "Product catalog with filters"
+  < [Router]
+  > [ProductCard, SearchBar, Select, Grid, LoadingSpinner]
+
+ProductDetailPage & "Individual product details"
+  < [Router]
+  > [Button, CartItem, Typography]
+
+CartPage & "Shopping cart management"
+  < [Router]
+  > [CartItem, Button]
+
+CheckoutPage & "Order checkout flow"
+  < [Router, ProtectedRoute]
+  > [Input, Button, Card]
+
+ProfilePage & "User profile management"
+  < [Router, ProtectedRoute]
+  > [Card, Input, Button]
+
+AdminDashboard & "Admin control panel"
+  < [Router, ProtectedRoute]
+  > [Card, Grid, Typography]
+
+# UI Library Components
+Button & "Reusable button component"
+  < [ProductDetailPage, CartPage, CheckoutPage]
+
+Input & "Form input component"
+  < [CheckoutPage, ProfilePage]
+
+Select & "Dropdown select component"
+  < [ProductListPage]
+
+Card & "Content card wrapper"
+  < [ProductCard, CheckoutPage, ProfilePage, AdminDashboard]
+
+Grid & "CSS Grid layout component"
+  < [HomePage, ProductListPage, AdminDashboard]
+
+Container & "Content container with max-width"
+  < [HomePage]
+
+Typography & "Text styling component"
+  < [ProductDetailPage, AdminDashboard]
+
+Icon &! "SVG icon wrapper"
+
+# Feature Components
+ProductCard & "Product display card"
+  < [HomePage, ProductListPage]
+  > [Card, Button]
+
+CartItem & "Cart item display"
+  < [CartPage, ProductDetailPage]
+  > [Button, Typography]
+
+SearchBar & "Product search input"
+  < [Header, ProductListPage]
+  > [Input]
+
+LoadingSpinner & "Loading indicator"
+  < [ProductListPage]
+
+ErrorBoundary &! "Error boundary wrapper"
+
+Modal &! "Modal dialog component"
+
+ProtectedRoute &! "Route guard for auth"
+  > [CheckoutPage, ProfilePage, AdminDashboard]
+
+# Assets
+Logo ~ "Company logo SVG"
+EmptyCartIcon ~ "Empty cart illustration"
+UserIcon ~ "User profile icon"
+SearchIcon ~ "Search magnifier icon"
+CartIcon ~ "Shopping cart icon"
+productPlaceholder ~ "Product placeholder image"
+
+# Service classes
+authService <:
+  => [login, logout, register, refreshToken, validateToken]
+
+cartService <:
+  => [getCart, addItem, removeItem, updateQuantity, clearCart]
+
+productService <:
+  => [getProducts, getProductById, searchProducts, getCategories]
+
+orderService <:
+  => [createOrder, getOrders, getOrderById, updateOrderStatus]
+
+paymentService <:
+  => [processPayment, validateCard, getPaymentMethods]
+
+# API client
+apiClient <:
+  => [get, post, put, delete, setAuthToken]
+
+# State management functions
+login :: (credentials: LoginDTO) => Promise<AuthResponseDTO>
+  <- LoginDTO
+  -> AuthResponseDTO
+  ~> [authService.login]
+  ~ [App, Header, ProfilePage]
+  $< [API_URL, NODE_ENV]
+
+logout :: () => void
+  ~> [authService.logout]
+  ~ [App, Header, ProfilePage]
+
+refreshToken :: () => Promise<void>
+  ~> [authService.refreshToken]
+  $< [API_URL]
+
+addToCart :: (product: ProductDTO, quantity: number) => void
+  <- ProductDTO
+  ~> [cartService.addItem]
+  ~ [ProductDetailPage, CartPage, Header]
+
+removeFromCart :: (productId: string) => void
+  ~> [cartService.removeItem]
+  ~ [CartPage, Header]
+
+updateQuantity :: (productId: string, quantity: number) => void
+  ~> [cartService.updateQuantity]
+  ~ [CartPage]
+
+clearCart :: () => void
+  ~> [cartService.clearCart]
+  ~ [CartPage, CheckoutPage]
+
+fetchProducts :: (params: ProductQueryDTO) => Promise<ProductListDTO>
+  <- ProductQueryDTO
+  -> ProductListDTO
+  ~> [productService.getProducts]
+  ~ [ProductListPage, HomePage]
+  $< [API_URL, GOOGLE_ANALYTICS_ID]
+
+fetchProductById :: (id: string) => Promise<ProductDTO>
+  -> ProductDTO
+  ~> [productService.getProductById]
+  ~ [ProductDetailPage]
+  $< [API_URL]
+
+searchProducts :: (query: string) => Promise<ProductListDTO>
+  -> ProductListDTO
+  ~> [productService.searchProducts]
+  ~ [SearchBar, ProductListPage]
+  $< [API_URL, REACT_VERSION, NODE_VERSION]
+
+createOrder :: (order: CreateOrderDTO) => Promise<OrderDTO>
+  <- CreateOrderDTO
+  -> OrderDTO
+  ~> [orderService.createOrder, paymentService.processPayment]
+  ~ [CheckoutPage]
+  $< [API_URL, STRIPE_PUBLIC_KEY, SENTRY_DSN]
+
+fetchOrders :: () => Promise<OrderListDTO>
+  -> OrderListDTO
+  ~> [orderService.getOrders]
+  ~ [ProfilePage]
+  $< [API_URL]
+
+fetchOrderById :: (id: string) => Promise<OrderDTO>
+  -> OrderDTO
+  ~> [orderService.getOrderById]
+  ~ [ProfilePage]
+  $< [API_URL]
+
+# Custom hooks
+useAuth :: () => AuthState
+  -> AuthState
+
+useCart :: () => CartState
+  -> CartState
+
+useProducts :: (params: ProductQueryDTO) => ProductsHookResult
+  <- ProductQueryDTO
+  -> ProductsHookResult
+
+useDebounce :: (value: string, delay: number) => string
+
+useInfiniteScroll :: (callback: Function) => void
+
+useLocalStorage :: (key: string, initialValue: any) => [any, Function]
+
+# Service worker
+serviceWorker <:
+  => [register, unregister]
+  $< [NODE_ENV]
+
+# Theme provider
+ThemeProvider <:
+  => [getTheme, setTheme]
+
+AuthProvider <:
+  => [getUser, setUser, clearUser]
+
+CartProvider <:
+  => [getCart, updateCart]
+
+# Redux store helper functions
+useAppDispatch :: () => Function
+  -> AuthState
+
+useAppSelector :: (selector: Function) => any
+  -> AuthState
+
+# Data Transfer Objects
+LoginDTO % "Login credentials"
+  - email: string "User email"
+  - password: string "User password"
+
+AuthResponseDTO % "Authentication response"
+  - token: string "JWT access token"
+  - refreshToken: string "JWT refresh token"
+  - user: UserDTO "User information"
+
+UserDTO % "User information"
+  - id: string "User ID"
+  - email: string "User email"
+  - name: string "Full name"
+  - role: string "User role" (optional)
+
+ProductDTO % "Product information"
+  - id: string "Product ID"
+  - name: string "Product name"
+  - description: string "Product description"
+  - price: number "Product price"
+  - images: string[] "Product images"
+  - category: string "Product category"
+  - stock: number "Available stock"
+
+ProductQueryDTO % "Product search parameters"
+  - category: string "Category filter" (optional)
+  - minPrice: number "Minimum price" (optional)
+  - maxPrice: number "Maximum price" (optional)
+  - search: string "Search query" (optional)
+  - page: number "Page number"
+  - limit: number "Items per page"
+
+ProductListDTO % "Paginated product list"
+  - products: ProductDTO[] "Product array"
+  - total: number "Total products"
+  - page: number "Current page"
+  - pages: number "Total pages"
+
+CreateOrderDTO % "Order creation data"
+  - items: OrderItemDTO[] "Order items"
+  - shippingAddress: AddressDTO "Shipping address"
+  - paymentMethod: string "Payment method ID"
+
+OrderItemDTO % "Order line item"
+  - productId: string "Product ID"
+  - quantity: number "Quantity"
+  - price: number "Unit price"
+
+OrderDTO % "Order information"
+  - id: string "Order ID"
+  - items: OrderItemDTO[] "Order items"
+  - total: number "Order total"
+  - status: string "Order status"
+  - createdAt: Date "Order date"
+
+OrderListDTO % "Order list"
+  - orders: OrderDTO[] "Orders array"
+  - total: number "Total orders"
+
+AddressDTO % "Address information"
+  - street: string "Street address"
+  - city: string "City"
+  - state: string "State/Province"
+  - country: string "Country"
+  - postalCode: string "Postal code"
+
+AuthState % "Authentication state"
+  - isAuthenticated: boolean "Auth status"
+  - user: UserDTO "Current user" (optional)
+  - loading: boolean "Loading state"
+
+CartState % "Shopping cart state"
+  - items: CartItemDTO[] "Cart items"
+  - total: number "Cart total"
+  - itemCount: number "Total items"
+
+CartItemDTO % "Cart item"
+  - product: ProductDTO "Product info"
+  - quantity: number "Quantity"
+
+ProductsHookResult % "Products hook return"
+  - products: ProductDTO[] "Products list"
+  - loading: boolean "Loading state"
+  - error: string "Error message" (optional)
+  - hasMore: boolean "Has more pages"
+
+# Constants
+theme {
+  PRIMARY_COLOR: "#007bff"
+  SECONDARY_COLOR: "#6c757d"
+  SUCCESS_COLOR: "#28a745"
+  ERROR_COLOR: "#dc3545"
+  FONT_FAMILY: "Inter, sans-serif"
+}
+
+globalStyles {
+  BREAKPOINT_SM: "640px"
+  BREAKPOINT_MD: "768px"
+  BREAKPOINT_LG: "1024px"
+  BREAKPOINT_XL: "1280px"
+}

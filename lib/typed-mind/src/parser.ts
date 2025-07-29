@@ -10,6 +10,7 @@ import type {
   AssetEntity,
   UIComponentEntity,
   RunParameterEntity,
+  DependencyEntity,
   Position,
   ImportStatement,
 } from './types';
@@ -86,7 +87,7 @@ export class DSLParser {
 
   private isEntityDeclaration(line: string): boolean {
     // Match various entity patterns - entities can start with any letter
-    return /^\w+\s*(->|@|<:|!|::|%|~|&|\$|\s*:)/.test(line);
+    return /^\w+\s*(->|@|<:|!|::|%|~|&|\$|\^|\s*:)/.test(line);
   }
 
   private isLongformDeclaration(line: string): boolean {
@@ -196,6 +197,7 @@ export class DSLParser {
         extends: baseClass,
         implements: interfaces,
         methods: [],
+        imports: [],
         position,
         raw: line,
         comment,
@@ -291,6 +293,22 @@ export class DSLParser {
         raw: line,
         comment,
       } as RunParameterEntity;
+    }
+
+    // Dependency: axios ^ "HTTP client library" v3.0.0
+    // Short form: axios ^ "HTTP client" 
+    const depMatch = cleanLine.match(/^(\w+)\s*\^\s*"([^"]+)"(?:\s*v?([\d.]+))?$/);
+    if (depMatch) {
+      return {
+        name: depMatch[1] as string,
+        type: 'Dependency',
+        purpose: depMatch[2] as string,
+        version: depMatch[3],
+        importedBy: [],
+        position,
+        raw: line,
+        comment,
+      } as DependencyEntity;
     }
 
     // Long form with explicit type

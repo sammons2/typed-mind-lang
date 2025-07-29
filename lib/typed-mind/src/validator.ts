@@ -1,4 +1,4 @@
-import type { AnyEntity, ClassEntity, FunctionEntity, UIComponentEntity, AssetEntity, RunParameterEntity, ConstantsEntity, ValidationError, ValidationResult, EntityType, ReferenceType } from './types';
+import type { AnyEntity, ClassEntity, FunctionEntity, UIComponentEntity, AssetEntity, RunParameterEntity, ConstantsEntity, DependencyEntity, ValidationError, ValidationResult, EntityType, ReferenceType } from './types';
 
 export class DSLValidator {
   private errors: ValidationError[] = [];
@@ -6,8 +6,8 @@ export class DSLValidator {
   // Define which entity types can be referenced by which reference types
   private static readonly VALID_REFERENCES: Record<ReferenceType, { from: EntityType[], to: EntityType[] }> = {
     imports: { 
-      from: ['File'], 
-      to: ['Function', 'Class', 'Constants', 'DTO', 'Asset', 'UIComponent', 'RunParameter', 'File'] 
+      from: ['File', 'Class'], 
+      to: ['Function', 'Class', 'Constants', 'DTO', 'Asset', 'UIComponent', 'RunParameter', 'File', 'Dependency'] 
     },
     exports: { 
       from: ['File'], 
@@ -164,7 +164,7 @@ export class DSLValidator {
 
     // Check for orphans
     for (const [name, entity] of entities) {
-      if (!referenced.has(name) && entity.type !== 'Program') {
+      if (!referenced.has(name) && entity.type !== 'Program' && entity.type !== 'Dependency') {
         this.addError({
           position: entity.position,
           message: `Orphaned entity '${name}'`,
@@ -193,17 +193,24 @@ export class DSLValidator {
             });
           }
         } else if (!entities.has(imp)) {
-          // Fuzzy match for suggestions
-          const suggestion = this.findSimilar(imp, entities);
-          const error: ValidationError = {
-            position: entity.position,
-            message: `Import '${imp}' not found`,
-            severity: 'error',
-          };
-          if (suggestion) {
-            error.suggestion = `Did you mean '${suggestion}'?`;
+          // Check if it's a Dependency entity
+          const isDependency = Array.from(entities.values()).some(
+            e => e.type === 'Dependency' && e.name === imp
+          );
+          
+          if (!isDependency) {
+            // Fuzzy match for suggestions
+            const suggestion = this.findSimilar(imp, entities);
+            const error: ValidationError = {
+              position: entity.position,
+              message: `Import '${imp}' not found`,
+              severity: 'error',
+            };
+            if (suggestion) {
+              error.suggestion = `Did you mean '${suggestion}'?`;
+            }
+            this.addError(error);
           }
-          this.addError(error);
         }
       }
     }
@@ -855,7 +862,24 @@ export class DSLValidator {
       if ('imports' in referencer) {
         for (const imp of referencer.imports) {
           if (!imp.includes('*')) {
-            addReference(imp, 'imports', referencer);
+            // Check if this is a Dependency entity
+            const dependency = Array.from(entities.values()).find(
+              e => e.type === 'Dependency' && e.name === imp
+            );
+            
+            if (dependency) {
+              // For Dependencies, update their importedBy field directly
+              const depEntity = dependency as DependencyEntity;
+              if (!depEntity.importedBy) {
+                depEntity.importedBy = [];
+              }
+              if (!depEntity.importedBy.includes(referencer.name)) {
+                depEntity.importedBy.push(referencer.name);
+              }
+            } else {
+              // For other entities, use the standard addReference
+              addReference(imp, 'imports', referencer);
+            }
           }
         }
       }

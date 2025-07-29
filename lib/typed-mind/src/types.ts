@@ -1,4 +1,4 @@
-export type EntityType = 'Program' | 'File' | 'Function' | 'Class' | 'Constants' | 'DTO' | 'Asset' | 'UIComponent' | 'RunParameter';
+export type EntityType = 'Program' | 'File' | 'Function' | 'Class' | 'Constants' | 'DTO' | 'Asset' | 'UIComponent' | 'RunParameter' | 'Dependency';
 
 export interface Position {
   line: number;
@@ -70,6 +70,7 @@ export interface ClassEntity extends Entity {
   extends?: string;
   implements: string[];
   methods: string[];
+  imports?: string[];
 }
 
 export interface ConstantsEntity extends Entity {
@@ -115,7 +116,14 @@ export interface RunParameterEntity extends Entity {
   consumedBy?: string[]; // Functions that consume this parameter
 }
 
-export type AnyEntity = ProgramEntity | FileEntity | FunctionEntity | ClassEntity | ConstantsEntity | DTOEntity | AssetEntity | UIComponentEntity | RunParameterEntity;
+export interface DependencyEntity extends Entity {
+  type: 'Dependency';
+  purpose: string;
+  version?: string;
+  importedBy?: string[]; // Files and Functions that import this dependency
+}
+
+export type AnyEntity = ProgramEntity | FileEntity | FunctionEntity | ClassEntity | ConstantsEntity | DTOEntity | AssetEntity | UIComponentEntity | RunParameterEntity | DependencyEntity;
 
 export interface ValidationError {
   position: Position;

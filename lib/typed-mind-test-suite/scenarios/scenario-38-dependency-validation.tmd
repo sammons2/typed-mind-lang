@@ -1,0 +1,49 @@
+# Dependency Validation Test
+WebApp -> MainFile v1.0.0 # Test dependency entity type
+
+# Dependencies - external packages
+axios ^ "HTTP client library" v3.1.0
+react ^ "UI library" 18.2.0
+lodash ^ "Utility functions"
+express ^ "Web framework" v4.18.2
+
+# Main entry point
+MainFile @ src/index.ts:
+  <- [axios, react, express, ServerFile]
+  -> []
+
+# Server file that uses dependencies  
+ServerFile @ src/server.ts:
+  <- [express, lodash, AuthService]
+  -> [startServer]
+
+# Service that uses axios
+AuthService <:
+  <- [axios]
+  => [login, logout]
+
+# Functions that consume dependencies
+startServer :: () => void
+  $< [PORT]
+
+login :: (username: string, password: string) => Promise<AuthResponse>
+  <- LoginRequest
+  -> AuthResponse
+  ~> [axios.post]
+
+# DTOs
+LoginRequest % "Login credentials"
+  - username: string "Username"
+  - password: string "Password"
+
+AuthResponse % "Authentication response"
+  - token: string "JWT token"
+  - user: User "User info"
+
+User % "User information"
+  - id: string "User ID"
+  - name: string "Full name"
+
+# Environment variables
+PORT $env "Server port" 
+  = "3000"

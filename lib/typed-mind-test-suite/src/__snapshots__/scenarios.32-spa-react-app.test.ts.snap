@@ -1,0 +1,38 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`scenario-32-spa-react-app > should validate SPA React application architecture 1`] = `
+{
+  "errors": [
+    {
+      "column": 1,
+      "line": 328,
+      "message": "Orphaned entity 'UserDTO'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 362,
+      "message": "Orphaned entity 'OrderItemDTO'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 378,
+      "message": "Orphaned entity 'AddressDTO'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 395,
+      "message": "Orphaned entity 'CartItemDTO'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+  ],
+  "file": "scenario-32-spa-react-app.tmd",
+  "valid": false,
+}
+`;
