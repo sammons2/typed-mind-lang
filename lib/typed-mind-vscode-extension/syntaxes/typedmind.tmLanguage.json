@@ -6,6 +6,7 @@
     { "include": "#dto-fields" },
     { "include": "#entities" },
     { "include": "#operators" },
+    { "include": "#referenced-entities" },
     { "include": "#strings" },
     { "include": "#keywords" },
     { "include": "#wildcards" }
@@ -44,7 +45,7 @@
       "patterns": [
         {
           "name": "entity.name.type.typedmind",
-          "match": "\\b(Program|File|Function|Class|Constants)\\b"
+          "match": "\\b(Program|File|Function|Class|Constants|Asset|UIComponent|DTO|RunParameter|Dependency)\\b"
         },
         {
           "name": "entity.name.function.typedmind",
@@ -81,6 +82,23 @@
         {
           "name": "entity.name.dependency.typedmind",
           "match": "\\b[A-Za-z][A-Za-z0-9@/_-]*\\b(?=\\s*\\^)"
+        }
+      ]
+    },
+    "referenced-entities": {
+      "patterns": [
+        {
+          "match": "\\[([^\\]]+)\\]",
+          "captures": {
+            "1": {
+              "patterns": [
+                {
+                  "match": "\\b([A-Za-z][A-Za-z0-9]*)\\b",
+                  "name": "entity.name.tag.typedmind"
+                }
+              ]
+            }
+          }
         }
       ]
     },
