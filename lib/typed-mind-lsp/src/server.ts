@@ -473,23 +473,37 @@ export class TypedMindLanguageServer {
   private getWordRangeAtPosition(text: string, offset: number): { start: number; end: number } | null {
     if (offset < 0 || offset >= text.length) return null;
 
-    // Find word boundaries
+    // Check if we're in a scoped package name (starts with @)
     let start = offset;
     let end = offset;
 
-    // Move start backward
-    while (start > 0 && !this.isWordBoundary(text[start - 1])) {
+    // Look backward to find the start
+    while (start > 0 && this.isEntityNameChar(text[start - 1])) {
       start--;
     }
+    
+    // Check if there's an @ before the word
+    if (start > 0 && text[start - 1] === '@') {
+      // Verify it's at a word boundary
+      if (start === 1 || !this.isEntityNameChar(text[start - 2])) {
+        start--; // Include the @
+      }
+    }
 
-    // Move end forward
-    while (end < text.length && !this.isWordBoundary(text[end])) {
+    // Look forward to find the end
+    while (end < text.length && this.isEntityNameChar(text[end])) {
       end++;
     }
 
     if (start === end) return null;
 
     return { start, end };
+  }
+
+  private isEntityNameChar(char: string | undefined): boolean {
+    if (!char) return false;
+    // Allow alphanumeric, hyphen, underscore, and forward slash (for scoped packages)
+    return /[a-zA-Z0-9\-_/]/.test(char);
   }
 
   private isWordBoundary(char: string | undefined): boolean {
