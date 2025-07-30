@@ -87,7 +87,7 @@ export class DSLParser {
 
   private isEntityDeclaration(line: string): boolean {
     // Match various entity patterns - entities can start with any letter
-    return /^\w+\s*(->|@|<:|!|::|%|~|&|\$|\^|\s*:)/.test(line);
+    return /^[@\w\-/]+\s*(->|@|<:|!|::|%|~|&|\$|\^|\s*:)/.test(line);
   }
 
   private isLongformDeclaration(line: string): boolean {
@@ -297,7 +297,8 @@ export class DSLParser {
 
     // Dependency: axios ^ "HTTP client library" v3.0.0
     // Short form: axios ^ "HTTP client" 
-    const depMatch = cleanLine.match(/^(\w+)\s*\^\s*"([^"]+)"(?:\s*v?([\d.]+))?$/);
+    // Supports scoped packages like @org/package
+    const depMatch = cleanLine.match(/^([@\w\-/]+)\s*\^\s*"([^"]+)"(?:\s*v?([\d.\-\w]+))?$/);
     if (depMatch) {
       return {
         name: depMatch[1] as string,
