@@ -15,6 +15,11 @@ import {
   DefinitionParams,
   Location,
   ReferenceParams,
+  SemanticTokensBuilder,
+  SemanticTokensParams,
+  SemanticTokens,
+  SemanticTokenTypes,
+  SemanticTokenModifiers,
 } from 'vscode-languageserver/node';
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -29,6 +34,25 @@ export class TypedMindLanguageServer {
   
   // Cache parsed entities per document
   private documentEntities = new Map<string, Map<string, AnyEntity>>();
+  
+  // Semantic tokens legend
+  private readonly tokenTypes = [
+    SemanticTokenTypes.function,
+    SemanticTokenTypes.class,
+    SemanticTokenTypes.interface,
+    SemanticTokenTypes.variable,
+    SemanticTokenTypes.parameter,
+    SemanticTokenTypes.property,
+    SemanticTokenTypes.namespace,
+    SemanticTokenTypes.type,
+  ];
+  
+  private readonly tokenModifiers = [
+    SemanticTokenModifiers.declaration,
+    SemanticTokenModifiers.definition,
+    SemanticTokenModifiers.readonly,
+    SemanticTokenModifiers.static,
+  ];
   
   constructor() {
     this.setupHandlers();
@@ -46,6 +70,13 @@ export class TypedMindLanguageServer {
           hoverProvider: true,
           definitionProvider: true,
           referencesProvider: true,
+          semanticTokensProvider: {
+            legend: {
+              tokenTypes: this.tokenTypes,
+              tokenModifiers: this.tokenModifiers,
+            },
+            full: true,
+          },
         },
       };
       return result;
@@ -83,6 +114,11 @@ export class TypedMindLanguageServer {
     // Handle find references
     this.connection.onReferences((params: ReferenceParams): Location[] => {
       return this.provideReferences(params);
+    });
+
+    // Handle semantic tokens
+    this.connection.languages.semanticTokens.on((params: SemanticTokensParams): SemanticTokens => {
+      return this.provideSemanticTokens(params);
     });
   }
 
@@ -509,6 +545,92 @@ export class TypedMindLanguageServer {
   private isWordBoundary(char: string | undefined): boolean {
     if (!char) return true;
     return /[\s\[\],<>@:~!=#\-]/.test(char);
+  }
+
+  private provideSemanticTokens(params: SemanticTokensParams): SemanticTokens {
+    const document = this.documents.get(params.textDocument.uri);
+    if (!document) {
+      return { data: [] };
+    }
+
+    const entities = this.documentEntities.get(params.textDocument.uri);
+    if (!entities) {
+      return { data: [] };
+    }
+
+    const builder = new SemanticTokensBuilder();
+    const text = document.getText();
+    const lines = text.split('\n');
+
+    // Build a map of entity names to their types for quick lookup
+    const entityTypeMap = new Map<string, string>();
+    for (const [name, entity] of entities) {
+      entityTypeMap.set(name, entity.type);
+    }
+
+    // Find all entity references in the document
+    for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+      const line = lines[lineIndex];
+      if (!line) continue;
+
+      // Check each word in the line
+      const words = line.matchAll(/\b([A-Za-z][A-Za-z0-9@/_-]*)\b/g);
+      for (const match of words) {
+        const word = match[1];
+        const index = match.index;
+        if (!word || index === undefined) continue;
+        
+        const entityType = entityTypeMap.get(word);
+        
+        if (entityType) {
+          const tokenType = this.getSemanticTokenType(entityType);
+          const tokenModifier = this.getSemanticTokenModifier(line, index);
+          
+          builder.push(
+            lineIndex,
+            index,
+            word.length,
+            tokenType,
+            tokenModifier
+          );
+        }
+      }
+    }
+
+    return builder.build();
+  }
+
+  private getSemanticTokenType(entityType: string): number {
+    switch (entityType) {
+      case 'Function':
+        return this.tokenTypes.indexOf(SemanticTokenTypes.function);
+      case 'Class':
+        return this.tokenTypes.indexOf(SemanticTokenTypes.class);
+      case 'DTO':
+      case 'Asset':
+      case 'UIComponent':
+        return this.tokenTypes.indexOf(SemanticTokenTypes.interface);
+      case 'RunParameter':
+        return this.tokenTypes.indexOf(SemanticTokenTypes.parameter);
+      case 'Constants':
+        return this.tokenTypes.indexOf(SemanticTokenTypes.property);
+      case 'Program':
+      case 'Dependency':
+        return this.tokenTypes.indexOf(SemanticTokenTypes.namespace);
+      case 'File':
+        return this.tokenTypes.indexOf(SemanticTokenTypes.type);
+      default:
+        return this.tokenTypes.indexOf(SemanticTokenTypes.variable);
+    }
+  }
+
+  private getSemanticTokenModifier(line: string, position: number): number {
+    // Check if this is a declaration (has an operator after it)
+    const afterWord = line.substring(position);
+    if (/^\w*\s*(->|@|<:|!|::|%|~|&|\$|\^)/.test(afterWord)) {
+      return 1 << this.tokenModifiers.indexOf(SemanticTokenModifiers.declaration);
+    }
+    return 0;
   }
 
   start(): void {

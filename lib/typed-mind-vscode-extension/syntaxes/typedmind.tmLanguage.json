@@ -4,9 +4,9 @@
   "patterns": [
     { "include": "#comments" },
     { "include": "#dto-fields" },
+    { "include": "#referenced-entities" },
     { "include": "#entities" },
     { "include": "#operators" },
-    { "include": "#referenced-entities" },
     { "include": "#strings" },
     { "include": "#keywords" },
     { "include": "#wildcards" }
@@ -88,16 +88,146 @@
     "referenced-entities": {
       "patterns": [
         {
+          "comment": "Function calls",
+          "match": "(~>)\\s*\\[([^\\]]+)\\]",
+          "captures": {
+            "1": { "name": "keyword.operator.calls.typedmind" },
+            "2": {
+              "patterns": [
+                {
+                  "match": "\\b([A-Za-z][A-Za-z0-9]*)\\b",
+                  "name": "entity.name.function.typedmind"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "comment": "Function affects UIComponents",
+          "match": "(~)\\s*\\[([^\\]]+)\\]",
+          "captures": {
+            "1": { "name": "keyword.operator.asset.typedmind" },
+            "2": {
+              "patterns": [
+                {
+                  "match": "\\b([A-Za-z][A-Za-z0-9]*)\\b",
+                  "name": "entity.name.component.typedmind"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "comment": "Methods",
+          "match": "(=>)\\s*\\[([^\\]]+)\\]",
+          "captures": {
+            "1": { "name": "keyword.operator.methods.typedmind" },
+            "2": {
+              "patterns": [
+                {
+                  "match": "\\b([A-Za-z][A-Za-z0-9]*)\\b",
+                  "name": "entity.name.function.typedmind"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "comment": "UIComponent contains",
+          "match": "(>)\\s*\\[([^\\]]+)\\]",
+          "captures": {
+            "1": { "name": "keyword.operator.contains.typedmind" },
+            "2": {
+              "patterns": [
+                {
+                  "match": "\\b([A-Za-z][A-Za-z0-9]*)\\b",
+                  "name": "entity.name.component.typedmind"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "comment": "UIComponent containedBy",
+          "match": "(<)\\s*\\[([^\\]]+)\\]",
+          "captures": {
+            "1": { "name": "keyword.operator.containedBy.typedmind" },
+            "2": {
+              "patterns": [
+                {
+                  "match": "\\b([A-Za-z][A-Za-z0-9]*)\\b",
+                  "name": "entity.name.component.typedmind"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "comment": "Function consumes RunParameters",
+          "match": "(\\$<)\\s*\\[([^\\]]+)\\]",
+          "captures": {
+            "1": { "name": "keyword.operator.consumes.typedmind" },
+            "2": {
+              "patterns": [
+                {
+                  "match": "\\b([A-Z][A-Z0-9_]*)\\b",
+                  "name": "entity.name.parameter.typedmind"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "comment": "Generic imports/exports (mixed types)",
+          "match": "(->|<-)\\s*\\[([^\\]]+)\\]",
+          "captures": {
+            "1": { "name": "keyword.operator.arrow.typedmind" },
+            "2": {
+              "patterns": [
+                {
+                  "match": "\\b([A-Za-z][A-Za-z0-9@/_-]*)\\b",
+                  "name": "variable.other.typedmind"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "comment": "Other bracketed lists",
           "match": "\\[([^\\]]+)\\]",
           "captures": {
             "1": {
               "patterns": [
                 {
-                  "match": "\\b([A-Za-z][A-Za-z0-9]*)\\b",
-                  "name": "entity.name.tag.typedmind"
+                  "match": "\\b([A-Za-z][A-Za-z0-9@/_-]*)\\b",
+                  "name": "variable.other.typedmind"
                 }
               ]
             }
+          }
+        },
+        {
+          "comment": "Program entry (single File reference)",
+          "match": "(->)\\s+(\\w+)\\s*(?=v|$)",
+          "captures": {
+            "1": { "name": "keyword.operator.arrow.typedmind" },
+            "2": { "name": "entity.name.function.typedmind" }
+          }
+        },
+        {
+          "comment": "Function input/output (single DTO reference)",
+          "match": "^\\s*(<-|->)\\s+(\\w+)$",
+          "captures": {
+            "1": { "name": "keyword.operator.arrow.typedmind" },
+            "2": { "name": "entity.name.dto.typedmind" }
+          }
+        },
+        {
+          "comment": "Asset contains program",
+          "match": "(>>)\\s+(\\w+)",
+          "captures": {
+            "1": { "name": "keyword.operator.contains-program.typedmind" },
+            "2": { "name": "entity.name.type.typedmind" }
           }
         }
       ]
