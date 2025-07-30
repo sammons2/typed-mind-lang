@@ -27,7 +27,7 @@ This extension features an accessibility-first design with colors optimized for 
 | Entity | Color | Style | Hex |
 |--------|-------|-------|-----|
 | **Program** | Coral Red | Bold | `#FF6B6B` |
-| **File** | Turquoise | Normal | `#4ECDC4` |
+| **File** | Plum | Normal | `#DDA0DD` |
 | **Function** | Yellow | Normal | `#FFE66D` |
 | **Class** | Mint Green | Italic | `#95E1D3` |
 | **Constants** | Lavender | Underline | `#C7CEEA` |

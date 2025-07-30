@@ -9,7 +9,7 @@ This color scheme is designed to be accessible for users with all types of color
 | Entity Type | Color (Hex) | Color Name | Text Style | Notes |
 |-------------|-------------|------------|------------|-------|
 | **Program** | `#FF6B6B` | Coral Red | Bold | High contrast, easily distinguishable |
-| **File** | `#4ECDC4` | Turquoise | Normal | Cool tone, distinct from warm colors |
+| **File** | `#DDA0DD` | Plum | Normal | Purple tone, distinct from blues |
 | **Function** | `#FFE66D` | Yellow | Normal | Traditional function color, high luminance |
 | **Class** | `#95E1D3` | Mint Green | Italic | Soft green, differentiated by style |
 | **Constants** | `#C7CEEA` | Lavender | Underline | Light purple, underline for emphasis |
