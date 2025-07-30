@@ -3,6 +3,7 @@
   "name": "TypedMind",
   "patterns": [
     { "include": "#comments" },
+    { "include": "#dto-fields" },
     { "include": "#entities" },
     { "include": "#operators" },
     { "include": "#strings" },
@@ -15,6 +16,27 @@
         {
           "name": "comment.line.number-sign.typedmind",
           "match": "#.*$"
+        }
+      ]
+    },
+    "dto-fields": {
+      "patterns": [
+        {
+          "match": "^\\s*-\\s*([a-zA-Z][a-zA-Z0-9]*):\\s*([a-zA-Z][a-zA-Z0-9\\[\\]<>]*)\\s*(.*)$",
+          "captures": {
+            "1": {
+              "name": "variable.other.property.typedmind"
+            },
+            "2": {
+              "name": "support.type.typedmind"
+            },
+            "3": {
+              "patterns": [
+                { "include": "#strings" },
+                { "include": "#keywords" }
+              ]
+            }
+          }
         }
       ]
     },
