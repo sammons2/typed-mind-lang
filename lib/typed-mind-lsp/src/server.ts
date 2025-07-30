@@ -144,7 +144,7 @@ export class TypedMindLanguageServer {
     const items: CompletionItem[] = [];
 
     // Add entity types
-    const entityTypes = ['Program', 'File', 'Function', 'Class', 'Constants', 'DTO', 'Asset', 'UIComponent', 'RunParameter'] as const;
+    const entityTypes = ['Program', 'File', 'Function', 'Class', 'Constants', 'DTO', 'Asset', 'UIComponent', 'RunParameter', 'Dependency'] as const;
     for (const type of entityTypes) {
       items.push({
         label: type,
@@ -167,6 +167,7 @@ export class TypedMindLanguageServer {
       { label: '~', detail: 'Asset operator' },
       { label: '&', detail: 'UIComponent operator' },
       { label: '&!', detail: 'Root UIComponent operator' },
+      { label: '^', detail: 'Dependency operator' },
       { label: '$env', detail: 'Environment variable parameter' },
       { label: '$iam', detail: 'IAM role parameter' },
       { label: '$runtime', detail: 'Runtime configuration parameter' },
@@ -217,6 +218,8 @@ export class TypedMindLanguageServer {
         return CompletionItemKind.Class;
       case 'RunParameter':
         return CompletionItemKind.Property;
+      case 'Dependency':
+        return CompletionItemKind.Module;
       default:
         return CompletionItemKind.Variable;
     }
@@ -252,10 +255,19 @@ export class TypedMindLanguageServer {
     if (entity.referencedBy && entity.referencedBy.length > 0) {
       const refsByType = new Map<string, string[]>();
       for (const ref of entity.referencedBy) {
-        if (!refsByType.has(ref.type)) {
-          refsByType.set(ref.type, []);
+        // Handle both object and string references
+        if (typeof ref === 'object' && ref.type && ref.from) {
+          if (!refsByType.has(ref.type)) {
+            refsByType.set(ref.type, []);
+          }
+          refsByType.get(ref.type)!.push(ref.from);
+        } else if (typeof ref === 'string') {
+          // Legacy string format
+          if (!refsByType.has('reference')) {
+            refsByType.set('reference', []);
+          }
+          refsByType.get('reference')!.push(ref);
         }
-        refsByType.get(ref.type)!.push(ref.from);
       }
       
       const refStrings: string[] = [];
@@ -362,6 +374,20 @@ export class TypedMindLanguageServer {
       }
       if (funcEntity.consumes && funcEntity.consumes.length > 0) {
         contents.push(`**Consumes**: ${funcEntity.consumes.join(', ')}`);
+      }
+    }
+
+    // Dependency-specific information
+    if (entity.type === 'Dependency') {
+      const depEntity = entity as any;
+      if (depEntity.purpose) {
+        contents.push(`**Purpose**: ${depEntity.purpose}`);
+      }
+      if (depEntity.version) {
+        contents.push(`**Version**: ${depEntity.version}`);
+      }
+      if (depEntity.importedBy && depEntity.importedBy.length > 0) {
+        contents.push(`**Imported By**: ${depEntity.importedBy.join(', ')}`);
       }
     }
 

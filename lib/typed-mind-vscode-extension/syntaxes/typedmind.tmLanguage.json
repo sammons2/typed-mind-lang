@@ -51,6 +51,14 @@
         {
           "name": "entity.name.component.typedmind",
           "match": "\\b[A-Za-z][A-Za-z0-9]*\\b(?=\\s*&)"
+        },
+        {
+          "name": "entity.name.parameter.typedmind",
+          "match": "\\b[A-Z][A-Z0-9_]*\\b(?=\\s*\\$(env|iam|runtime|config))"
+        },
+        {
+          "name": "entity.name.dependency.typedmind",
+          "match": "\\b[A-Za-z][A-Za-z0-9@/_-]*\\b(?=\\s*\\^)"
         }
       ]
     },
@@ -107,6 +115,30 @@
         {
           "name": "keyword.operator.containedBy.typedmind",
           "match": "<"
+        },
+        {
+          "name": "keyword.operator.dependency.typedmind",
+          "match": "\\^"
+        },
+        {
+          "name": "keyword.operator.parameter.typedmind",
+          "match": "\\$(env|iam|runtime|config)"
+        },
+        {
+          "name": "keyword.operator.consumes.typedmind",
+          "match": "\\$<"
+        },
+        {
+          "name": "keyword.operator.contains-program.typedmind",
+          "match": ">>"
+        },
+        {
+          "name": "keyword.operator.root-component.typedmind",
+          "match": "&!"
+        },
+        {
+          "name": "keyword.operator.default.typedmind",
+          "match": "="
         }
       ]
     },
@@ -125,7 +157,27 @@
       "patterns": [
         {
           "name": "keyword.other.version.typedmind",
-          "match": "\\bv[0-9]+\\.[0-9]+\\b"
+          "match": "\\bv?[0-9]+\\.[0-9]+(?:\\.[0-9]+)?(?:-[a-zA-Z0-9.-]+)?\\b"
+        },
+        {
+          "name": "keyword.control.optional.typedmind",
+          "match": "\\b(optional|required)\\b"
+        },
+        {
+          "name": "keyword.control.import.typedmind",
+          "match": "\\b(@import|import)\\b"
+        },
+        {
+          "name": "keyword.control.as.typedmind",
+          "match": "\\bas\\b"
+        },
+        {
+          "name": "storage.type.typedmind",
+          "match": "\\b(program|file|function|class|dto|component|asset|constants|parameter|dependency)\\b"
+        },
+        {
+          "name": "storage.modifier.typedmind",
+          "match": "\\b(type|description|path|entry|version|signature|input|output|calls|affects|consumes|imports|exports|extends|implements|methods|contains|containedBy|affectedBy|fields|purpose|root|paramType|required|default|importedBy)\\b:"
         }
       ]
     },
