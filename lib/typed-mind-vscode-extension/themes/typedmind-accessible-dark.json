@@ -1,0 +1,162 @@
+{
+  "name": "TypedMind Accessible Dark",
+  "type": "dark",
+  "colors": {
+    "editor.background": "#1a1a1a",
+    "editor.foreground": "#e0e0e0"
+  },
+  "tokenColors": [
+    {
+      "name": "TypedMind Program",
+      "scope": "entity.name.namespace.typedmind",
+      "settings": {
+        "foreground": "#FFB700",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "name": "TypedMind File",
+      "scope": "entity.name.module.typedmind",
+      "settings": {
+        "foreground": "#00D9FF",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "name": "TypedMind Function",
+      "scope": "entity.name.function.typedmind",
+      "settings": {
+        "foreground": "#FF6DB6"
+      }
+    },
+    {
+      "name": "TypedMind Class",
+      "scope": "entity.name.class.typedmind",
+      "settings": {
+        "foreground": "#00FF88"
+      }
+    },
+    {
+      "name": "TypedMind Constants",
+      "scope": "constant.other.typedmind",
+      "settings": {
+        "foreground": "#FFE14D",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "name": "TypedMind DTO",
+      "scope": "entity.name.type.interface.typedmind",
+      "settings": {
+        "foreground": "#B794F6",
+        "fontStyle": "italic"
+      }
+    },
+    {
+      "name": "TypedMind Asset",
+      "scope": "entity.name.tag.typedmind",
+      "settings": {
+        "foreground": "#81E6D9"
+      }
+    },
+    {
+      "name": "TypedMind UIComponent",
+      "scope": "entity.name.tag.component.typedmind",
+      "settings": {
+        "foreground": "#FBB6CE"
+      }
+    },
+    {
+      "name": "TypedMind RunParameter",
+      "scope": "variable.parameter.typedmind",
+      "settings": {
+        "foreground": "#FED7AA",
+        "fontStyle": "underline"
+      }
+    },
+    {
+      "name": "TypedMind Dependency",
+      "scope": "support.other.module.typedmind",
+      "settings": {
+        "foreground": "#C6F6D5",
+        "fontStyle": "underline"
+      }
+    },
+    {
+      "name": "TypedMind Comments",
+      "scope": "comment.line.number-sign.typedmind",
+      "settings": {
+        "foreground": "#6B7280",
+        "fontStyle": "italic"
+      }
+    },
+    {
+      "name": "TypedMind Strings",
+      "scope": "string.quoted.double.typedmind",
+      "settings": {
+        "foreground": "#A7F3D0"
+      }
+    },
+    {
+      "name": "TypedMind Operators",
+      "scope": [
+        "keyword.operator.arrow.typedmind",
+        "keyword.operator.import.typedmind",
+        "keyword.operator.location.typedmind",
+        "keyword.operator.signature.typedmind",
+        "keyword.operator.calls.typedmind",
+        "keyword.operator.extends.typedmind",
+        "keyword.operator.constants.typedmind",
+        "keyword.operator.methods.typedmind",
+        "keyword.operator.dto.typedmind",
+        "keyword.operator.asset.typedmind",
+        "keyword.operator.component.typedmind",
+        "keyword.operator.contains.typedmind",
+        "keyword.operator.containedBy.typedmind",
+        "keyword.operator.dependency.typedmind",
+        "keyword.operator.parameter.typedmind",
+        "keyword.operator.consumes.typedmind",
+        "keyword.operator.contains-program.typedmind",
+        "keyword.operator.root-component.typedmind",
+        "keyword.operator.default.typedmind"
+      ],
+      "settings": {
+        "foreground": "#F59E0B"
+      }
+    },
+    {
+      "name": "TypedMind Keywords",
+      "scope": [
+        "keyword.control.optional.typedmind",
+        "keyword.control.import.typedmind",
+        "keyword.control.as.typedmind",
+        "storage.type.typedmind",
+        "storage.modifier.typedmind"
+      ],
+      "settings": {
+        "foreground": "#E879F9"
+      }
+    },
+    {
+      "name": "TypedMind Version",
+      "scope": "keyword.other.version.typedmind",
+      "settings": {
+        "foreground": "#94A3B8"
+      }
+    },
+    {
+      "name": "TypedMind Property Names",
+      "scope": "variable.other.property.typedmind",
+      "settings": {
+        "foreground": "#93C5FD"
+      }
+    },
+    {
+      "name": "TypedMind Types",
+      "scope": "support.type.typedmind",
+      "settings": {
+        "foreground": "#FDE68A"
+      }
+    }
+  ]
+}

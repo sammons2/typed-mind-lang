@@ -35,6 +35,13 @@
         "path": "./syntaxes/typedmind.tmLanguage.json"
       }
     ],
+    "themes": [
+      {
+        "label": "TypedMind Colorblind Dark",
+        "uiTheme": "vs-dark",
+        "path": "./themes/typedmind-colorblind-dark.json"
+      }
+    ],
     "configuration": {
       "type": "object",
       "title": "TypedMind",

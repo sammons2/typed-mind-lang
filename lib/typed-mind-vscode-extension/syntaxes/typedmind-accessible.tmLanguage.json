@@ -44,47 +44,88 @@
     "entities": {
       "patterns": [
         {
-          "name": "entity.name.type.typedmind",
-          "match": "\\b(Program|File|Function|Class|Constants|Asset|UIComponent|DTO|RunParameter|Dependency)\\b"
+          "name": "entity.name.namespace.typedmind",
+          "match": "\\bProgram\\b"
         },
         {
-          "name": "entity.name.namespace.program.typedmind",
-          "match": "\\b[A-Za-z][A-Za-z0-9]*\\b(?=\\s*->\\s*\\w+\\s*v)"
+          "name": "entity.name.module.typedmind",
+          "match": "\\bFile\\b"
         },
         {
-          "name": "entity.name.type.file.typedmind",
+          "name": "entity.name.function.typedmind",
+          "match": "\\bFunction\\b"
+        },
+        {
+          "name": "entity.name.class.typedmind",
+          "match": "\\bClass\\b"
+        },
+        {
+          "name": "constant.other.typedmind",
+          "match": "\\bConstants\\b"
+        },
+        {
+          "name": "entity.name.tag.typedmind",
+          "match": "\\bAsset\\b"
+        },
+        {
+          "name": "entity.name.tag.component.typedmind",
+          "match": "\\bUIComponent\\b"
+        },
+        {
+          "name": "entity.name.type.interface.typedmind",
+          "match": "\\bDTO\\b"
+        },
+        {
+          "name": "variable.parameter.typedmind",
+          "match": "\\bRunParameter\\b"
+        },
+        {
+          "name": "support.other.module.typedmind",
+          "match": "\\bDependency\\b"
+        },
+        {
+          "comment": "Entity names before @",
+          "name": "entity.name.function.typedmind",
           "match": "\\b[A-Za-z][A-Za-z0-9]*\\b(?=\\s*@)"
         },
         {
+          "comment": "Entity names before ::",
           "name": "entity.name.function.typedmind",
           "match": "\\b[A-Za-z][A-Za-z0-9]*\\b(?=\\s*::)"
         },
         {
+          "comment": "Entity names before <:",
           "name": "entity.name.class.typedmind",
           "match": "\\b[A-Za-z][A-Za-z0-9]*\\b(?=\\s*<:)"
         },
         {
-          "name": "entity.name.constant.typedmind",
+          "comment": "Entity names before !",
+          "name": "constant.other.typedmind",
           "match": "\\b[A-Za-z][A-Za-z0-9]*\\b(?=\\s*!)"
         },
         {
-          "name": "entity.name.dto.typedmind",
+          "comment": "Entity names before %",
+          "name": "entity.name.type.interface.typedmind",
           "match": "\\b[A-Za-z][A-Za-z0-9]*\\b(?=\\s*%)"
         },
         {
-          "name": "entity.name.asset.typedmind",
+          "comment": "Entity names before ~",
+          "name": "entity.name.tag.typedmind",
           "match": "\\b[A-Za-z][A-Za-z0-9]*\\b(?=\\s*~)"
         },
         {
-          "name": "entity.name.component.typedmind",
+          "comment": "Entity names before &",
+          "name": "entity.name.tag.component.typedmind",
           "match": "\\b[A-Za-z][A-Za-z0-9]*\\b(?=\\s*&)"
         },
         {
-          "name": "entity.name.parameter.typedmind",
+          "comment": "Entity names before $env, $iam, $runtime, $config",
+          "name": "variable.parameter.typedmind",
           "match": "\\b[A-Z][A-Z0-9_]*\\b(?=\\s*\\$(env|iam|runtime|config))"
         },
         {
-          "name": "entity.name.dependency.typedmind",
+          "comment": "Entity names before ^",
+          "name": "support.other.module.typedmind",
           "match": "\\b[A-Za-z][A-Za-z0-9@/_-]*\\b(?=\\s*\\^)"
         }
       ]
@@ -115,7 +156,7 @@
               "patterns": [
                 {
                   "match": "\\b([A-Za-z][A-Za-z0-9]*)\\b",
-                  "name": "entity.name.component.typedmind"
+                  "name": "entity.name.tag.component.typedmind"
                 }
               ]
             }
@@ -145,7 +186,7 @@
               "patterns": [
                 {
                   "match": "\\b([A-Za-z][A-Za-z0-9]*)\\b",
-                  "name": "entity.name.component.typedmind"
+                  "name": "entity.name.tag.component.typedmind"
                 }
               ]
             }
@@ -160,7 +201,7 @@
               "patterns": [
                 {
                   "match": "\\b([A-Za-z][A-Za-z0-9]*)\\b",
-                  "name": "entity.name.component.typedmind"
+                  "name": "entity.name.tag.component.typedmind"
                 }
               ]
             }
@@ -175,7 +216,7 @@
               "patterns": [
                 {
                   "match": "\\b([A-Z][A-Z0-9_]*)\\b",
-                  "name": "entity.name.parameter.typedmind"
+                  "name": "variable.parameter.typedmind"
                 }
               ]
             }
@@ -215,7 +256,7 @@
           "match": "(->)\\s+(\\w+)\\s*(?=v|$)",
           "captures": {
             "1": { "name": "keyword.operator.arrow.typedmind" },
-            "2": { "name": "entity.name.function.typedmind" }
+            "2": { "name": "entity.name.module.typedmind" }
           }
         },
         {
@@ -223,7 +264,7 @@
           "match": "^\\s*(<-|->)\\s+(\\w+)$",
           "captures": {
             "1": { "name": "keyword.operator.arrow.typedmind" },
-            "2": { "name": "entity.name.dto.typedmind" }
+            "2": { "name": "entity.name.type.interface.typedmind" }
           }
         },
         {
@@ -231,7 +272,7 @@
           "match": "(>>)\\s+(\\w+)",
           "captures": {
             "1": { "name": "keyword.operator.contains-program.typedmind" },
-            "2": { "name": "entity.name.type.typedmind" }
+            "2": { "name": "entity.name.namespace.typedmind" }
           }
         }
       ]

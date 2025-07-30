@@ -1,0 +1,90 @@
+{
+  "name": "TypedMind Colorblind Dark",
+  "type": "dark",
+  "colors": {
+    "editor.background": "#1e1e1e",
+    "editor.foreground": "#d4d4d4"
+  },
+  "tokenColors": [
+    {
+      "name": "TypedMind Program",
+      "scope": "entity.name.namespace.program.typedmind",
+      "settings": {
+        "foreground": "#FF6B6B",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "name": "TypedMind File",
+      "scope": "entity.name.type.file.typedmind",
+      "settings": {
+        "foreground": "#4ECDC4",
+        "fontStyle": ""
+      }
+    },
+    {
+      "name": "TypedMind Function",
+      "scope": "entity.name.function.typedmind",
+      "settings": {
+        "foreground": "#FFE66D",
+        "fontStyle": ""
+      }
+    },
+    {
+      "name": "TypedMind Class",
+      "scope": "entity.name.class.typedmind",
+      "settings": {
+        "foreground": "#95E1D3",
+        "fontStyle": "italic"
+      }
+    },
+    {
+      "name": "TypedMind Constants",
+      "scope": "entity.name.constant.typedmind",
+      "settings": {
+        "foreground": "#C7CEEA",
+        "fontStyle": "underline"
+      }
+    },
+    {
+      "name": "TypedMind DTO",
+      "scope": "entity.name.dto.typedmind",
+      "settings": {
+        "foreground": "#FFB4A2",
+        "fontStyle": ""
+      }
+    },
+    {
+      "name": "TypedMind Asset",
+      "scope": "entity.name.asset.typedmind",
+      "settings": {
+        "foreground": "#B8E7FF",
+        "fontStyle": "italic"
+      }
+    },
+    {
+      "name": "TypedMind UIComponent",
+      "scope": "entity.name.component.typedmind",
+      "settings": {
+        "foreground": "#A8DADC",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "name": "TypedMind RunParameter",
+      "scope": "entity.name.parameter.typedmind",
+      "settings": {
+        "foreground": "#F1FAEE",
+        "fontStyle": "bold italic"
+      }
+    },
+    {
+      "name": "TypedMind Dependency",
+      "scope": "entity.name.dependency.typedmind",
+      "settings": {
+        "foreground": "#F4A261",
+        "fontStyle": ""
+      }
+    }
+  ]
+}
