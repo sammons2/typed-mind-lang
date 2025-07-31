@@ -172,6 +172,7 @@ export class LongformParser {
           type: 'Program',
           entry: properties.get('entry') || '',
           version: properties.get('version'),
+          purpose: properties.get('purpose') || properties.get('description'),
           position,
           raw,
           comment
@@ -184,6 +185,7 @@ export class LongformParser {
           path: properties.get('path') || '',
           imports: properties.get('imports') || [],
           exports: properties.get('exports') || [],
+          purpose: properties.get('purpose') || properties.get('description'),
           position,
           raw,
           comment
@@ -213,6 +215,7 @@ export class LongformParser {
           implements: properties.get('implements') || [],
           methods: properties.get('methods') || [],
           imports: properties.get('imports') || [],
+          purpose: properties.get('purpose') || properties.get('description'),
           position,
           raw,
           comment
@@ -235,7 +238,7 @@ export class LongformParser {
         return {
           name,
           type: 'DTO',
-          description: properties.get('description') || '',
+          purpose: properties.get('purpose') || properties.get('description'),
           fields,
           position,
           raw,
@@ -273,6 +276,7 @@ export class LongformParser {
           type: 'Constants',
           path: properties.get('path') || '',
           schema: properties.get('schema'),
+          purpose: properties.get('purpose') || properties.get('description'),
           position,
           raw,
           comment

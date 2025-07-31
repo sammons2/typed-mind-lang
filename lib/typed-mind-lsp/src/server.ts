@@ -325,6 +325,10 @@ export class TypedMindLanguageServer {
       contents.push(`**Description**: ${entity.description}`);
     }
 
+    if ('purpose' in entity && entity.purpose) {
+      contents.push(`**Purpose**: ${entity.purpose}`);
+    }
+
     if ('imports' in entity && entity.imports.length > 0) {
       contents.push(`**Imports**: ${entity.imports.join(', ')}`);
     }

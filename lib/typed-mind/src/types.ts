@@ -42,6 +42,7 @@ export interface ProgramEntity extends Entity {
   type: 'Program';
   entry: string;
   version?: string;
+  purpose?: string;
 }
 
 export interface FileEntity extends Entity {
@@ -49,6 +50,7 @@ export interface FileEntity extends Entity {
   path: string;
   imports: string[];
   exports: string[];
+  purpose?: string;
 }
 
 export interface FunctionEntity extends Entity {
@@ -71,12 +73,14 @@ export interface ClassEntity extends Entity {
   implements: string[];
   methods: string[];
   imports?: string[];
+  purpose?: string;
 }
 
 export interface ConstantsEntity extends Entity {
   type: 'Constants';
   path: string;
   schema?: string;
+  purpose?: string;
 }
 
 export interface DTOField {

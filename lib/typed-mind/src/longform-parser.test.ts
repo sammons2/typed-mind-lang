@@ -142,7 +142,7 @@ dto UserDTO {
       expect(dto).toBeDefined();
       expect(dto?.type).toBe('DTO');
       if (dto?.type === 'DTO') {
-        expect(dto.description).toBe('User data transfer object');
+        expect(dto.purpose).toBe('User data transfer object');
         expect(dto.fields).toHaveLength(4);
         expect(dto.fields[0]).toEqual({
           name: 'id',

@@ -106,14 +106,15 @@ export class DSLParser {
     // Extract inline comment if present
     const { cleanLine, comment } = this.extractInlineComment(line);
 
-    // Program: AppName -> EntryFile v1.0.0
-    const programMatch = cleanLine.match(/^(\w+)\s*->\s*(\w+)(?:\s+v([\d.]+))?$/);
+    // Program: AppName -> EntryFile v1.0.0 or AppName -> EntryFile "Main application" v1.0.0
+    const programMatch = cleanLine.match(/^(\w+)\s*->\s*(\w+)(?:\s+"([^"]+)")?(?:\s+v([\d.]+))?$/);
     if (programMatch) {
       return {
         name: programMatch[1] as string,
         type: 'Program',
         entry: programMatch[2] as string,
-        version: programMatch[3],
+        purpose: programMatch[3],
+        version: programMatch[4],
         position,
         raw: line,
         comment,
@@ -447,14 +448,28 @@ export class DSLParser {
       return;
     }
 
-    // Description: "Creates a new user in the database"
+    // Description/Purpose: "Creates a new user in the database"
     const descMatch = line.match(/^"([^"]+)"$/);
     if (descMatch) {
+      const description = descMatch[1] as string;
+      
       if (entity.type === 'Function') {
         const funcEntity = entity as FunctionEntity;
-        funcEntity.description = descMatch[1] as string;
-        return;
+        funcEntity.description = description;
+      } else if (entity.type === 'Program') {
+        const progEntity = entity as ProgramEntity;
+        progEntity.purpose = description;
+      } else if (entity.type === 'File') {
+        const fileEntity = entity as FileEntity;
+        fileEntity.purpose = description;
+      } else if (entity.type === 'Class') {
+        const classEntity = entity as ClassEntity;
+        classEntity.purpose = description;
+      } else if (entity.type === 'Constants') {
+        const constEntity = entity as ConstantsEntity;
+        constEntity.purpose = description;
       }
+      return;
     }
 
     // RunParameter default value: = "default-value"
