@@ -50,7 +50,7 @@
       "name": "TypedMind DTO",
       "scope": "entity.name.dto.typedmind",
       "settings": {
-        "foreground": "#FFB4A2",
+        "foreground": "#E5989B",
         "fontStyle": ""
       }
     },
@@ -82,7 +82,7 @@
       "name": "TypedMind Dependency",
       "scope": "entity.name.dependency.typedmind",
       "settings": {
-        "foreground": "#F4A261",
+        "foreground": "#FAD02C",
         "fontStyle": ""
       }
     }
