@@ -140,7 +140,7 @@ Todo % "Todo entity"
                 <div class="feature-card">
                     <div class="feature-icon">🏗️</div>
                     <h3>Modern Patterns</h3>
-                    <p>Supports classes, DTOs, UI components, assets, and runtime parameters</p>
+                    <p>Supports classes, DTOs, UI components, assets, dependencies, and runtime parameters</p>
                 </div>
             </div>
         </div>
@@ -162,6 +162,7 @@ Todo % "Todo entity"
                     <button class="tab-button" data-tab="asset">Asset</button>
                     <button class="tab-button" data-tab="constants">Constants</button>
                     <button class="tab-button" data-tab="runparameter">RunParameter</button>
+                    <button class="tab-button" data-tab="dependency">Dependency</button>
                     <button class="tab-button" data-tab="import">Import</button>
                 </div>
                 
@@ -230,7 +231,7 @@ updateUserProfile :: (data: ProfileDto) => User
   "Updates user profile"
   <- ProfileDto
   -> User
-  +> [ProfileComponent, HeaderComponent]</code></pre>
+  ~ [ProfileComponent, HeaderComponent]</code></pre>
                     </div>
                     
                     <div class="tab-pane" id="dto-tab">
@@ -262,7 +263,7 @@ App &! "Main application component"
 Header & "Application header"
   < [App]
   > [Logo, Navigation, UserMenu]
-  <+ [login, logout]
+  # Components affected by: [login, logout]
 
 MainContent & "Main content area"
   < [App]
@@ -271,7 +272,7 @@ MainContent & "Main content area"
 # Component affected by functions
 UserProfile & "User profile display"
   < [ContentArea]
-  <+ [updateUserProfile, deleteUser]</code></pre>
+  # Components affected by: [updateUserProfile, deleteUser]</code></pre>
                     </div>
                     
                     <div class="tab-pane" id="asset-tab">
@@ -334,6 +335,29 @@ MEMORY_LIMIT $runtime "Memory limit in MB"
 # Config file parameters
 FEATURE_FLAGS $config "Feature toggle configuration"
 API_RATE_LIMITS $config "Rate limiting rules"</code></pre>
+                    </div>
+                    
+                    <div class="tab-pane" id="dependency-tab">
+                        <h3>Dependency</h3>
+                        <p>Define external dependencies like npm packages with versions.</p>
+                        <pre><code class="language-typedmind"># NPM packages
+axios ^ "HTTP client library" v3.0.0
+express ^ "Web framework" v4.18.0
+lodash ^ "Utility library"
+
+# Scoped packages
+@types/node ^ "Node.js type definitions" v20.0.0
+@aws-sdk/client-s3 ^ "AWS S3 client" v3.400.0
+
+# Referenced in files
+ServerMain @ src/server.ts:
+  <- [express^, axios^]
+  -> [startServer]
+
+# Dependencies are marked with ^ in imports
+start :: () => void
+  "Starts the server"
+  ~> [express^.listen]</code></pre>
                     </div>
                     
                     <div class="tab-pane" id="import-tab">
@@ -400,7 +424,7 @@ create :: (input: CreateTodoInput) => Todo
   "Creates a new todo"
   <- CreateTodoInput
   -> Todo
-  +> [TodoList]
+  ~ [TodoList]
 
 findAll :: () => Todo[]
   "Retrieves all todos"
@@ -414,11 +438,11 @@ update :: (id: string, input: CreateTodoInput) => Todo
   "Updates existing todo"
   <- CreateTodoInput
   -> Todo
-  +> [TodoItem]
+  ~ [TodoItem]
 
 delete :: (id: string) => void
   "Deletes a todo"
-  +> [TodoList]
+  ~ [TodoList]
 
 # UI Components
 TodoApp &! "Root todo application"
@@ -427,15 +451,15 @@ TodoApp &! "Root todo application"
 TodoList & "List of todos"
   < [TodoApp]
   > [TodoItem]
-  <+ [create, delete]
+  # Components affected by: [create, delete]
 
 TodoItem & "Individual todo display"
   < [TodoList]
-  <+ [update]
+  # Components affected by: [update]
 
 TodoForm & "Form for creating todos"
   < [TodoApp]
-  <+ [create]</textarea>
+  # Components affected by: [create]</textarea>
                 </div>
                 
                 <div class="playground-output">
@@ -518,7 +542,7 @@ App &! "Root React application"
 Header & "Application header"
   < [App]
   > [Logo, Navigation, ThemeToggle]
-  <+ [toggleTheme]
+  # Components affected by: [toggleTheme]
 
 Dashboard & "Main dashboard view"
   < [App]
@@ -527,7 +551,7 @@ Dashboard & "Main dashboard view"
 Sidebar & "Navigation sidebar"
   < [Dashboard]
   > [MenuItem]
-  <+ [selectMenuItem]
+  # Components affected by: [selectMenuItem]
 
 MainContent & "Main content area"
   < [Dashboard]
@@ -618,7 +642,7 @@ code --install-extension typedmind.vscode-typedmind</code></pre>
                     <div class="step-number">2</div>
                     <div class="step-content">
                         <h3>Create Your First .tmd File</h3>
-                        <p>Start with a simple program structure</p>
+                        <p>TypedMind files use the <code>.tmd</code> extension. Start with a simple program structure:</p>
                         <pre><code class="language-typedmind">MyFirstApp -> main v1.0.0
 
 main @ main.ts:
