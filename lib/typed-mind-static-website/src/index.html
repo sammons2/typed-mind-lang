@@ -76,7 +76,77 @@
                 <a href="#playground" class="btn btn-secondary">Try Playground</a>
             </div>
             <div class="hero-code">
-                <pre><code class="language-typedmind">TodoApp -> api v1.0.0
+                <div class="code-toggle">
+                    <button class="toggle-btn active" data-syntax="longform">Longform</button>
+                    <button class="toggle-btn" data-syntax="shortform">Shortform</button>
+                </div>
+                <pre class="longform-code"><code class="language-typedmind"># Longform syntax is for humans
+program TodoApp {
+  entry: api
+  version: "1.0.0"
+}
+
+file api {
+  path: "api.ts"
+  imports: [CreateTodoDto, Todo]
+  exports: [TodoService]
+}
+
+class TodoService {
+  extends: BaseService
+  methods: [createTodo, getTodos]
+}
+
+function createTodo {
+  signature: "(input: CreateTodoDto) => Todo"
+  description: "Creates a new todo item"
+  input: CreateTodoDto
+  output: Todo
+}
+
+function getTodos {
+  signature: "() => Todo[]"
+  description: "Retrieves all todo items"
+  output: Todo
+}
+
+dto CreateTodoDto {
+  description: "Input for creating todos"
+  fields: {
+    title: {
+      type: "string"
+      description: "Todo title"
+    }
+    completed: {
+      type: "boolean"
+      description: "Completion status"
+    }
+  }
+}
+
+dto Todo {
+  description: "Todo entity"
+  fields: {
+    id: {
+      type: "string"
+      description: "Unique identifier"
+    }
+    title: {
+      type: "string"
+      description: "Todo title"
+    }
+    completed: {
+      type: "boolean"
+      description: "Completion status"
+    }
+    createdAt: {
+      type: "Date"
+      description: "Creation timestamp"
+    }
+  }
+}</code></pre>
+                <pre class="shortform-code" style="display: none;"><code class="language-typedmind"># Shortform syntax is for LLMs
+TodoApp -> api v1.0.0
 
 api @ api.ts:
   <- [CreateTodoDto, Todo]
@@ -170,11 +240,23 @@ Todo % "Todo entity"
                     <div class="tab-pane active" id="program-tab">
                         <h3>Program</h3>
                         <p>The root entity that contains all other entities in your architecture.</p>
-                        <pre><code class="language-typedmind"># Comments start with hash symbol
-# Program declaration with version
-MyApplication -> main v1.0.0
+                        <div class="code-toggle">
+                            <button class="toggle-btn active" data-syntax="longform">Longform</button>
+                            <button class="toggle-btn" data-syntax="shortform">Shortform</button>
+                        </div>
+                        <pre class="longform-code"><code class="language-typedmind"># Longform syntax is for humans
+program MyApplication {
+  entry: main
+  version: "1.0.0"
+}
 
 # Import other TypedMind files
+import "./shared/models.tmd" as models
+import "./shared/services.tmd" as services</code></pre>
+                        <pre class="shortform-code" style="display: none;"><code class="language-typedmind"># Shortform syntax is for LLMs
+MyApplication -> main v1.0.0
+
+# Import other TypedMind files  
 @import "./shared/models.tmd" as models
 @import "./shared/services.tmd" as services</code></pre>
                     </div>
@@ -182,7 +264,22 @@ MyApplication -> main v1.0.0
                     <div class="tab-pane" id="file-tab">
                         <h3>File</h3>
                         <p>Represents a source code file in your architecture.</p>
-                        <pre><code class="language-typedmind"># File with imports and exports
+                        <div class="code-toggle">
+                            <button class="toggle-btn active" data-syntax="longform">Longform</button>
+                            <button class="toggle-btn" data-syntax="shortform">Shortform</button>
+                        </div>
+                        <pre class="longform-code"><code class="language-typedmind"># Longform syntax is for humans
+file UserController {
+  path: "controllers/user.controller.ts"
+  imports: [User, CreateUserDto, UserService]
+  exports: [UserController]
+}
+
+class UserController {
+  extends: BaseController
+  methods: [getUser, createUser]
+}</code></pre>
+                        <pre class="shortform-code" style="display: none;"><code class="language-typedmind"># Shortform syntax is for LLMs
 UserController @ controllers/user.controller.ts:
   <- [User, CreateUserDto, UserService]
   -> [UserController]
@@ -195,7 +292,32 @@ UserController <: BaseController
                     <div class="tab-pane" id="class-tab">
                         <h3>Class</h3>
                         <p>Define classes with methods and relationships.</p>
-                        <pre><code class="language-typedmind"># Class with inheritance and methods
+                        <div class="code-toggle">
+                            <button class="toggle-btn active" data-syntax="longform">Longform</button>
+                            <button class="toggle-btn" data-syntax="shortform">Shortform</button>
+                        </div>
+                        <pre class="longform-code"><code class="language-typedmind"># Longform syntax is for humans
+class UserService {
+  extends: BaseService
+  implements: [IUserService]
+  methods: [findById, create, update, delete]
+}
+
+# Class methods are defined as functions
+function findById {
+  signature: "(id: string) => User"
+  description: "Finds a user by ID"
+  calls: [validateId, queryDatabase]
+}
+
+function create {
+  signature: "(data: CreateUserDto) => User"
+  description: "Creates a new user"
+  input: CreateUserDto
+  output: User
+  calls: [validate, save]
+}</code></pre>
+                        <pre class="shortform-code" style="display: none;"><code class="language-typedmind"># Shortform syntax is for LLMs
 UserService <: BaseService, IUserService
   => [findById, create, update, delete]
 
@@ -214,7 +336,35 @@ create :: (data: CreateUserDto) => User
                     <div class="tab-pane" id="function-tab">
                         <h3>Function</h3>
                         <p>Standalone functions or class methods with parameters and return types.</p>
-                        <pre><code class="language-typedmind"># Standalone function
+                        <div class="code-toggle">
+                            <button class="toggle-btn active" data-syntax="longform">Longform</button>
+                            <button class="toggle-btn" data-syntax="shortform">Shortform</button>
+                        </div>
+                        <pre class="longform-code"><code class="language-typedmind"># Longform syntax is for humans
+function validateEmail {
+  signature: "(email: string) => boolean"
+  description: "Validates email format"
+}
+
+# Function with DTO references
+function login {
+  signature: "(credentials: LoginDto) => AuthToken"
+  description: "Authenticates user and returns token"
+  input: LoginDto
+  output: AuthToken
+  calls: [validateCredentials, generateToken]
+  consumes: [JWT_SECRET]
+}
+
+# Function affecting UI
+function updateUserProfile {
+  signature: "(data: ProfileDto) => User"
+  description: "Updates user profile"
+  input: ProfileDto
+  output: User
+  affects: [ProfileComponent, HeaderComponent]
+}</code></pre>
+                        <pre class="shortform-code" style="display: none;"><code class="language-typedmind"># Shortform syntax is for LLMs
 validateEmail :: (email: string) => boolean
   "Validates email format"
 
@@ -237,7 +387,58 @@ updateUserProfile :: (data: ProfileDto) => User
                     <div class="tab-pane" id="dto-tab">
                         <h3>Data Transfer Object (DTO)</h3>
                         <p>Define data structures with field descriptions.</p>
-                        <pre><code class="language-typedmind"># Basic DTO
+                        <div class="code-toggle">
+                            <button class="toggle-btn active" data-syntax="longform">Longform</button>
+                            <button class="toggle-btn" data-syntax="shortform">Shortform</button>
+                        </div>
+                        <pre class="longform-code"><code class="language-typedmind"># Longform syntax is for humans
+dto BaseEntity {
+  description: "Base entity with common fields"
+  fields: {
+    id: {
+      type: "string"
+      description: "Unique identifier"
+    }
+    createdAt: {
+      type: "Date"
+      description: "Creation timestamp"
+    }
+    updatedAt: {
+      type: "Date"
+      description: "Last update timestamp"
+    }
+  }
+}
+
+# DTO with optional fields
+dto User {
+  description: "User entity"
+  fields: {
+    id: {
+      type: "string"
+      description: "User ID"
+    }
+    email: {
+      type: "string"
+      description: "Email address"
+    }
+    name: {
+      type: "string"
+      description: "Full name"
+    }
+    role: {
+      type: "UserRole"
+      description: "User role"
+      optional: true
+    }
+    avatar: {
+      type: "string"
+      description: "Avatar URL"
+      optional: true
+    }
+  }
+}</code></pre>
+                        <pre class="shortform-code" style="display: none;"><code class="language-typedmind"># Shortform syntax is for LLMs
 BaseEntity % "Base entity with common fields"
   - id: string "Unique identifier"
   - createdAt: Date "Creation timestamp"
@@ -255,7 +456,38 @@ User % "User entity"
                     <div class="tab-pane" id="uicomponent-tab">
                         <h3>UI Component</h3>
                         <p>Define UI components with containment relationships.</p>
-                        <pre><code class="language-typedmind"># Root component
+                        <div class="code-toggle">
+                            <button class="toggle-btn active" data-syntax="longform">Longform</button>
+                            <button class="toggle-btn" data-syntax="shortform">Shortform</button>
+                        </div>
+                        <pre class="longform-code"><code class="language-typedmind"># Longform syntax is for humans
+component App {
+  root: true
+  description: "Main application component"
+  contains: [Header, MainContent, Footer]
+}
+
+# Child components
+component Header {
+  description: "Application header"
+  containedBy: [App]
+  contains: [Logo, Navigation, UserMenu]
+  affectedBy: [login, logout]
+}
+
+component MainContent {
+  description: "Main content area"
+  containedBy: [App]
+  contains: [Sidebar, ContentArea]
+}
+
+# Component affected by functions
+component UserProfile {
+  description: "User profile display"
+  containedBy: [ContentArea]
+  affectedBy: [updateUserProfile, deleteUser]
+}</code></pre>
+                        <pre class="shortform-code" style="display: none;"><code class="language-typedmind"># Shortform syntax is for LLMs
 App &! "Main application component"
   > [Header, MainContent, Footer]
 
@@ -278,7 +510,37 @@ UserProfile & "User profile display"
                     <div class="tab-pane" id="asset-tab">
                         <h3>Asset</h3>
                         <p>Define deployable assets like containers, packages, or applications.</p>
-                        <pre><code class="language-typedmind"># Basic asset
+                        <div class="code-toggle">
+                            <button class="toggle-btn active" data-syntax="longform">Longform</button>
+                            <button class="toggle-btn" data-syntax="shortform">Shortform</button>
+                        </div>
+                        <pre class="longform-code"><code class="language-typedmind"># Longform syntax is for humans
+asset UserServiceContainer {
+  description: "Docker container for user service"
+}
+
+# Asset containing a program
+asset APIGateway {
+  description: "API Gateway application"
+  contains: [GatewayProgram]
+}
+
+# Multiple assets
+asset WebApp {
+  description: "Frontend React application"
+  contains: [ReactApp]
+}
+
+asset MobileApp {
+  description: "React Native mobile app"
+  contains: [MobileProgram]
+}
+
+asset WorkerService {
+  description: "Background job processor"
+  contains: [WorkerProgram]
+}</code></pre>
+                        <pre class="shortform-code" style="display: none;"><code class="language-typedmind"># Shortform syntax is for LLMs
 UserServiceContainer ~ "Docker container for user service"
 
 # Asset containing a program
@@ -299,7 +561,48 @@ WorkerService ~ "Background job processor"
                     <div class="tab-pane" id="constants-tab">
                         <h3>Constants</h3>
                         <p>Define constant values with file location and type.</p>
-                        <pre><code class="language-typedmind"># Basic constants
+                        <div class="code-toggle">
+                            <button class="toggle-btn active" data-syntax="longform">Longform</button>
+                            <button class="toggle-btn" data-syntax="shortform">Shortform</button>
+                        </div>
+                        <pre class="longform-code"><code class="language-typedmind"># Longform syntax is for humans
+constants API_VERSION {
+  file: "config.ts"
+  type: "string"
+}
+
+constants MAX_RETRIES {
+  file: "config.ts"
+  type: "number"
+}
+
+constants DEFAULT_TIMEOUT {
+  file: "config.ts"
+  type: "number"
+}
+
+# Object constants with schema
+constants DATABASE_CONFIG {
+  file: "database/config.ts"
+  type: "DatabaseConfig"
+}
+
+constants FEATURE_FLAGS {
+  file: "features.ts"
+  type: "FeatureFlags"
+}
+
+# Array constants
+constants ALLOWED_ORIGINS {
+  file: "cors.config.ts"
+  type: "string[]"
+}
+
+constants SUPPORTED_LOCALES {
+  file: "i18n/config.ts"
+  type: "Locale[]"
+}</code></pre>
+                        <pre class="shortform-code" style="display: none;"><code class="language-typedmind"># Shortform syntax is for LLMs
 API_VERSION ! config.ts : string
 MAX_RETRIES ! config.ts : number
 DEFAULT_TIMEOUT ! config.ts : number
@@ -316,7 +619,64 @@ SUPPORTED_LOCALES ! i18n/config.ts : Locale[]</code></pre>
                     <div class="tab-pane" id="runparameter-tab">
                         <h3>RunParameter</h3>
                         <p>Define runtime parameters from different sources.</p>
-                        <pre><code class="language-typedmind"># Environment variables
+                        <div class="code-toggle">
+                            <button class="toggle-btn active" data-syntax="longform">Longform</button>
+                            <button class="toggle-btn" data-syntax="shortform">Shortform</button>
+                        </div>
+                        <pre class="longform-code"><code class="language-typedmind"># Longform syntax is for humans
+runparam DATABASE_URL {
+  source: "env"
+  description: "Database connection string"
+  required: true
+}
+
+runparam PORT {
+  source: "env"
+  description: "Server port"
+  default: "3000"
+}
+
+runparam NODE_ENV {
+  source: "env"
+  description: "Environment mode"
+  default: "development"
+}
+
+# IAM/Security parameters
+runparam AWS_ROLE_ARN {
+  source: "iam"
+  description: "AWS role for service"
+  required: true
+}
+
+runparam SERVICE_ACCOUNT {
+  source: "iam"
+  description: "GCP service account"
+}
+
+# Runtime configuration
+runparam MAX_WORKERS {
+  source: "runtime"
+  description: "Maximum worker threads"
+  default: "4"
+}
+
+runparam MEMORY_LIMIT {
+  source: "runtime"
+  description: "Memory limit in MB"
+}
+
+# Config file parameters
+runparam FEATURE_FLAGS {
+  source: "config"
+  description: "Feature toggle configuration"
+}
+
+runparam API_RATE_LIMITS {
+  source: "config"
+  description: "Rate limiting rules"
+}</code></pre>
+                        <pre class="shortform-code" style="display: none;"><code class="language-typedmind"># Shortform syntax is for LLMs
 DATABASE_URL $env "Database connection string" (required)
 PORT $env "Server port"
   = "3000"
@@ -340,7 +700,50 @@ API_RATE_LIMITS $config "Rate limiting rules"</code></pre>
                     <div class="tab-pane" id="dependency-tab">
                         <h3>Dependency</h3>
                         <p>Define external dependencies like npm packages with versions.</p>
-                        <pre><code class="language-typedmind"># NPM packages
+                        <div class="code-toggle">
+                            <button class="toggle-btn active" data-syntax="longform">Longform</button>
+                            <button class="toggle-btn" data-syntax="shortform">Shortform</button>
+                        </div>
+                        <pre class="longform-code"><code class="language-typedmind"># Longform syntax is for humans
+dependency axios {
+  description: "HTTP client library"
+  version: "3.0.0"
+}
+
+dependency express {
+  description: "Web framework"
+  version: "4.18.0"
+}
+
+dependency lodash {
+  description: "Utility library"
+}
+
+# Scoped packages
+dependency "@types/node" {
+  description: "Node.js type definitions"
+  version: "20.0.0"
+}
+
+dependency "@aws-sdk/client-s3" {
+  description: "AWS S3 client"
+  version: "3.400.0"
+}
+
+# Referenced in files
+file ServerMain {
+  path: "src/server.ts"
+  imports: [express, axios]
+  exports: [startServer]
+}
+
+# Dependencies are referenced in function calls
+function start {
+  signature: "() => void"
+  description: "Starts the server"
+  calls: ["express.listen"]
+}</code></pre>
+                        <pre class="shortform-code" style="display: none;"><code class="language-typedmind"># Shortform syntax is for LLMs
 axios ^ "HTTP client library" v3.0.0
 express ^ "Web framework" v4.18.0
 lodash ^ "Utility library"
@@ -363,7 +766,41 @@ start :: () => void
                     <div class="tab-pane" id="import-tab">
                         <h3>Import System</h3>
                         <p>Import entities from other TypedMind files with aliasing.</p>
-                        <pre><code class="language-typedmind"># Import statements at the top
+                        <div class="code-toggle">
+                            <button class="toggle-btn active" data-syntax="longform">Longform</button>
+                            <button class="toggle-btn" data-syntax="shortform">Shortform</button>
+                        </div>
+                        <pre class="longform-code"><code class="language-typedmind"># Longform syntax is for humans
+import "./shared/models.tmd" {
+  alias: "models"
+}
+
+import "./shared/services.tmd" {
+  alias: "services"
+}
+
+import "./auth/auth.tmd" {
+  alias: "auth"
+}
+
+program MyApp {
+  entry: api
+  version: "1.0.0"
+}
+
+# Reference imported entities
+file UserAPI {
+  path: "api.ts"
+  imports: ["models.User", "services.UserService"]
+  exports: [UserAPI]
+}
+
+function getUser {
+  signature: "(id: string) => models.User"
+  description: "Retrieves user by ID"
+  calls: ["services.findUser", "auth.checkPermissions"]
+}</code></pre>
+                        <pre class="shortform-code" style="display: none;"><code class="language-typedmind"># Shortform syntax is for LLMs
 @import "./shared/models.tmd" as models
 @import "./shared/services.tmd" as services
 @import "./auth/auth.tmd" as auth
@@ -394,72 +831,115 @@ getUser :: (id: string) => models.User
                 <div class="playground-editor">
                     <div class="editor-header">
                         <span>TypedMind Editor</span>
-                        <button class="btn btn-small" id="validateBtn">Validate</button>
+                        <div class="editor-controls">
+                            <div class="code-toggle inline">
+                                <button class="toggle-btn active" data-syntax="longform">Longform</button>
+                                <button class="toggle-btn" data-syntax="shortform">Shortform</button>
+                            </div>
+                            <button class="btn btn-small" id="validateBtn">Validate</button>
+                        </div>
                     </div>
-                    <textarea id="codeEditor" class="code-editor" spellcheck="false">TodoApp -> models v1.0.0
+                    <textarea id="codeEditor" class="code-editor" spellcheck="false"># Longform syntax is for humans
+program TodoApp {
+  entryPoint: models
+  version: "1.0.0"
+}
 
 # Data Models
-models @ models.ts:
-  -> [Todo, CreateTodoInput]
+file models {
+  path: "models.ts"
+  exports: [Todo, CreateTodoInput]
+}
 
-Todo % "Todo entity"
-  - id: string "Unique identifier"
-  - title: string "Todo title"
-  - completed: boolean "Completion status"
-  - createdAt: Date "Creation timestamp"
+dto Todo {
+  description: "Todo entity"
+  fields: [
+    { name: "id", type: "string", description: "Unique identifier" },
+    { name: "title", type: "string", description: "Todo title" },
+    { name: "completed", type: "boolean", description: "Completion status" },
+    { name: "createdAt", type: "Date", description: "Creation timestamp" }
+  ]
+}
 
-CreateTodoInput % "Input for creating todos"
-  - title: string "Todo title"
-  - completed: boolean "Initial completion status"
+dto CreateTodoInput {
+  description: "Input for creating todos"
+  fields: [
+    { name: "title", type: "string", description: "Todo title" },
+    { name: "completed", type: "boolean", description: "Initial completion status" }
+  ]
+}
 
 # Service Layer
-todoService @ services/todo.service.ts:
-  <- [Todo, CreateTodoInput]
-  -> [TodoService]
+file todoService {
+  path: "services/todo.service.ts"
+  imports: [Todo, CreateTodoInput]
+  exports: [TodoService]
+}
 
-TodoService <: BaseService
-  => [create, findAll, findById, update, delete]
+class TodoService {
+  extends: BaseService
+  methods: [create, findAll, findById, update, delete]
+}
 
-create :: (input: CreateTodoInput) => Todo
-  "Creates a new todo"
-  <- CreateTodoInput
-  -> Todo
-  ~ [TodoList]
+function create {
+  signature: (input: CreateTodoInput) => Todo
+  description: "Creates a new todo"
+  input: CreateTodoInput
+  output: Todo
+  affects: [TodoList]
+}
 
-findAll :: () => Todo[]
-  "Retrieves all todos"
-  -> Todo
+function findAll {
+  signature: () => Todo[]
+  description: "Retrieves all todos"
+  output: Todo
+}
 
-findById :: (id: string) => Todo
-  "Finds todo by ID"
-  -> Todo
+function findById {
+  signature: (id: string) => Todo
+  description: "Finds todo by ID"
+  output: Todo
+}
 
-update :: (id: string, input: CreateTodoInput) => Todo
-  "Updates existing todo"
-  <- CreateTodoInput
-  -> Todo
-  ~ [TodoItem]
+function update {
+  signature: (id: string, input: CreateTodoInput) => Todo
+  description: "Updates existing todo"
+  input: CreateTodoInput
+  output: Todo
+  affects: [TodoItem]
+}
 
-delete :: (id: string) => void
-  "Deletes a todo"
-  ~ [TodoList]
+function delete {
+  signature: (id: string) => void
+  description: "Deletes a todo"
+  affects: [TodoList]
+}
 
 # UI Components
-TodoApp &! "Root todo application"
-  > [TodoList, TodoForm]
+component TodoApp {
+  description: "Root todo application"
+  root: true
+  contains: [TodoList, TodoForm]
+}
 
-TodoList & "List of todos"
-  < [TodoApp]
-  > [TodoItem]
+component TodoList {
+  description: "List of todos"
+  containedBy: [TodoApp]
+  contains: [TodoItem]
   # Components affected by: [create, delete]
+}
 
-TodoItem & "Individual todo display"
-  < [TodoList]
+component TodoItem {
+  description: "Individual todo display"
+  containedBy: [TodoList]
   # Components affected by: [update]
+}
 
-TodoForm & "Form for creating todos"
-  < [TodoApp]
-  # Components affected by: [create]</textarea>
+component TodoForm {
+  description: "Form for creating todos"
+  containedBy: [TodoApp]
+  # Components affected by: [create]
+}</textarea>
                 </div>
                 
                 <div class="playground-output">
@@ -484,7 +964,77 @@ TodoForm & "Form for creating todos"
                 <div class="example-card">
                     <h3>Microservices Architecture</h3>
                     <p>Define a complete microservices system with service boundaries</p>
-                    <pre><code class="language-typedmind">ECommerce -> services v1.0.0
+                    <div class="code-toggle">
+                        <button class="toggle-btn active" data-syntax="longform">Longform</button>
+                        <button class="toggle-btn" data-syntax="shortform">Shortform</button>
+                    </div>
+                    <pre class="longform-code"><code class="language-typedmind"># Longform syntax is for humans
+program ECommerce {
+  entryPoint: services
+  version: "1.0.0"
+}
+
+# User Service
+file userService {
+  path: "services/user-service.ts"
+  imports: [User, CreateUserDto]
+  exports: [UserService]
+}
+
+class UserService {
+  extends: BaseService
+  methods: [createUser, getUser, getUserOrders]
+}
+
+function createUser {
+  signature: (data: CreateUserDto) => User
+  description: "Creates a new user account"
+  input: CreateUserDto
+  output: User
+  calls: [validateUser, saveToDatabase]
+}
+
+function getUser {
+  signature: (id: string) => User
+  description: "Retrieves user by ID"
+  output: User
+}
+
+function getUserOrders {
+  signature: (userId: string) => Order[]
+  description: "Gets all orders for a user"
+  output: Order
+  calls: [OrderService.getOrdersByUser]
+}
+
+# Order Service  
+file orderService {
+  path: "services/order-service.ts"
+  imports: [Order, CreateOrderDto, User]
+  exports: [OrderService]
+}
+
+class OrderService {
+  extends: BaseService
+  methods: [createOrder, getOrdersByUser]
+}
+
+function createOrder {
+  signature: (data: CreateOrderDto) => Order
+  description: "Creates a new order"
+  input: CreateOrderDto
+  output: Order
+  calls: [validateOrder, processPayment]
+  consumes: [PAYMENT_API_KEY]
+}
+
+function getOrdersByUser {
+  signature: (userId: string) => Order[]
+  description: "Retrieves orders for a user"
+  output: Order
+}</code></pre>
+                    <pre class="shortform-code" style="display: none;"><code class="language-typedmind"># Shortform syntax is for LLMs
+ECommerce -> services v1.0.0
 
 # User Service
 userService @ services/user-service.ts:
@@ -533,7 +1083,74 @@ getOrdersByUser :: (userId: string) => Order[]
                 <div class="example-card">
                     <h3>React Component Architecture</h3>
                     <p>Model your React component hierarchy and data flow</p>
-                    <pre><code class="language-typedmind">ReactApp -> ui v1.0.0
+                    <div class="code-toggle">
+                        <button class="toggle-btn active" data-syntax="longform">Longform</button>
+                        <button class="toggle-btn" data-syntax="shortform">Shortform</button>
+                    </div>
+                    <pre class="longform-code"><code class="language-typedmind"># Longform syntax is for humans
+program ReactApp {
+  entryPoint: ui
+  version: "1.0.0"
+}
+
+# UI Component Hierarchy
+component App {
+  description: "Root React application"
+  root: true
+  contains: [Header, Dashboard, Footer]
+}
+
+component Header {
+  description: "Application header"
+  containedBy: [App]
+  contains: [Logo, Navigation, ThemeToggle]
+  # Components affected by: [toggleTheme]
+}
+
+component Dashboard {
+  description: "Main dashboard view"
+  containedBy: [App]
+  contains: [Sidebar, MainContent]
+}
+
+component Sidebar {
+  description: "Navigation sidebar"
+  containedBy: [Dashboard]
+  contains: [MenuItem]
+  # Components affected by: [selectMenuItem]
+}
+
+component MainContent {
+  description: "Main content area"
+  containedBy: [Dashboard]
+  contains: [ContentPanel]
+}
+
+component Footer {
+  description: "Application footer"
+  containedBy: [App]
+}
+
+# State Management
+dto AppState {
+  description: "Global application state"
+  fields: [
+    { name: "user", type: "User", description: "Current user", optional: true },
+    { name: "theme", type: "Theme", description: "UI theme" },
+    { name: "sidebarOpen", type: "boolean", description: "Sidebar visibility" }
+  ]
+}
+
+dto Theme {
+  description: "Theme configuration"
+  fields: [
+    { name: "mode", type: "string", description: "light or dark" },
+    { name: "primaryColor", type: "string", description: "Primary theme color" },
+    { name: "accentColor", type: "string", description: "Accent color" }
+  ]
+}</code></pre>
+                    <pre class="shortform-code" style="display: none;"><code class="language-typedmind"># Shortform syntax is for LLMs
+ReactApp -> ui v1.0.0
 
 # UI Component Hierarchy
 App &! "Root React application"
@@ -576,7 +1193,76 @@ Theme % "Theme configuration"
                 <div class="example-card">
                     <h3>API Gateway Pattern</h3>
                     <p>Express API gateway with authentication and routing</p>
-                    <pre><code class="language-typedmind">APIGateway -> gateway v1.0.0
+                    <div class="code-toggle">
+                        <button class="toggle-btn active" data-syntax="longform">Longform</button>
+                        <button class="toggle-btn" data-syntax="shortform">Shortform</button>
+                    </div>
+                    <pre class="longform-code"><code class="language-typedmind"># Longform syntax is for humans
+program APIGateway {
+  entryPoint: gateway
+  version: "1.0.0"
+}
+
+# Authentication Middleware
+file authMiddleware {
+  path: "gateway/auth.middleware.ts"
+  imports: [User, TokenPayload]
+  exports: [authenticate, authorize]
+}
+
+function authenticate {
+  signature: (token: string) => User
+  description: "Validates JWT token and returns user"
+  output: User
+  calls: [verifyToken, fetchUser]
+  consumes: [JWT_SECRET]
+}
+
+function authorize {
+  signature: (user: User, resource: string) => boolean
+  description: "Checks user permissions for resource"
+  input: User
+  calls: [checkPermissions]
+}
+
+# API Router
+file apiRouter {
+  path: "gateway/router.ts"
+  imports: [Request, Response, Route]
+  exports: [APIRouter]
+}
+
+class APIRouter {
+  extends: BaseRouter
+  methods: [route, registerRoute, handleError]
+}
+
+function route {
+  signature: (request: Request) => Response
+  description: "Routes incoming requests"
+  input: Request
+  output: Response
+  calls: [authenticate, findRoute, executeHandler]
+}
+
+function registerRoute {
+  signature: (path: string, handler: RouteHandler) => void
+  description: "Registers a new route"
+  input: RouteHandler
+}
+
+# Route Configuration
+constants ROUTE_PREFIX {
+  path: "gateway/config.ts"
+  schema: string
+}
+
+constants MAX_REQUEST_SIZE {
+  path: "gateway/config.ts"
+  schema: number
+}</code></pre>
+                    <pre class="shortform-code" style="display: none;"><code class="language-typedmind"># Shortform syntax is for LLMs
+APIGateway -> gateway v1.0.0
 
 # Authentication Middleware
 authMiddleware @ gateway/auth.middleware.ts:
@@ -643,7 +1329,34 @@ code --install-extension typedmind.vscode-typedmind</code></pre>
                     <div class="step-content">
                         <h3>Create Your First .tmd File</h3>
                         <p>TypedMind files use the <code>.tmd</code> extension. Start with a simple program structure:</p>
-                        <pre><code class="language-typedmind">MyFirstApp -> main v1.0.0
+                        <div class="code-toggle">
+                            <button class="toggle-btn active" data-syntax="longform">Longform</button>
+                            <button class="toggle-btn" data-syntax="shortform">Shortform</button>
+                        </div>
+                        <pre class="longform-code"><code class="language-typedmind"># Longform syntax is for humans
+program MyFirstApp {
+  entryPoint: main
+  version: "1.0.0"
+}
+
+file main {
+  path: "main.ts"
+  exports: [App]
+}
+
+class App {
+  extends: Application
+  methods: [start, stop]
+}
+
+function start {
+  signature: () => void
+  description: "Starts the application"
+  calls: [initialize, listen]
+  consumes: [PORT, NODE_ENV]
+}</code></pre>
+                        <pre class="shortform-code" style="display: none;"><code class="language-typedmind"># Shortform syntax is for LLMs
+MyFirstApp -> main v1.0.0
 
 main @ main.ts:
   -> [App]
@@ -663,7 +1376,35 @@ start :: () => void
                     <div class="step-content">
                         <h3>Add Components and DTOs</h3>
                         <p>Build out your architecture incrementally</p>
-                        <pre><code class="language-typedmind"># Define your data models
+                        <div class="code-toggle">
+                            <button class="toggle-btn active" data-syntax="longform">Longform</button>
+                            <button class="toggle-btn" data-syntax="shortform">Shortform</button>
+                        </div>
+                        <pre class="longform-code"><code class="language-typedmind"># Longform syntax is for humans
+# Define your data models
+dto User {
+  description: "User entity"
+  fields: [
+    { name: "id", type: "string", description: "Unique identifier" },
+    { name: "name", type: "string", description: "Full name" },
+    { name: "email", type: "string", description: "Email address" }
+  ]
+}
+
+# Add service classes
+class UserService {
+  extends: BaseService
+  methods: [getUser, createUser, updateUser]
+}
+
+function getUser {
+  signature: (id: string) => User
+  description: "Retrieves a user by ID"
+  output: User
+  calls: [validateId, queryDatabase]
+}</code></pre>
+                        <pre class="shortform-code" style="display: none;"><code class="language-typedmind"># Shortform syntax is for LLMs
+# Define your data models
 User % "User entity"
   - id: string "Unique identifier"
   - name: string "Full name"
