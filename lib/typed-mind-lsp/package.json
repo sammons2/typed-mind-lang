@@ -1,17 +1,29 @@
 {
   "name": "@sammons/typed-mind-lsp",
-  "version": "1.0.0",
-  "description": "Language Server Protocol implementation for TypedMind DSL",
+  "version": "0.1.0",
+  "description": "Language Server Protocol implementation for TypedMind DSL - providing IDE support with syntax highlighting, validation, and intellisense",
+  "keywords": ["typedmind", "dsl", "lsp", "language-server", "vscode", "ide", "syntax-highlighting"],
   "author": "sammons",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sammons/typed-mind"
+    "url": "https://github.com/sammons/backend-app-lang"
+  },
+  "homepage": "https://github.com/sammons/backend-app-lang#readme",
+  "bugs": {
+    "url": "https://github.com/sammons/backend-app-lang/issues"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
     "typed-mind-lsp": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=22.0.0"
   },
   "scripts": {
     "build": "tsc --build",
@@ -19,20 +31,21 @@
     "test": "vitest --run",
     "test:watch": "vitest --watch",
     "lint": "eslint src",
-    "clean": "rm -rf dist node_modules"
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "prepublishOnly": "npm run clean && npm run build && npm test"
   },
   "dependencies": {
-    "@sammons/typed-mind": "workspace:*",
+    "@sammons/typed-mind": "^0.1.0",
     "vscode-languageserver": "^9.0.1",
     "vscode-languageserver-textdocument": "^1.0.12"
   },
   "devDependencies": {
-    "@types/node": "^24.0.0",
+    "@types/node": "^22.10.5",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
   },
-  "engines": {
-    "node": ">=22.0.0"
+  "publishConfig": {
+    "access": "public"
   }
 }

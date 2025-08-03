@@ -1,15 +1,28 @@
-# TypedMind Static Website
+# TypedMind Playground
 
-A beautiful, modern static website for the TypedMind Domain Specific Language (DSL).
+An interactive web IDE for the TypedMind Domain Specific Language (DSL) - a powerful language for creating AI agent workflows and system architectures.
+
+## What is TypedMind Playground?
+
+TypedMind Playground is an interactive web-based development environment that allows you to:
+
+- **Write and test TypedMind DSL code** with syntax highlighting and real-time validation
+- **Explore comprehensive examples** of TypedMind syntax and patterns
+- **Learn the language** through interactive documentation and guides
+- **Experiment safely** in a browser-based sandbox environment
 
 ## Features
 
-- **Modern Design**: Clean, developer-friendly interface with dark mode support
-- **Interactive Playground**: Try TypedMind syntax with real-time validation
-- **Comprehensive Documentation**: Complete syntax guide and examples
-- **SEO Optimized**: Structured data, meta tags, and AI crawler optimization
-- **Fast & Responsive**: Optimized for performance and mobile devices
-- **Accessible**: WCAG compliant with semantic HTML
+- **Monaco Editor Integration**: Full-featured code editor with TypedMind syntax highlighting
+- **Real-time Validation**: Instant feedback on syntax errors and validation issues
+- **Interactive Examples**: Pre-loaded examples demonstrating various TypedMind patterns
+- **Modern UI**: Clean, developer-friendly interface with dark mode support
+- **Mobile Responsive**: Works on desktop, tablet, and mobile devices
+- **No Installation Required**: Runs entirely in your browser
+
+## Live Demo
+
+Visit the live playground at: **[https://sammons.github.io/typed-mind-playground](https://sammons.github.io/typed-mind-playground)**
 
 ## Development
 
@@ -29,6 +42,9 @@ npm run serve
 
 # Build for production
 npm run build
+
+# Deploy to GitHub Pages
+npm run deploy
 ```
 
 ### Project Structure
@@ -39,36 +55,19 @@ lib/typed-mind-static-website/
 ├── assets/           
 │   ├── css/          # Stylesheets
 │   └── js/           # JavaScript files
-├── dist/             # Built files (generated)
+├── dist/             # Built files (GitHub Pages ready)
 ├── build.js          # Build script
 └── package.json      # Project configuration
 ```
 
-## Deployment
+## GitHub Pages Deployment
 
-### GitHub Pages
+This project is configured for easy deployment to GitHub Pages:
 
-The project includes a GitHub Actions workflow that automatically deploys to GitHub Pages when changes are pushed to the main branch.
-
-### Netlify
-
-```bash
-# Deploy using Netlify CLI
-netlify deploy --prod --dir=dist
-```
-
-### Vercel
-
-```bash
-# Deploy using Vercel CLI
-vercel --prod
-```
-
-### Cloudflare Pages
-
-1. Connect your GitHub repository
-2. Set build command: `npm run build`
-3. Set output directory: `dist`
+1. **Automatic Deployment**: Push to main branch triggers automatic deployment
+2. **Custom Domain Ready**: Configure custom domain in repository settings
+3. **Optimized Build**: All assets are properly minified and optimized
+4. **Relative Paths**: All links work correctly in subdirectory deployments
 
 ## Configuration
 

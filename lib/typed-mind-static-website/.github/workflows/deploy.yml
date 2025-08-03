@@ -30,7 +30,7 @@ jobs:
           
       - name: Install dependencies
         working-directory: ./lib/typed-mind-static-website
-        run: npm install
+        run: npm ci
         
       - name: Build
         working-directory: ./lib/typed-mind-static-website

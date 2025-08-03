@@ -39,9 +39,17 @@ This extension features an accessibility-first design with colors optimized for 
 
 ## Installation
 
+### From VS Code Marketplace
+Once published, you can install the extension directly from the VS Code Marketplace:
+1. Open VS Code
+2. Go to Extensions view (Ctrl+Shift+X)
+3. Search for "TypedMind DSL"
+4. Click Install
+
+### Manual Installation (Development)
 1. Build: `pnpm build`
 2. Package: `pnpm package`
-3. Install: `code --install-extension typed-mind-*.vsix`
+3. Install: `code --install-extension typed-mind-vscode-extension-*.vsix`
 4. Select **"TypedMind Colorblind Dark"** theme for best experience
 
 ## Usage

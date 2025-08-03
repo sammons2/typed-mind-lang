@@ -8,12 +8,16 @@
     "type": "git",
     "url": "https://github.com/sammons/backend-app-lang"
   },
+  "homepage": "https://sammons.github.io/typed-mind-playground",
   "scripts": {
     "dev": "npx http-server dist -p 8080 -c-1",
     "build": "node build.js",
-    "serve": "npm run build && npm run dev"
+    "serve": "npm run build && npm run dev",
+    "deploy": "npm run build && npx gh-pages -d dist",
+    "predeploy": "npm run build"
   },
   "devDependencies": {
+    "gh-pages": "^6.1.1",
     "http-server": "^14.1.1",
     "marked": "^12.0.2",
     "prismjs": "^1.29.0"

@@ -1,5 +1,5 @@
 {
-  "name": "@sammons/typed-mind-vscode-extension",
+  "name": "typed-mind-vscode-extension",
   "displayName": "TypedMind DSL",
   "description": "VS Code extension for TypedMind DSL (.tmd files)",
   "version": "1.0.0",
@@ -7,11 +7,16 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sammons/typed-mind"
+    "url": "https://github.com/sammons/typed-mind-vscode-extension"
   },
   "publisher": "sammons",
-  "categories": ["Programming Languages"],
-  "keywords": ["typedmind", "dsl", "architecture"],
+  "icon": "icon.png",
+  "categories": ["Programming Languages", "Themes"],
+  "keywords": ["typedmind", "dsl", "architecture", "language", "syntax-highlighting", "accessibility", "colorblind-friendly"],
+  "galleryBanner": {
+    "color": "#1e1e1e",
+    "theme": "dark"
+  },
   "engines": {
     "vscode": "^1.74.0"
   },
@@ -40,6 +45,16 @@
         "label": "TypedMind Colorblind Dark",
         "uiTheme": "vs-dark",
         "path": "./themes/typedmind-colorblind-dark.json"
+      },
+      {
+        "label": "TypedMind Accessible Dark",
+        "uiTheme": "vs-dark",
+        "path": "./themes/typedmind-accessible-dark.json"
+      },
+      {
+        "label": "TypedMind Accessible Light",
+        "uiTheme": "vs",
+        "path": "./themes/typedmind-accessible-light.json"
       }
     ],
     "configuration": {

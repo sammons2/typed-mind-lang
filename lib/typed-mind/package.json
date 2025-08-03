@@ -1,14 +1,29 @@
 {
   "name": "@sammons/typed-mind",
-  "version": "1.0.0",
-  "description": "Core language parser and validator for TypedMind DSL",
+  "version": "0.1.0",
+  "description": "Core language parser and validator for TypedMind DSL - a declarative language for building software architectures",
+  "keywords": ["typedmind", "dsl", "parser", "validator", "architecture", "declarative", "software-design"],
   "author": "sammons",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sammons/backend-app-lang"
+  },
+  "homepage": "https://github.com/sammons/backend-app-lang#readme",
+  "bugs": {
+    "url": "https://github.com/sammons/backend-app-lang/issues"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "grammar.md",
+    "grammar.ebnf"
   ],
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "build": "tsc --build",
     "dev": "tsc --build --watch",
@@ -16,12 +31,14 @@
     "test": "vitest --run",
     "test:watch": "vitest --watch",
     "lint": "eslint src",
-    "generate-grammar-docs": "tsx src/generate-grammar-doc.ts"
+    "generate-grammar-docs": "tsx src/generate-grammar-doc.ts",
+    "prepublishOnly": "npm run clean && npm run build && npm test"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
     "tsup": "^8.3.5",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "tsx": "^4.19.2"
   },
   "publishConfig": {
     "access": "public"

@@ -1,15 +1,27 @@
 {
   "name": "@sammons/typed-mind-renderer",
-  "version": "1.0.0",
-  "description": "Interactive HTML/D3.js renderer for TypedMind DSL",
+  "version": "0.1.0",
+  "description": "Interactive HTML/D3.js renderer for TypedMind DSL - generates beautiful visualizations of software architectures",
+  "keywords": ["typedmind", "dsl", "renderer", "visualization", "d3", "html", "architecture-diagram"],
   "author": "sammons",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sammons/backend-app-lang"
+  },
+  "homepage": "https://github.com/sammons/backend-app-lang#readme",
+  "bugs": {
+    "url": "https://github.com/sammons/backend-app-lang/issues"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist",
-    "static"
+    "README.md"
   ],
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "build": "tsc --build && npm run copy-static",
     "copy-static": "mkdir -p dist && cp -r src/static dist/",
@@ -17,10 +29,11 @@
     "clean": "rm -rf dist *.tsbuildinfo",
     "test": "vitest --run",
     "test:watch": "vitest --watch",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "prepublishOnly": "npm run clean && npm run build && npm test"
   },
   "dependencies": {
-    "@sammons/typed-mind": "workspace:*"
+    "@sammons/typed-mind": "^0.1.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",

@@ -1,12 +1,40 @@
+# VS Code test files
 .vscode/**
 .vscode-test/**
+
+# Source files (only include built dist)
 src/**
-.gitignore
-.yarnrc
-vsc-extension-quickstart.md
-**/tsconfig.json
-**/.eslintrc.json
-**/*.map
 **/*.ts
+**/*.map
+**/tsconfig.json
+tsup.config.ts
+
+# Build and development files
 node_modules/**
 !node_modules/@sammons/typed-mind-lsp/**
+dist/**/*.map
+
+# Documentation and development files
+docs/**
+*.md
+!README.md
+!CHANGELOG.md
+
+# Configuration files
+.gitignore
+.yarnrc
+.eslintrc.json
+**/.eslintrc.json
+.prettierrc
+vsc-extension-quickstart.md
+
+# Test files
+**/*.test.ts
+**/*.spec.ts
+test/**
+tests/**
+
+# Development artifacts
+*.log
+.env
+.env.local

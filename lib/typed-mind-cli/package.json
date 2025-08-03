@@ -1,28 +1,42 @@
 {
   "name": "@sammons/typed-mind-cli",
-  "version": "1.0.0",
-  "description": "Command-line interface for TypedMind DSL",
+  "version": "0.1.0",
+  "description": "Command-line interface for TypedMind DSL - a declarative language for building software architectures",
+  "keywords": ["typedmind", "dsl", "cli", "architecture", "declarative", "software-design"],
   "author": "sammons",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sammons/backend-app-lang"
+  },
+  "homepage": "https://github.com/sammons/backend-app-lang#readme",
+  "bugs": {
+    "url": "https://github.com/sammons/backend-app-lang/issues"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
     "typed-mind": "./dist/cli.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "build": "tsc --build && chmod +x dist/cli.js",
     "dev": "tsc --build --watch",
     "clean": "rm -rf dist *.tsbuildinfo",
     "test": "vitest --run",
     "test:watch": "vitest --watch",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "prepublishOnly": "npm run clean && npm run build && npm test"
   },
   "dependencies": {
-    "@sammons/typed-mind": "workspace:*",
-    "@sammons/typed-mind-renderer": "workspace:*"
+    "@sammons/typed-mind": "^0.1.0",
+    "@sammons/typed-mind-renderer": "^0.1.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
