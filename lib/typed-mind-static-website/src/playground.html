@@ -87,6 +87,7 @@
                     <button class="tab-btn active" data-tab="problems">Problems</button>
                     <button class="tab-btn" data-tab="ast">AST</button>
                     <button class="tab-btn" data-tab="visualization">Visualization</button>
+                    <button class="tab-btn" data-tab="assistant">AI Assistant</button>
                 </div>
                 
                 <div class="tab-content active" id="problems-tab">
@@ -111,6 +112,74 @@
                         </div>
                     </div>
                 </div>
+                
+                <div class="tab-content" id="assistant-tab">
+                    <div class="chat-container">
+                        <!-- API Configuration Panel -->
+                        <div class="chat-config" id="chatConfig">
+                            <div class="config-header">
+                                <h3>AI Assistant Configuration</h3>
+                                <button class="config-toggle" id="configToggle">⚙️</button>
+                            </div>
+                            <div class="config-content" id="configContent">
+                                <div class="config-section">
+                                    <label for="apiProvider">AI Provider:</label>
+                                    <select id="apiProvider" class="config-select">
+                                        <option value="openai">OpenAI ChatGPT</option>
+                                        <option value="anthropic">Anthropic Claude</option>
+                                    </select>
+                                </div>
+                                <div class="config-section">
+                                    <label for="apiToken">API Token:</label>
+                                    <div class="token-input-group">
+                                        <input type="password" id="apiToken" class="config-input" placeholder="Enter your API token">
+                                        <button class="token-toggle" id="tokenToggle">👁️</button>
+                                    </div>
+                                    <div class="config-help">
+                                        Your token is encrypted and stored locally in your browser. It is never sent to our servers.
+                                    </div>
+                                </div>
+                                <div class="config-actions">
+                                    <button class="btn btn-small" id="saveConfig">Save Configuration</button>
+                                    <button class="btn btn-small btn-secondary" id="clearConfig">Clear Token</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Chat Messages -->
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="welcome-message">
+                                <div class="assistant-avatar">🤖</div>
+                                <div class="message-content">
+                                    <p>Hello! I'm your TypedMind AI assistant. I can help you:</p>
+                                    <ul>
+                                        <li>Generate TypedMind code from your descriptions</li>
+                                        <li>Explain TypedMind syntax and patterns</li>
+                                        <li>Convert between longform and shortform syntax</li>
+                                        <li>Review and improve your architecture definitions</li>
+                                    </ul>
+                                    <p>Configure your API token above to get started!</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Chat Input -->
+                        <div class="chat-input-container">
+                            <div class="chat-actions">
+                                <button class="btn btn-small btn-secondary" id="clearChat" disabled>Clear History</button>
+                            </div>
+                            <div class="chat-input-wrapper">
+                                <textarea id="chatInput" class="chat-input" placeholder="Ask me anything about TypedMind or describe the architecture you want to create..." rows="3" disabled></textarea>
+                                <button class="chat-send" id="chatSend" disabled>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                                        <polygon points="22,2 15,22 11,13 2,9"></polygon>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -119,6 +188,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
     <script src="assets/js/typedmind-parser-browser.js"></script>
     <script src="assets/js/playground-examples-standalone.js"></script>
+    <script src="assets/js/token-manager.js"></script>
+    <script src="assets/js/chat-service.js"></script>
+    <script src="assets/js/chat-ui.js"></script>
     <script src="assets/js/typedmind-monaco-simple.js"></script>
     <script>
         // Theme toggle functionality
