@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TokenManager Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            padding: 8px 16px;
+            margin: 5px;
+            border: none;
+            border-radius: 3px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <h1>TokenManager Test Suite</h1>
+    
+    <div class="test-section">
+        <h2>Environment Check</h2>
+        <div id="environmentResults"></div>
+        <button onclick="checkEnvironment()">Check Environment</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Initialization Test</h2>
+        <div id="initResults"></div>
+        <button onclick="testInitialization()">Test Initialization</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Token Storage Test</h2>
+        <input type="text" id="testToken" placeholder="Enter test token (e.g., sk-test123)" value="sk-test123">
+        <input type="text" id="testProvider" placeholder="Provider (e.g., openai)" value="openai">
+        <br>
+        <button onclick="testTokenStorage()">Test Token Storage</button>
+        <button onclick="testTokenRetrieval()">Test Token Retrieval</button>
+        <button onclick="testTokenRemoval()">Test Token Removal</button>
+        <div id="storageResults"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Fallback Test</h2>
+        <button onclick="testFallbackMethod()">Test Fallback Storage</button>
+        <div id="fallbackResults"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Clear All</h2>
+        <button onclick="clearAllData()">Clear All Stored Data</button>
+        <div id="clearResults"></div>
+    </div>
+
+    <script src="assets/js/token-manager.js"></script>
+    <script>
+        let tokenManager;
+        
+        function log(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            container.appendChild(div);
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function clearResults(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+        
+        async function checkEnvironment() {
+            clearResults('environmentResults');
+            
+            try {
+                log('environmentResults', 'Checking browser environment...', 'info');
+                
+                // Check basic requirements
+                const hasWindow = typeof window !== 'undefined';
+                const hasLocalStorage = typeof localStorage !== 'undefined';
+                const hasIndexedDB = typeof indexedDB !== 'undefined';
+                const hasWebCrypto = window.crypto && window.crypto.subtle;
+                
+                log('environmentResults', `Window available: ${hasWindow}`, hasWindow ? 'success' : 'error');
+                log('environmentResults', `LocalStorage available: ${hasLocalStorage}`, hasLocalStorage ? 'success' : 'error');
+                log('environmentResults', `IndexedDB available: ${hasIndexedDB}`, hasIndexedDB ? 'success' : 'error');
+                log('environmentResults', `Web Crypto API available: ${hasWebCrypto}`, hasWebCrypto ? 'success' : 'error');
+                
+                // Check TokenManager class
+                const hasTokenManager = typeof TokenManager !== 'undefined';
+                log('environmentResults', `TokenManager class available: ${hasTokenManager}`, hasTokenManager ? 'success' : 'error');
+                
+                if (hasTokenManager) {
+                    const isSupported = TokenManager.isSupported();
+                    log('environmentResults', `TokenManager.isSupported(): ${isSupported}`, isSupported ? 'success' : 'info');
+                }
+                
+            } catch (error) {
+                log('environmentResults', `Environment check failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testInitialization() {
+            clearResults('initResults');
+            
+            try {
+                log('initResults', 'Creating new TokenManager instance...', 'info');
+                tokenManager = new TokenManager();
+                
+                log('initResults', 'Calling initialize()...', 'info');
+                const result = await tokenManager.initialize();
+                
+                log('initResults', `Initialization result: ${result}`, result ? 'success' : 'error');
+                log('initResults', `Using Web Crypto: ${tokenManager.useWebCrypto}`, 'info');
+                log('initResults', `Initialized: ${tokenManager.initialized}`, tokenManager.initialized ? 'success' : 'error');
+                
+            } catch (error) {
+                log('initResults', `Initialization failed: ${error.message}`, 'error');
+                console.error('Initialization error:', error);
+            }
+        }
+        
+        async function testTokenStorage() {
+            clearResults('storageResults');
+            
+            if (!tokenManager) {
+                log('storageResults', 'Please run initialization test first', 'error');
+                return;
+            }
+            
+            try {
+                const token = document.getElementById('testToken').value;
+                const provider = document.getElementById('testProvider').value;
+                
+                if (!token || !provider) {
+                    log('storageResults', 'Please enter both token and provider', 'error');
+                    return;
+                }
+                
+                log('storageResults', `Storing token for provider: ${provider}`, 'info');
+                const result = await tokenManager.encryptToken(token, provider);
+                
+                log('storageResults', `Storage result: ${result}`, result ? 'success' : 'error');
+                
+                // Check if token exists
+                const exists = tokenManager.hasToken(provider);
+                log('storageResults', `Token exists check: ${exists}`, exists ? 'success' : 'error');
+                
+            } catch (error) {
+                log('storageResults', `Token storage failed: ${error.message}`, 'error');
+                console.error('Storage error:', error);
+            }
+        }
+        
+        async function testTokenRetrieval() {
+            if (!tokenManager) {
+                log('storageResults', 'Please run initialization test first', 'error');
+                return;
+            }
+            
+            try {
+                const provider = document.getElementById('testProvider').value;
+                
+                if (!provider) {
+                    log('storageResults', 'Please enter provider', 'error');
+                    return;
+                }
+                
+                log('storageResults', `Retrieving token for provider: ${provider}`, 'info');
+                const retrievedToken = await tokenManager.decryptToken(provider);
+                
+                if (retrievedToken) {
+                    log('storageResults', `Retrieved token: ${retrievedToken}`, 'success');
+                } else {
+                    log('storageResults', 'No token found or decryption failed', 'error');
+                }
+                
+            } catch (error) {
+                log('storageResults', `Token retrieval failed: ${error.message}`, 'error');
+                console.error('Retrieval error:', error);
+            }
+        }
+        
+        async function testTokenRemoval() {
+            if (!tokenManager) {
+                log('storageResults', 'Please run initialization test first', 'error');
+                return;
+            }
+            
+            try {
+                const provider = document.getElementById('testProvider').value;
+                
+                if (!provider) {
+                    log('storageResults', 'Please enter provider', 'error');
+                    return;
+                }
+                
+                log('storageResults', `Removing token for provider: ${provider}`, 'info');
+                tokenManager.removeToken(provider);
+                
+                const exists = tokenManager.hasToken(provider);
+                log('storageResults', `Token exists after removal: ${exists}`, !exists ? 'success' : 'error');
+                
+            } catch (error) {
+                log('storageResults', `Token removal failed: ${error.message}`, 'error');
+                console.error('Removal error:', error);
+            }
+        }
+        
+        async function testFallbackMethod() {
+            clearResults('fallbackResults');
+            
+            try {
+                log('fallbackResults', 'Creating TokenManager with forced fallback...', 'info');
+                const fallbackManager = new TokenManager();
+                
+                // Force fallback mode
+                fallbackManager.useWebCrypto = false;
+                fallbackManager.initialized = true;
+                
+                const testToken = 'fallback-test-token-123';
+                const testProvider = 'test-fallback';
+                
+                log('fallbackResults', 'Testing fallback storage...', 'info');
+                const stored = await fallbackManager.encryptToken(testToken, testProvider);
+                log('fallbackResults', `Fallback storage result: ${stored}`, stored ? 'success' : 'error');
+                
+                log('fallbackResults', 'Testing fallback retrieval...', 'info');
+                const retrieved = await fallbackManager.decryptToken(testProvider);
+                log('fallbackResults', `Retrieved token: ${retrieved}`, 'info');
+                
+                const matches = retrieved === testToken;
+                log('fallbackResults', `Token matches: ${matches}`, matches ? 'success' : 'error');
+                
+                // Clean up
+                fallbackManager.removeToken(testProvider);
+                
+            } catch (error) {
+                log('fallbackResults', `Fallback test failed: ${error.message}`, 'error');
+                console.error('Fallback error:', error);
+            }
+        }
+        
+        function clearAllData() {
+            clearResults('clearResults');
+            
+            try {
+                if (tokenManager) {
+                    tokenManager.clearAllTokens();
+                    log('clearResults', 'All tokens cleared via TokenManager', 'success');
+                }
+                
+                // Also clear directly from localStorage
+                localStorage.removeItem('typedmind_encrypted_tokens');
+                localStorage.removeItem('typedmind_tokens_fallback');
+                
+                log('clearResults', 'All localStorage data cleared', 'success');
+                
+                // Clear IndexedDB
+                const deleteRequest = indexedDB.deleteDatabase('TypedMindStorage');
+                deleteRequest.onsuccess = () => {
+                    log('clearResults', 'IndexedDB cleared', 'success');
+                };
+                deleteRequest.onerror = (error) => {
+                    log('clearResults', `IndexedDB clear failed: ${error}`, 'error');
+                };
+                
+            } catch (error) {
+                log('clearResults', `Clear failed: ${error.message}`, 'error');
+                console.error('Clear error:', error);
+            }
+        }
+        
+        // Initialize on load
+        window.addEventListener('load', () => {
+            checkEnvironment();
+        });
+    </script>
+</body>
+</html>
