@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TypedMind Playground - Interactive Architecture DSL Editor (Refactored)</title>
+    <meta name="description" content="Try TypedMind DSL in your browser with real-time validation, syntax highlighting, and IntelliSense support">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/playground.css">
+    
+    <!-- Monaco Editor -->
+    <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/editor/editor.main.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand"><a href="index.html" style="text-decoration: none; color: inherit;">TypedMind</a></div>
+            <div class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html#overview">Overview</a></li>
+                <li><a href="index.html#syntax">Syntax</a></li>
+                <li><a href="playground.html">Playground</a></li>
+                <li><a href="refactored-playground.html" class="active">Refactored</a></li>
+                <li><a href="index.html#getting-started">Get Started</a></li>
+                <li><a href="https://github.com/sammons/typed-mind-lang" target="_blank">GitHub</a></li>
+                <li><button class="theme-toggle" id="themeToggle">🌙</button></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <!-- Playground Container -->
+    <div class="playground-container">
+        <!-- Toolbar -->
+        <div class="playground-toolbar">
+            <div class="toolbar-left">
+                <h1>TypedMind Playground <span style="color: #4CAF50; font-size: 0.8em;">(Refactored)</span></h1>
+                <div class="syntax-toggle">
+                    <button class="toggle-btn active" data-syntax="longform">Longform</button>
+                    <button class="toggle-btn" data-syntax="shortform">Shortform</button>
+                </div>
+            </div>
+            <div class="toolbar-right">
+                <button class="btn btn-small" id="formatBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="21" y1="10" x2="3" y2="10"></line>
+                        <line x1="21" y1="6" x2="3" y2="6"></line>
+                        <line x1="21" y1="14" x2="3" y2="14"></line>
+                        <line x1="21" y1="18" x2="3" y2="18"></line>
+                    </svg>
+                    Format
+                </button>
+                <select id="exampleSelect" class="example-select">
+                    <option value="">Load Example...</option>
+                    <option value="todo-app">Todo App</option>
+                    <option value="microservices">Microservices</option>
+                    <option value="react-app">React Components</option>
+                    <option value="api-gateway">API Gateway</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="playground-main">
+            <!-- Editor Panel -->
+            <div class="editor-panel">
+                <div class="panel-header">
+                    <span>Editor</span>
+                    <span class="file-name">playground.tmd</span>
+                </div>
+                <div id="monaco-editor" class="monaco-editor-container"></div>
+            </div>
+            
+            <!-- Resizable Splitter -->
+            <div class="splitter" id="verticalSplitter">
+                <div class="splitter-handle"></div>
+            </div>
+            
+            <!-- Output Panel -->
+            <div class="output-panel">
+                <div class="panel-tabs">
+                    <button class="tab-btn active" data-tab="problems">Problems</button>
+                    <button class="tab-btn" data-tab="ast">AST</button>
+                    <button class="tab-btn" data-tab="visualization">Visualization</button>
+                    <button class="tab-btn" data-tab="assistant">AI Assistant</button>
+                </div>
+                
+                <div class="tab-content active" id="problems-tab">
+                    <div class="problems-list" id="problemsList">
+                        <div class="no-problems">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <span>No problems detected</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="ast-tab">
+                    <pre class="ast-output" id="astOutput"></pre>
+                </div>
+                
+                <div class="tab-content" id="visualization-tab">
+                    <div class="visualization-container" id="visualizationContainer">
+                        <div class="visualization-placeholder">
+                            <p>Architecture visualization coming soon...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="assistant-tab">
+                    <div class="chat-container">
+                        <!-- API Configuration Panel -->
+                        <div class="chat-config" id="chatConfig">
+                            <div class="config-header">
+                                <h3>AI Assistant Configuration</h3>
+                                <button class="config-toggle" id="configToggle">⚙️</button>
+                            </div>
+                            <div class="config-content" id="configContent" style="display: none;">
+                                <div class="config-section">
+                                    <label for="apiProvider">AI Provider:</label>
+                                    <select id="apiProvider" class="config-select">
+                                        <option value="openai">OpenAI ChatGPT</option>
+                                        <option value="anthropic">Anthropic Claude</option>
+                                    </select>
+                                </div>
+                                <div class="config-section">
+                                    <label for="apiToken">API Token:</label>
+                                    <div class="token-input-group">
+                                        <input type="password" id="apiToken" class="config-input" placeholder="Enter your API token">
+                                        <button class="token-toggle" id="tokenToggle">👁️</button>
+                                    </div>
+                                    <div class="config-help">
+                                        Your token is encrypted and stored locally in your browser. It is never sent to our servers.
+                                    </div>
+                                </div>
+                                <div class="config-actions">
+                                    <button class="btn btn-small" id="saveConfig">Save Configuration</button>
+                                    <button class="btn btn-small btn-secondary" id="clearConfig">Clear Token</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Chat Messages -->
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="welcome-message">
+                                <div class="assistant-avatar">🤖</div>
+                                <div class="message-content">
+                                    <p>Hello! I'm your TypedMind AI assistant with enhanced capabilities. I can help you:</p>
+                                    <ul>
+                                        <li>Generate TypedMind code from your descriptions</li>
+                                        <li>Explain TypedMind syntax and patterns</li>
+                                        <li>Convert between longform and shortform syntax</li>
+                                        <li>Review and improve your architecture definitions</li>
+                                        <li>Fix validation errors automatically</li>
+                                        <li>Manage code checkpoints and history</li>
+                                    </ul>
+                                    <p><strong>This is the refactored version with improved architecture and better error handling!</strong></p>
+                                    <p>Configure your API token above to get started!</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Chat Input -->
+                        <div class="chat-input-container">
+                            <div class="chat-actions">
+                                <button class="btn btn-small btn-secondary" id="clearChat" disabled>Clear History</button>
+                                <button class="btn btn-small btn-secondary" id="fixProblems">Fix Problems</button>
+                                <button class="btn btn-small btn-secondary" id="manageCheckpoints">Manage Checkpoints</button>
+                            </div>
+                            <div class="chat-input-wrapper">
+                                <textarea id="chatInput" class="chat-input" placeholder="Configure your API token above to start chatting..." rows="3" disabled></textarea>
+                                <button class="chat-send" id="chatSend" disabled>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                                        <polygon points="22,2 15,22 11,13 2,9"></polygon>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+    <script src="assets/js/typedmind-parser-browser.js"></script>
+    <script src="assets/js/playground-examples-standalone.js"></script>
+    <script src="assets/js/token-manager.js"></script>
+    <script src="assets/js/code-checkpoint-manager.js"></script>
+    <script src="assets/js/chat-service.js"></script>
+    
+    <!-- Refactored Architecture Components -->
+    <script src="assets/js/refactored/event-emitter.js"></script>
+    <script src="assets/js/refactored/base-ui-component.js"></script>
+    <script src="assets/js/refactored/notification-system.js"></script>
+    <script src="assets/js/refactored/configuration-panel.js"></script>
+    <script src="assets/js/refactored/chat-ui-manager.js"></script>
+    <script src="assets/js/refactored/services.js"></script>
+    <script src="assets/js/refactored/initialization.js"></script>
+    
+    <!-- Keep existing functionality for comparison -->
+    <script src="assets/js/playground-splitter.js"></script>
+    <script src="assets/js/typedmind-monaco-simple.js"></script>
+    
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        themeToggle.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+        
+        themeToggle.addEventListener('click', () => {
+            const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+        });
+        
+        // Mobile navigation toggle
+        const navToggle = document.getElementById('navToggle');
+        const navMenu = document.getElementById('navMenu');
+        
+        navToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+            navToggle.classList.toggle('active');
+        });
+        
+        // Add initialization status indicator
+        window.addEventListener('typedmind:initialized', (event) => {
+            console.log('TypedMind refactored playground initialized:', event.detail);
+            
+            // Show initialization success notification
+            if (window.refactoredServices?.notificationSystem) {
+                window.refactoredServices.notificationSystem.showSuccess(
+                    'Refactored playground initialized successfully!',
+                    { duration: 3000 }
+                );
+            }
+        });
+        
+        // Add keyboard shortcuts info
+        document.addEventListener('keydown', (e) => {
+            // Show help on Ctrl+?
+            if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+                e.preventDefault();
+                if (window.refactoredServices?.notificationSystem) {
+                    window.refactoredServices.notificationSystem.showInfo(
+                        'Keyboard Shortcuts:\n' +
+                        '• Ctrl+Enter: Send message\n' +
+                        '• Ctrl+K: Focus chat input\n' +
+                        '• Escape: Close configuration panel\n' +
+                        '• Ctrl+/: Show this help',
+                        { 
+                            title: 'Keyboard Shortcuts',
+                            duration: 8000,
+                            autoRemove: true
+                        }
+                    );
+                }
+            }
+        });
+    </script>
+</body>
+</html>

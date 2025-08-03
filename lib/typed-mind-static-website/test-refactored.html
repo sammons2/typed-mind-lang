@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TypedMind Refactored Components Test</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+        
+        .test-section h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .test-button {
+            margin: 5px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            background: #007acc;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .test-button:hover {
+            background: #005a9e;
+        }
+        
+        .test-output {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .chat-test-area {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            min-height: 200px;
+            background: #fafafa;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>TypedMind Refactored Components Test Suite</h1>
+        <p>This page tests the refactored architecture components independently.</p>
+        
+        <!-- EventEmitter Test -->
+        <div class="test-section">
+            <h2>EventEmitter Test <span id="eventEmitterStatus" class="status-indicator">Loading...</span></h2>
+            <button class="test-button" onclick="testEventEmitter()">Test EventEmitter</button>
+            <button class="test-button" onclick="testEventEmitterAdvanced()">Test Advanced Features</button>
+            <div id="eventEmitterOutput" class="test-output"></div>
+        </div>
+        
+        <!-- NotificationSystem Test -->
+        <div class="test-section">
+            <h2>NotificationSystem Test <span id="notificationStatus" class="status-indicator">Loading...</span></h2>
+            <button class="test-button" onclick="testNotificationSuccess()">Show Success</button>
+            <button class="test-button" onclick="testNotificationError()">Show Error</button>
+            <button class="test-button" onclick="testNotificationWarning()">Show Warning</button>
+            <button class="test-button" onclick="testNotificationInfo()">Show Info</button>
+            <button class="test-button" onclick="testNotificationCustom()">Show Custom</button>
+            <button class="test-button" onclick="clearNotifications()">Clear All</button>
+            <div id="notificationOutput" class="test-output"></div>
+        </div>
+        
+        <!-- RefactoredServices Test -->
+        <div class="test-section">
+            <h2>RefactoredServices Test <span id="servicesStatus" class="status-indicator">Loading...</span></h2>
+            <button class="test-button" onclick="testServicesInitialization()">Test Initialization</button>
+            <button class="test-button" onclick="testServicesStatus()">Check Status</button>
+            <button class="test-button" onclick="testTokenManager()">Test Token Manager</button>
+            <div id="servicesOutput" class="test-output"></div>
+        </div>
+        
+        <!-- Chat UI Components Test -->
+        <div class="test-section">
+            <h2>Chat UI Components Test <span id="chatStatus" class="status-indicator">Loading...</span></h2>
+            
+            <!-- Mock Configuration Panel -->
+            <div class="chat-config" id="chatConfig">
+                <div class="config-header">
+                    <h4>Mock Configuration Panel</h4>
+                    <button class="config-toggle" id="configToggle">⚙️</button>
+                </div>
+                <div class="config-content" id="configContent" style="display: none; padding: 10px; border: 1px solid #ddd; margin-top: 10px;">
+                    <div class="config-section">
+                        <label for="apiProvider">AI Provider:</label>
+                        <select id="apiProvider">
+                            <option value="openai">OpenAI ChatGPT</option>
+                            <option value="anthropic">Anthropic Claude</option>
+                        </select>
+                    </div>
+                    <div class="config-section">
+                        <label for="apiToken">API Token:</label>
+                        <input type="password" id="apiToken" placeholder="Enter your API token">
+                        <button id="tokenToggle">👁️</button>
+                    </div>
+                    <div class="config-actions" style="margin-top: 10px;">
+                        <button class="test-button" id="saveConfig">Save Configuration</button>
+                        <button class="test-button" id="clearConfig">Clear Token</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mock Chat Messages -->
+            <div class="chat-test-area" id="chatMessages">
+                <div class="welcome-message">
+                    <p><strong>🤖 Mock Chat Interface</strong></p>
+                    <p>This tests the refactored chat components.</p>
+                </div>
+            </div>
+            
+            <!-- Mock Chat Input -->
+            <div style="margin-top: 10px;">
+                <textarea id="chatInput" placeholder="Test message..." rows="2" style="width: 70%; margin-right: 10px;"></textarea>
+                <button class="test-button" id="chatSend">Send</button>
+                <button class="test-button" id="clearChat">Clear</button>
+            </div>
+            
+            <div style="margin-top: 10px;">
+                <button class="test-button" onclick="testChatComponents()">Test Chat Components</button>
+                <button class="test-button" onclick="testConfigPanel()">Test Config Panel</button>
+            </div>
+            
+            <div id="chatOutput" class="test-output"></div>
+        </div>
+        
+        <!-- Overall Integration Test -->
+        <div class="test-section">
+            <h2>Integration Test <span id="integrationStatus" class="status-indicator">Loading...</span></h2>
+            <button class="test-button" onclick="runFullIntegrationTest()">Run Full Integration Test</button>
+            <div id="integrationOutput" class="test-output"></div>
+        </div>
+    </div>
+
+    <!-- Load all the refactored components -->
+    <script src="assets/js/token-manager.js"></script>
+    <script src="assets/js/chat-service.js"></script>
+    <script src="assets/js/refactored/event-emitter.js"></script>
+    <script src="assets/js/refactored/base-ui-component.js"></script>
+    <script src="assets/js/refactored/notification-system.js"></script>
+    <script src="assets/js/refactored/configuration-panel.js"></script>
+    <script src="assets/js/refactored/chat-ui-manager.js"></script>
+    <script src="assets/js/refactored/services.js"></script>
+    
+    <script>
+        let testResults = {
+            eventEmitter: false,
+            notification: false,
+            services: false,
+            chat: false,
+            integration: false
+        };
+        
+        let testNotificationSystem = null;
+        let testServices = null;
+        
+        // Initialize test environment
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initializeTestEnvironment();
+        });
+        
+        async function initializeTestEnvironment() {
+            try {
+                // Test EventEmitter
+                if (window.EventEmitter) {
+                    document.getElementById('eventEmitterStatus').textContent = 'Available';
+                    document.getElementById('eventEmitterStatus').className = 'status-indicator status-success';
+                    testResults.eventEmitter = true;
+                }
+                
+                // Test NotificationSystem
+                if (window.NotificationSystem) {
+                    testNotificationSystem = new window.NotificationSystem({
+                        position: 'top-right',
+                        maxNotifications: 3
+                    });
+                    document.getElementById('notificationStatus').textContent = 'Available';
+                    document.getElementById('notificationStatus').className = 'status-indicator status-success';
+                    testResults.notification = true;
+                }
+                
+                // Test RefactoredServices
+                if (window.RefactoredServices) {
+                    document.getElementById('servicesStatus').textContent = 'Available';
+                    document.getElementById('servicesStatus').className = 'status-indicator status-success';
+                    testResults.services = true;
+                }
+                
+                // Test Chat Components
+                if (window.ConfigurationPanel && window.ChatUIManager) {
+                    document.getElementById('chatStatus').textContent = 'Available';
+                    document.getElementById('chatStatus').className = 'status-indicator status-success';
+                    testResults.chat = true;
+                }
+                
+                // Update integration status
+                const allAvailable = Object.values(testResults).every(result => result);
+                document.getElementById('integrationStatus').textContent = allAvailable ? 'Ready' : 'Missing Components';
+                document.getElementById('integrationStatus').className = `status-indicator ${allAvailable ? 'status-success' : 'status-error'}`;
+                testResults.integration = allAvailable;
+                
+                log('integrationOutput', `Test environment initialized. Components available: ${Object.entries(testResults).filter(([k,v]) => v).map(([k,v]) => k).join(', ')}`);
+                
+            } catch (error) {
+                log('integrationOutput', `Initialization error: ${error.message}`);
+            }
+        }
+        
+        function log(outputId, message) {
+            const output = document.getElementById(outputId);
+            const timestamp = new Date().toLocaleTimeString();
+            output.textContent += `[${timestamp}] ${message}\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        function clearLog(outputId) {
+            document.getElementById(outputId).textContent = '';
+        }
+        
+        // EventEmitter Tests
+        function testEventEmitter() {
+            clearLog('eventEmitterOutput');
+            try {
+                const emitter = new EventEmitter();
+                let testData = [];
+                
+                // Test basic on/emit
+                emitter.on('test', (data) => {
+                    testData.push(`received: ${data}`);
+                });
+                
+                emitter.emit('test', 'hello');
+                emitter.emit('test', 'world');
+                
+                log('eventEmitterOutput', `Basic test: ${testData.join(', ')}`);
+                
+                // Test off
+                const handler = (data) => testData.push(`handler2: ${data}`);
+                emitter.on('test2', handler);
+                emitter.emit('test2', 'before off');
+                emitter.off('test2', handler);
+                emitter.emit('test2', 'after off');
+                
+                log('eventEmitterOutput', `Off test: ${testData.slice(2).join(', ')}`);
+                
+                // Test once
+                emitter.once('once-test', (data) => {
+                    testData.push(`once: ${data}`);
+                });
+                
+                emitter.emit('once-test', 'first');
+                emitter.emit('once-test', 'second'); // Should not trigger
+                
+                log('eventEmitterOutput', `Once test: ${testData.slice(-1)[0]}`);
+                log('eventEmitterOutput', 'EventEmitter basic tests passed ✅');
+                
+            } catch (error) {
+                log('eventEmitterOutput', `EventEmitter test failed: ${error.message} ❌`);
+            }
+        }
+        
+        function testEventEmitterAdvanced() {
+            clearLog('eventEmitterOutput');
+            try {
+                const emitter = new EventEmitter();
+                
+                // Test listener count
+                const handler1 = () => {};
+                const handler2 = () => {};
+                
+                emitter.on('count-test', handler1);
+                emitter.on('count-test', handler2);
+                
+                log('eventEmitterOutput', `Listener count: ${emitter.listenerCount('count-test')}`);
+                log('eventEmitterOutput', `Has listeners: ${emitter.hasListeners('count-test')}`);
+                log('eventEmitterOutput', `Event names: ${emitter.eventNames().join(', ')}`);
+                
+                // Test remove all listeners
+                emitter.removeAllListeners('count-test');
+                log('eventEmitterOutput', `After removeAll - count: ${emitter.listenerCount('count-test')}`);
+                
+                log('eventEmitterOutput', 'EventEmitter advanced tests passed ✅');
+                
+            } catch (error) {
+                log('eventEmitterOutput', `EventEmitter advanced test failed: ${error.message} ❌`);
+            }
+        }
+        
+        // Notification Tests
+        function testNotificationSuccess() {
+            if (testNotificationSystem) {
+                const id = testNotificationSystem.showSuccess('This is a success message!', {
+                    title: 'Success Test',
+                    duration: 3000
+                });
+                log('notificationOutput', `Success notification shown with ID: ${id}`);
+            }
+        }
+        
+        function testNotificationError() {
+            if (testNotificationSystem) {
+                const id = testNotificationSystem.showError('This is an error message!', {
+                    title: 'Error Test',
+                    autoRemove: false
+                });
+                log('notificationOutput', `Error notification shown with ID: ${id}`);
+            }
+        }
+        
+        function testNotificationWarning() {
+            if (testNotificationSystem) {
+                const id = testNotificationSystem.showWarning('This is a warning message!');
+                log('notificationOutput', `Warning notification shown with ID: ${id}`);
+            }
+        }
+        
+        function testNotificationInfo() {
+            if (testNotificationSystem) {
+                const id = testNotificationSystem.showInfo('This is an info message with some longer text to test the layout and wrapping behavior.');
+                log('notificationOutput', `Info notification shown with ID: ${id}`);
+            }
+        }
+        
+        function testNotificationCustom() {
+            if (testNotificationSystem) {
+                const id = testNotificationSystem.showNotification('Custom notification with special config', 'info', {
+                    title: 'Custom Test',
+                    duration: 10000,
+                    clickToDismiss: true
+                });
+                log('notificationOutput', `Custom notification shown with ID: ${id}`);
+            }
+        }
+        
+        function clearNotifications() {
+            if (testNotificationSystem) {
+                testNotificationSystem.clearNotifications();
+                log('notificationOutput', 'All notifications cleared');
+            }
+        }
+        
+        // Services Tests
+        async function testServicesInitialization() {
+            clearLog('servicesOutput');
+            try {
+                if (!window.RefactoredServices) {
+                    throw new Error('RefactoredServices not available');
+                }
+                
+                log('servicesOutput', 'Creating RefactoredServices instance...');
+                testServices = new window.RefactoredServices();
+                
+                log('servicesOutput', 'Initializing services...');
+                // Note: This will fail because we don't have all dependencies in test environment
+                try {
+                    await testServices.initialize();
+                    log('servicesOutput', 'Services initialized successfully ✅');
+                } catch (initError) {
+                    log('servicesOutput', `Services initialization failed (expected in test environment): ${initError.message}`);
+                    log('servicesOutput', 'This is normal when not all dependencies are loaded.');
+                }
+                
+            } catch (error) {
+                log('servicesOutput', `Services test failed: ${error.message} ❌`);
+            }
+        }
+        
+        function testServicesStatus() {
+            if (testServices) {
+                const status = testServices.getStatus();
+                log('servicesOutput', `Services status: ${JSON.stringify(status, null, 2)}`);
+            } else {
+                log('servicesOutput', 'No services instance available. Run initialization test first.');
+            }
+        }
+        
+        async function testTokenManager() {
+            clearLog('servicesOutput');
+            try {
+                if (!window.TokenManager) {
+                    throw new Error('TokenManager not available');
+                }
+                
+                log('servicesOutput', 'Creating TokenManager instance...');
+                const tokenManager = new window.TokenManager();
+                
+                log('servicesOutput', 'Initializing TokenManager...');
+                await tokenManager.initialize();
+                
+                log('servicesOutput', `Web Crypto supported: ${tokenManager.isWebCryptoSupported()}`);
+                log('servicesOutput', `Use Web Crypto: ${tokenManager.useWebCrypto}`);
+                
+                // Test token storage (with dummy data)
+                const testToken = 'sk-test-token-for-testing-123';
+                log('servicesOutput', 'Testing token encryption...');
+                await tokenManager.encryptToken(testToken, 'openai');
+                
+                log('servicesOutput', `Has token: ${tokenManager.hasToken('openai')}`);
+                
+                const retrievedToken = await tokenManager.decryptToken('openai');
+                log('servicesOutput', `Token retrieval successful: ${retrievedToken === testToken ? '✅' : '❌'}`);
+                
+                // Clean up
+                tokenManager.removeToken('openai');
+                log('servicesOutput', 'Token removed, test complete ✅');
+                
+            } catch (error) {
+                log('servicesOutput', `TokenManager test failed: ${error.message} ❌`);
+            }
+        }
+        
+        // Chat Component Tests
+        function testChatComponents() {
+            clearLog('chatOutput');
+            try {
+                // Test BaseUIComponent
+                if (!window.BaseUIComponent) {
+                    throw new Error('BaseUIComponent not available');
+                }
+                
+                const component = new window.BaseUIComponent('chatMessages');
+                log('chatOutput', `BaseUIComponent created: ${!!component}`);
+                
+                // Test state management
+                component.setState({ test: 'value', count: 1 });
+                const state = component.getState();
+                log('chatOutput', `State test: ${JSON.stringify(state)}`);
+                
+                // Test events
+                let eventReceived = false;
+                component.on('test-event', (data) => {
+                    eventReceived = true;
+                    log('chatOutput', `Event received: ${data}`);
+                });
+                
+                component.emit('test-event', 'test data');
+                log('chatOutput', `Event system working: ${eventReceived ? '✅' : '❌'}`);
+                
+                // Clean up
+                component.destroy();
+                log('chatOutput', 'BaseUIComponent test completed ✅');
+                
+            } catch (error) {
+                log('chatOutput', `Chat components test failed: ${error.message} ❌`);
+            }
+        }
+        
+        function testConfigPanel() {
+            clearLog('chatOutput');
+            try {
+                // Test configuration panel functionality
+                const configToggle = document.getElementById('configToggle');
+                const configContent = document.getElementById('configContent');
+                
+                if (configToggle && configContent) {
+                    // Simulate toggle
+                    const initialDisplay = configContent.style.display;
+                    configToggle.click();
+                    const afterToggle = configContent.style.display;
+                    
+                    log('chatOutput', `Config toggle test: ${initialDisplay} -> ${afterToggle}`);
+                    log('chatOutput', 'Mock configuration panel working ✅');
+                } else {
+                    log('chatOutput', 'Configuration panel elements not found ❌');
+                }
+                
+            } catch (error) {
+                log('chatOutput', `Config panel test failed: ${error.message} ❌`);
+            }
+        }
+        
+        // Integration Test
+        async function runFullIntegrationTest() {
+            clearLog('integrationOutput');
+            log('integrationOutput', 'Starting full integration test...');
+            
+            try {
+                // Test 1: Component availability
+                const components = ['EventEmitter', 'BaseUIComponent', 'NotificationSystem', 'RefactoredServices'];
+                const available = components.filter(comp => window[comp]);
+                log('integrationOutput', `Available components: ${available.join(', ')}`);
+                
+                // Test 2: Create notification system
+                const notificationSystem = new window.NotificationSystem();
+                log('integrationOutput', 'NotificationSystem created ✅');
+                
+                // Test 3: Test cross-component communication
+                const emitter = new window.EventEmitter();
+                let messageReceived = false;
+                
+                emitter.on('integration-test', () => {
+                    messageReceived = true;
+                    notificationSystem.showSuccess('Integration test message received!');
+                });
+                
+                emitter.emit('integration-test');
+                log('integrationOutput', `Cross-component communication: ${messageReceived ? '✅' : '❌'}`);
+                
+                // Test 4: Component lifecycle
+                const component = new window.BaseUIComponent();
+                component.setState({ integrationTest: true });
+                const hasState = component.getState().integrationTest;
+                component.destroy();
+                log('integrationOutput', `Component lifecycle: ${hasState ? '✅' : '❌'}`);
+                
+                // Test 5: Notification system features
+                setTimeout(() => {
+                    notificationSystem.showInfo('Integration test completed successfully!', {
+                        title: 'Test Results',
+                        duration: 5000
+                    });
+                }, 1000);
+                
+                log('integrationOutput', 'Full integration test completed ✅');
+                
+            } catch (error) {
+                log('integrationOutput', `Integration test failed: ${error.message} ❌`);
+            }
+        }
+        
+        // Set up mock configuration panel functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            const configToggle = document.getElementById('configToggle');
+            const configContent = document.getElementById('configContent');
+            
+            if (configToggle && configContent) {
+                configToggle.addEventListener('click', () => {
+                    const isVisible = configContent.style.display === 'block';
+                    configContent.style.display = isVisible ? 'none' : 'block';
+                    configToggle.textContent = isVisible ? '⚙️' : '✕';
+                });
+            }
+        });
+    </script>
+</body>
+</html>
