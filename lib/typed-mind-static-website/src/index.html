@@ -54,7 +54,7 @@
             <ul class="nav-menu" id="navMenu">
                 <li><a href="#overview">Overview</a></li>
                 <li><a href="#syntax">Syntax</a></li>
-                <li><a href="#playground">Playground</a></li>
+                <li><a href="playground.html">Playground</a></li>
                 <li><a href="#examples">Examples</a></li>
                 <li><a href="#getting-started">Get Started</a></li>
                 <li><a href="https://github.com/sammons/backend-app-lang" target="_blank">GitHub</a></li>
@@ -825,21 +825,26 @@ getUser :: (id: string) => models.User
     <section id="playground" class="section">
         <div class="container">
             <h2 class="section-title">Interactive Playground</h2>
-            <p class="section-subtitle">Try TypedMind syntax and see real-time validation</p>
+            <p class="section-subtitle">Try TypedMind syntax with full IDE support</p>
             
-            <div class="playground">
-                <div class="playground-editor">
-                    <div class="editor-header">
-                        <span>TypedMind Editor</span>
-                        <div class="editor-controls">
-                            <div class="code-toggle inline">
-                                <button class="toggle-btn active" data-syntax="longform">Longform</button>
-                                <button class="toggle-btn" data-syntax="shortform">Shortform</button>
-                            </div>
-                            <button class="btn btn-small" id="validateBtn">Validate</button>
-                        </div>
-                    </div>
-                    <textarea id="codeEditor" class="code-editor" spellcheck="false"># Longform syntax is for humans
+            <div class="playground-preview">
+                <p>Experience TypedMind with:</p>
+                <ul class="feature-list">
+                    <li>✨ Monaco Editor with syntax highlighting</li>
+                    <li>🔍 Real-time validation and error checking</li>
+                    <li>💡 IntelliSense and auto-completion</li>
+                    <li>🔗 Shareable URLs for your code</li>
+                    <li>📊 AST visualization</li>
+                </ul>
+                <a href="playground.html" class="btn btn-primary btn-large">Open Playground →</a>
+            </div>
+            
+            <div class="playground-example">
+                <div class="code-toggle">
+                    <button class="toggle-btn active" data-syntax="longform">Longform</button>
+                    <button class="toggle-btn" data-syntax="shortform">Shortform</button>
+                </div>
+                <pre class="longform-code"><code class="language-typedmind"># Longform syntax is for humans
 program TodoApp {
   entryPoint: models
   version: "1.0.0"
@@ -939,18 +944,72 @@ component TodoForm {
   description: "Form for creating todos"
   containedBy: [TodoApp]
   # Components affected by: [create]
-}</textarea>
-                </div>
-                
-                <div class="playground-output">
-                    <div class="output-header">Validation Results</div>
-                    <div id="validationOutput" class="validation-output">
-                        <div class="validation-success">
-                            <span class="success-icon">✓</span>
-                            <span>Valid TypedMind syntax!</span>
-                        </div>
-                    </div>
-                </div>
+}</code></pre>
+                <pre class="shortform-code" style="display: none;"><code class="language-typedmind"># Shortform syntax is for LLMs
+TodoApp -> models v1.0.0
+
+# Data Models
+models @ models.ts:
+  -> [Todo, CreateTodoInput]
+
+Todo % "Todo entity"
+  - id: string "Unique identifier"
+  - title: string "Todo title"
+  - completed: boolean "Completion status"
+  - createdAt: Date "Creation timestamp"
+
+CreateTodoInput % "Input for creating todos"
+  - title: string "Todo title"
+  - completed: boolean "Initial completion status"
+
+# Service Layer
+todoService @ services/todo.service.ts:
+  <- [Todo, CreateTodoInput]
+  -> [TodoService]
+
+TodoService <: BaseService
+  => [create, findAll, findById, update, delete]
+
+create :: (input: CreateTodoInput) => Todo
+  "Creates a new todo"
+  <- CreateTodoInput
+  -> Todo
+  ~ [TodoList]
+
+findAll :: () => Todo[]
+  "Retrieves all todos"
+  -> Todo
+
+findById :: (id: string) => Todo
+  "Finds todo by ID"
+  -> Todo
+
+update :: (id: string, input: CreateTodoInput) => Todo
+  "Updates existing todo"
+  <- CreateTodoInput
+  -> Todo
+  ~ [TodoItem]
+
+delete :: (id: string) => void
+  "Deletes a todo"
+  ~ [TodoList]
+
+# UI Components
+TodoApp &! "Root todo application"
+  > [TodoList, TodoForm]
+
+TodoList & "List of todos"
+  < [TodoApp]
+  > [TodoItem]
+  # Components affected by: [create, delete]
+
+TodoItem & "Individual todo display"
+  < [TodoList]
+  # Components affected by: [update]
+
+TodoForm & "Form for creating todos"
+  < [TodoApp]
+  # Components affected by: [create]</code></pre>
             </div>
         </div>
     </section>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TypedMind Playground - Interactive Architecture DSL Editor</title>
+    <meta name="description" content="Try TypedMind DSL in your browser with real-time validation, syntax highlighting, and IntelliSense support">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/playground.css">
+    
+    <!-- Monaco Editor -->
+    <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/editor/editor.main.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand"><a href="index.html" style="text-decoration: none; color: inherit;">TypedMind</a></div>
+            <div class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html#overview">Overview</a></li>
+                <li><a href="index.html#syntax">Syntax</a></li>
+                <li><a href="playground.html" class="active">Playground</a></li>
+                <li><a href="index.html#examples">Examples</a></li>
+                <li><a href="index.html#getting-started">Get Started</a></li>
+                <li><a href="https://github.com/sammons/backend-app-lang" target="_blank">GitHub</a></li>
+                <li><button class="theme-toggle" id="themeToggle">🌙</button></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <!-- Playground Container -->
+    <div class="playground-container">
+        <!-- Toolbar -->
+        <div class="playground-toolbar">
+            <div class="toolbar-left">
+                <h1>TypedMind Playground</h1>
+                <div class="syntax-toggle">
+                    <button class="toggle-btn active" data-syntax="longform">Longform</button>
+                    <button class="toggle-btn" data-syntax="shortform">Shortform</button>
+                </div>
+            </div>
+            <div class="toolbar-right">
+                <button class="btn btn-small" id="shareBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                        <polyline points="16 6 12 2 8 6"></polyline>
+                        <line x1="12" y1="2" x2="12" y2="15"></line>
+                    </svg>
+                    Share
+                </button>
+                <button class="btn btn-small" id="formatBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="21" y1="10" x2="3" y2="10"></line>
+                        <line x1="21" y1="6" x2="3" y2="6"></line>
+                        <line x1="21" y1="14" x2="3" y2="14"></line>
+                        <line x1="21" y1="18" x2="3" y2="18"></line>
+                    </svg>
+                    Format
+                </button>
+                <select id="exampleSelect" class="example-select">
+                    <option value="">Load Example...</option>
+                    <option value="todo-app">Todo App</option>
+                    <option value="microservices">Microservices</option>
+                    <option value="react-app">React Components</option>
+                    <option value="api-gateway">API Gateway</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="playground-main">
+            <!-- Editor Panel -->
+            <div class="editor-panel">
+                <div class="panel-header">
+                    <span>Editor</span>
+                    <span class="file-name">playground.tmd</span>
+                </div>
+                <div id="monaco-editor" class="monaco-editor-container"></div>
+            </div>
+            
+            <!-- Output Panel -->
+            <div class="output-panel">
+                <div class="panel-tabs">
+                    <button class="tab-btn active" data-tab="problems">Problems</button>
+                    <button class="tab-btn" data-tab="ast">AST</button>
+                    <button class="tab-btn" data-tab="visualization">Visualization</button>
+                </div>
+                
+                <div class="tab-content active" id="problems-tab">
+                    <div class="problems-list" id="problemsList">
+                        <div class="no-problems">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <span>No problems detected</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="ast-tab">
+                    <pre class="ast-output" id="astOutput"></pre>
+                </div>
+                
+                <div class="tab-content" id="visualization-tab">
+                    <div class="visualization-container" id="visualizationContainer">
+                        <div class="visualization-placeholder">
+                            <p>Architecture visualization coming soon...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Share Modal -->
+    <div class="modal" id="shareModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Share Your TypedMind Code</h2>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Copy this URL to share your code:</p>
+                <div class="share-url-container">
+                    <input type="text" id="shareUrl" class="share-url" readonly>
+                    <button class="btn btn-small" id="copyBtn">Copy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+    <script src="assets/js/playground-examples-standalone.js"></script>
+    <script src="assets/js/typedmind-monaco-simple.js"></script>
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        themeToggle.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+        
+        themeToggle.addEventListener('click', () => {
+            const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+        });
+        
+        // Mobile navigation toggle
+        const navToggle = document.getElementById('navToggle');
+        const navMenu = document.getElementById('navMenu');
+        
+        navToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+            navToggle.classList.toggle('active');
+        });
+    </script>
+</body>
+</html>

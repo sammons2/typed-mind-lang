@@ -16,6 +16,9 @@
   --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
   --border-radius: 8px;
   --transition: all 0.2s ease;
+  --color-error: #dc3545;
+  --color-warning: #ffc107;
+  --color-success: #28a745;
 }
 
 [data-theme="dark"] {
@@ -28,6 +31,9 @@
   --color-text-muted: #8b949e;
   --color-border: #30363d;
   --color-code-bg: #161b22;
+  --color-error: #f85149;
+  --color-warning: #d29922;
+  --color-success: #3fb950;
 }
 
 /* Reset and base styles */
@@ -395,6 +401,39 @@ pre code {
   grid-template-columns: 1fr 1fr;
   gap: 2rem;
   min-height: 500px;
+}
+
+.playground-preview {
+  text-align: center;
+  padding: 2rem;
+  background: var(--color-surface);
+  border-radius: 12px;
+  margin-bottom: 3rem;
+}
+
+.playground-preview p {
+  font-size: 1.125rem;
+  margin-bottom: 1.5rem;
+}
+
+.playground-preview .feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem 0;
+  display: inline-block;
+  text-align: left;
+}
+
+.playground-preview .feature-list li {
+  padding: 0.5rem 0;
+  font-size: 1rem;
+}
+
+.playground-example {
+  background: var(--color-surface);
+  border-radius: 12px;
+  padding: 1.5rem;
+  overflow: hidden;
 }
 
 .playground-editor,
