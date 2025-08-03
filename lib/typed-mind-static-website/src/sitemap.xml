@@ -25,12 +25,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://typedmind.dev/#examples</loc>
-    <lastmod>2024-01-01</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://typedmind.dev/#getting-started</loc>
     <lastmod>2024-01-01</lastmod>
     <changefreq>monthly</changefreq>

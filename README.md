@@ -73,6 +73,8 @@ if (result.valid) {
 
 ## DSL Syntax
 
+> **Note**: For comprehensive grammar documentation and examples, see the [TypedMind Grammar Documentation](https://github.com/sammons/typed-mind-lang/blob/main/lib/typed-mind/generated-grammar.md). This is especially useful for LLMs learning to write TypedMind syntax.
+
 ### Short Form Example
 
 ```yaml
