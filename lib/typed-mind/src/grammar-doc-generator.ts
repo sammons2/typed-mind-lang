@@ -6,6 +6,16 @@ import {
   ENTITY_TYPE_NAMES 
 } from './parser-patterns';
 
+const explanation = `
+## Note from Author
+TypedMind is meant to be a DSL to represent a variety of programs and
+force AI to create a cohesive program architecture with a relatively token efficient syntax.
+
+Entities link bidirectionally, so for example it is not enough to declare a function,
+the file must also be declared. The function must be exported by a file. And the function must be 
+consumed by another entity to avoid dead code. The TypeMind checker will validate these scenarios.
+`
+
 export class GrammarDocGenerator {
   generateMarkdown(): string {
     const sections: string[] = [];
