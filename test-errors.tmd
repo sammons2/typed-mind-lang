@@ -1,0 +1,17 @@
+# Test file with errors
+
+TodoApp -> AppEntry "Todo application"
+
+# This entity is orphaned - not referenced anywhere
+OrphanedEntity @ src/orphan.ts:
+  "This should cause an error"
+
+# Function with invalid reference
+TestFunction :: (data: NonExistentDTO) => void
+  "Test function with invalid DTO reference"
+  <- NonExistentDTO
+  ~> [nonExistentMethod]
+
+# UI Component that references unknown parent
+TestComponent & "Test component"
+  < [UnknownParent]
