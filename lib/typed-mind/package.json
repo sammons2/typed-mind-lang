@@ -15,7 +15,8 @@
     "clean": "rm -rf dist *.tsbuildinfo",
     "test": "vitest --run",
     "test:watch": "vitest --watch",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "generate-grammar-docs": "tsx src/generate-grammar-doc.ts"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",

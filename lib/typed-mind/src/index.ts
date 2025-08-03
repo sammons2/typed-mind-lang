@@ -10,6 +10,9 @@ export { DSLParser, type ParseResult } from './parser';
 export { DSLValidator } from './validator';
 export { ErrorFormatter } from './formatter';
 export { LongformParser } from './longform-parser';
+export { GrammarValidator, type GrammarValidationResult, type GrammarValidationError } from './grammar-validator';
+export { ENTITY_PATTERNS, CONTINUATION_PATTERNS, GENERAL_PATTERNS, PATTERN_DESCRIPTIONS } from './parser-patterns';
+export { GrammarDocGenerator } from './grammar-doc-generator';
 
 export class DSLChecker {
   private parser = new DSLParser();

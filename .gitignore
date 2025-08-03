@@ -8,3 +8,8 @@ coverage/
 .vscode/
 .idea/
 .DS_Store
+
+# Generated documentation
+lib/typed-mind/generated-grammar.md
+lib/typed-mind/grammar.json
+lib/typed-mind/grammar.ebnf
