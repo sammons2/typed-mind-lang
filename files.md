@@ -227,6 +227,5 @@
 | renderer.md | Interactive HTML/D3.js renderer with dark theme showing entity sidebar, force-directed graph visualization, node selection, zoom controls, and architecture exploration features |
 | specification.md | Complete DSL specification with long/short form syntax for Programs, Files, Functions, Classes, and Constants using operators like ->, <-, @, ::, ~>, <:, !, =>, plus validation rules |
 | start-prompt.md | Initial project requirements document outlining goals for an LLM-optimized DSL with semantic intuition, token efficiency, static validation, TypeScript targeting, excellent errors, and interactive rendering |
-| test-playground.js | Node.js test script to verify playground functionality and provide manual testing instructions |
 | tsconfig.json | TypeScript configuration with strict settings and composite project references |
 | vitest.config.ts | Vitest configuration for Node.js testing environment with global test functions |
