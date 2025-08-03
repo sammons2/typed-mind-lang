@@ -79,7 +79,6 @@
 | lib/typed-mind-static-website/src/playground.html | Interactive TypedMind playground with Monaco editor and AI assistant integration |
 | lib/typed-mind-static-website/src/refactored-playground.html | Refactored version of the playground with improved architecture and additional features |
 | lib/typed-mind-static-website/src/robots.txt | Robots.txt file allowing all web crawlers and AI bots to index the site |
-| lib/typed-mind-static-website/test-chat.html | Test page for validating chat functionality and dependencies |
 | lib/typed-mind-static-website/test-monaco.html | Simple Monaco editor test page to verify editor loading |
 | lib/typed-mind-static-website/test-refactored.html | Test page for refactored architecture components with comprehensive test suite |
 | lib/typed-mind-static-website/test-token-manager.html | Test page specifically for TokenManager functionality with encryption/decryption tests |
