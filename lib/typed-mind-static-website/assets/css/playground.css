@@ -83,14 +83,63 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 200px;
+  overflow: hidden;
 }
 
 .output-panel {
   width: 400px;
   display: flex;
   flex-direction: column;
-  border-left: 1px solid var(--color-border);
   background: var(--color-surface);
+  min-height: 200px;
+  overflow: hidden;
+}
+
+/* Resizable Splitter */
+.splitter {
+  width: 6px;
+  background: var(--color-border);
+  cursor: ew-resize;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+  user-select: none;
+}
+
+.splitter:hover {
+  background: var(--color-primary);
+}
+
+.splitter.dragging {
+  background: var(--color-primary);
+}
+
+.splitter-handle {
+  width: 2px;
+  height: 40px;
+  background: var(--color-text-muted);
+  border-radius: 1px;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.splitter:hover .splitter-handle,
+.splitter.dragging .splitter-handle {
+  opacity: 1;
+  background: white;
+}
+
+/* Disable text selection during drag */
+body.dragging-splitter {
+  user-select: none;
+  cursor: ew-resize !important;
+}
+
+body.dragging-splitter * {
+  cursor: ew-resize !important;
 }
 
 /* Panel Headers */
@@ -340,6 +389,10 @@
   
   .playground-main {
     flex-direction: column;
+  }
+  
+  .splitter {
+    display: none; /* Hide splitter on mobile */
   }
   
   .output-panel {
