@@ -735,6 +735,7 @@ body.dragging-splitter * {
   display: flex;
   justify-content: flex-end;
   margin-bottom: 12px;
+  gap: 8px;
 }
 
 .chat-input-wrapper {
