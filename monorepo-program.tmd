@@ -1,0 +1,231 @@
+# TypedMind Monorepo Architecture
+# This represents the complete system as of now
+
+TypedMindSystem -> TypedMindCore v1.0.0
+
+# Import individual package definitions
+@import "./lib/typed-mind/program.tmd" as core
+@import "./lib/typed-mind-cli/program.tmd" as cli  
+@import "./lib/typed-mind-lsp/program.tmd" as lsp
+@import "./lib/typed-mind-renderer/program.tmd" as renderer
+@import "./lib/typed-mind-vscode-extension/program.tmd" as vscode
+
+# Core TypedMind parser and validator library
+TypedMindCore @ lib/typed-mind:
+  <- [core.TypesModule]
+  -> [core.DSLChecker, core.DSLParser, core.DSLValidator]
+
+# Command-line interface for TypedMind
+TypedMindCLI @ lib/typed-mind-cli:
+  <- [TypedMindCore, TypedMindRenderer]
+  -> [CLICommand]
+  
+CLICommand ~ "npx typed-mind"
+  >> TypedMindCLI
+
+# Language Server Protocol implementation
+TypedMindLSP @ lib/typed-mind-lsp:
+  <- [TypedMindCore]
+  -> [LanguageServer]
+
+# HTML/D3.js visualization renderer
+TypedMindRenderer @ lib/typed-mind-renderer:
+  <- [TypedMindCore]
+  -> [Renderer]
+
+# VS Code extension
+TypedMindVSCode @ lib/typed-mind-vscode-extension:
+  <- [TypedMindLSP]
+  -> [Extension]
+
+# Static website with playground
+TypedMindWebsite @ lib/typed-mind-static-website:
+  <- [TypedMindParserBrowser]
+  -> [Website]
+
+Website @ src/index.html:
+  -> [LandingPage]
+
+LandingPage &! "Main website landing page"
+  > [Navigation, HeroSection, SyntaxSection, PlaygroundSection, GettingStartedSection]
+
+PlaygroundPage @ src/playground.html:
+  -> [PlaygroundApp]
+
+PlaygroundApp &! "Interactive TypedMind playground"
+  > [PlaygroundToolbar, EditorPanel, OutputPanel]
+
+PlaygroundToolbar & "Top toolbar with controls"
+  < [PlaygroundApp]
+  > [SyntaxToggle, FormatButton, ExampleSelector]
+
+EditorPanel & "Monaco editor panel"
+  < [PlaygroundApp]
+  > [MonacoEditor]
+
+OutputPanel & "Output panel with tabs"
+  < [PlaygroundApp]  
+  > [ProblemsTab, ASTTab, VisualizationTab, ChatTab]
+
+# Monaco editor integration
+MonacoIntegration @ assets/js/typedmind-monaco-simple.js:
+  <- [TypedMindParserBrowser, LZString]
+  -> [registerTypedMindLanguage, setupUrlSync]
+
+# Browser-compatible parser
+TypedMindParserBrowser @ assets/js/typedmind-parser-browser.js:
+  -> [TypedMindParser]
+
+# Standalone examples
+PlaygroundExamples @ assets/js/playground-examples-standalone.js:
+  -> [TYPEDMIND_EXAMPLES]
+
+# Main website JavaScript
+MainJS @ assets/js/main.js:
+  -> [setupSyntaxToggles, themeToggle, navigationHandlers]
+
+# CSS styles
+MainStyles @ assets/css/styles.css:
+  # Main website styles
+
+PlaygroundStyles @ assets/css/playground.css:
+  # Playground-specific styles
+
+# Build and deployment
+BuildScript @ build.js:
+  ~> [copyFiles, minifyAssets]
+
+NetlifyConfig ! netlify.toml : DeploymentConfig
+VercelConfig ! vercel.json : DeploymentConfig
+
+# Test suite
+TypedMindTestSuite @ lib/typed-mind-test-suite:
+  <- [TypedMindCore]
+  -> [TestScenarios]
+
+# Key functions in Monaco integration
+registerTypedMindLanguage :: (monaco: Monaco) => void
+  "Registers TypedMind language with Monaco editor"
+  ~> [setLanguageConfiguration, setMonarchTokensProvider]
+
+setupUrlSync :: () => void
+  "Synchronizes editor content with URL for sharing"
+  ~> [updateUrl, loadFromUrl]
+
+validateCode :: (editor: Editor) => void
+  "Validates TypedMind code in real-time"
+  <- TypedMindParser
+  ~> [parse, displayProblems]
+
+# DTOs for configuration
+DeploymentConfig % "Deployment configuration"
+  - build: object "Build settings"
+  - redirects: array "URL redirects"
+
+MonacoConfig % "Monaco editor configuration"
+  - language: string "Language ID"
+  - theme: string "Theme name"
+  - fontSize: number "Font size"
+
+# Chatbot Components
+ChatTab & "AI Assistant tab"
+  < [OutputPanel]
+  > [ChatInterface, TokenSetup]
+
+ChatInterface & "Main chat interface"
+  < [ChatTab]
+  > [MessageList, ChatInput, ClearButton]
+
+MessageList & "Chat message history"
+  < [ChatInterface]
+  > [ChatMessage]
+
+ChatMessage & "Individual chat message"
+  < [MessageList]
+  # Displays user or assistant messages
+
+ChatInput & "Message input field"
+  < [ChatInterface]
+  ~> [sendMessage]
+
+TokenSetup & "API token configuration"
+  < [ChatTab]
+  > [TokenSelector, TokenInput]
+
+# Chatbot service layer
+ChatService @ assets/js/chat-service.js:
+  <- [TokenManager, ChatHistory, APIAdapters]
+  -> [sendMessage, clearHistory]
+
+TokenManager @ assets/js/token-manager.js:
+  <- [CryptoUtils]
+  -> [storeToken, getToken, clearToken]
+
+ChatHistory @ assets/js/chat-history.js:
+  -> [saveMessage, loadHistory, clearHistory]
+
+APIAdapters @ assets/js/api-adapters.js:
+  -> [ChatGPTAdapter, ClaudeAdapter]
+
+ChatGPTAdapter <: BaseAPIAdapter
+  => [sendRequest]
+
+ClaudeAdapter <: BaseAPIAdapter  
+  => [sendRequest]
+
+CryptoUtils @ assets/js/crypto-utils.js:
+  -> [encrypt, decrypt]
+
+# Chatbot functions
+sendMessage :: (message: string, apiType: string) => Promise<ChatResponse>
+  "Sends message to selected AI API"
+  <- UserMessage
+  -> AssistantMessage
+  ~> [validateToken, formatPrompt, callAPI, saveToHistory]
+
+storeToken :: (token: string, apiType: string) => void
+  "Securely stores API token"
+  ~> [encrypt, localStorage.setItem]
+
+clearHistory :: () => void
+  "Clears all chat history"
+  ~> [localStorage.removeItem]
+
+formatPrompt :: (userMessage: string) => SystemPrompt
+  "Formats message with TypedMind grammar context"
+  <- TypedMindGrammar
+  -> SystemPrompt
+
+# Chatbot DTOs
+UserMessage % "User chat message"
+  - content: string "Message content"
+  - timestamp: Date "Message timestamp"
+
+AssistantMessage % "AI assistant response"
+  - content: string "Response content"  
+  - timestamp: Date "Response timestamp"
+  - code: string "Generated TypedMind code" (optional)
+
+ChatResponse % "API response wrapper"
+  - success: boolean "Request success"
+  - message: AssistantMessage "Response message" (optional)
+  - error: string "Error message" (optional)
+
+SystemPrompt % "System prompt with grammar"
+  - system: string "System instructions"
+  - grammar: string "TypedMind grammar reference"
+  - userMessage: string "User's request"
+
+TokenConfig % "API token configuration"
+  - apiType: string "chatgpt | claude"
+  - token: string "Encrypted API token"
+
+# Runtime parameters
+CLAUDE_API_KEY $browser "Claude API key for chatbot" (optional)
+OPENAI_API_KEY $browser "OpenAI API key for chatbot" (optional)
+
+# Dependencies
+monaco-editor ^ "Monaco code editor" v0.44.0
+lz-string ^ "String compression library"
+express ^ "Web framework"
+vscode-languageserver ^ "LSP implementation"
