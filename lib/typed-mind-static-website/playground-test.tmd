@@ -1,0 +1,12 @@
+# Simple test with errors
+
+TestApp -> Main "Test application"
+
+# This should cause an orphaned entity error
+OrphanedFile @ src/orphan.ts:
+  "This file is not referenced"
+
+# Function with non-existent DTO
+TestFunc :: (input: MissingDTO) => void
+  "Test function"
+  <- MissingDTO
