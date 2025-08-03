@@ -80,7 +80,6 @@
 | lib/typed-mind-static-website/src/refactored-playground.html | Refactored version of the playground with improved architecture and additional features |
 | lib/typed-mind-static-website/src/robots.txt | Robots.txt file allowing all web crawlers and AI bots to index the site |
 | lib/typed-mind-static-website/test-refactored.html | Test page for refactored architecture components with comprehensive test suite |
-| lib/typed-mind-static-website/test-token-manager.html | Test page specifically for TokenManager functionality with encryption/decryption tests |
 | lib/typed-mind-static-website/vercel.json | Vercel configuration file with build settings, security headers, and cache control for static assets |
 | lib/typed-mind-test-suite/TEST_COVERAGE.md | Documentation file tracking test coverage for TypedMind DSL scenarios and validation rules |
 | lib/typed-mind-test-suite/package.json | Package configuration for TypedMind test suite with vitest and workspace dependency setup |
