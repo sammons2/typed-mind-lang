@@ -1,4 +1,6 @@
-# TypedMind Longform Syntax Design
+# TypedMind Longform Syntax Implementation Guide
+
+This document describes the implementation details for TypedMind's dual syntax support. For the complete grammar reference, see [grammar.md](./grammar.md).
 
 TypedMind supports both shortform (for LLMs) and longform (for humans) syntax. Both compile to the same AST.
 

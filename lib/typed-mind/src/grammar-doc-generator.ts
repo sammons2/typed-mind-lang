@@ -142,7 +142,7 @@ export class GrammarDocGenerator {
     sections.push('');
     sections.push('### Complete Application Example');
     sections.push('');
-    sections.push('```yaml');
+    sections.push('```tmd');
     sections.push('# Program definition');
     sections.push('TodoApp -> AppEntry "Main todo application" v1.0.0');
     sections.push('');

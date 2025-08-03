@@ -8,7 +8,7 @@ const generator = new GrammarDocGenerator();
 
 // Generate markdown documentation
 const markdown = generator.generateMarkdown();
-const mdPath = join(__dirname, '..', 'generated-grammar.md');
+const mdPath = join(__dirname, '..', 'grammar.md');
 writeFileSync(mdPath, markdown);
 console.log(`✅ Generated Markdown grammar documentation: ${mdPath}`);
 
@@ -25,3 +25,4 @@ writeFileSync(ebnfPath, ebnf);
 console.log(`✅ Generated EBNF grammar notation: ${ebnfPath}`);
 
 console.log('\n📚 Grammar documentation generated successfully!');
+console.log('\n💡 Note: grammar.md is auto-generated. Do not edit it manually.');
