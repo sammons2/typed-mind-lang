@@ -1,29 +1,16 @@
 # TypedMind Monorepo Architecture
-# This represents the complete system as multiple coordinated programs
+# Each package is an Asset containing one Program with Dependencies modeling package.json deps
 
-# Main monorepo coordination program
-TypedMindSystem -> MonorepoCoordinator v1.0.0
+# Main coordination program
+TypedMindMonorepo -> MonorepoCoordinator v1.0.0
 
 # Coordination file that manages the monorepo
 MonorepoCoordinator @ package.json:
-  <- [CLIExecutable, VSCodeExtensionPackage, StaticWebsiteAsset, TestSuiteAsset]
+  <- [TypedMindCore, TypedMindCLI, TypedMindLSP, TypedMindRenderer, TypedMindVSCode, TypedMindWebsite, TypedMindTestSuite]
   -> [WorkspaceConfig]
 
 WorkspaceConfig <:
   => [manageWorkspaces, buildAll, testAll]
-
-# Assets that bridge between programs
-CLIExecutable ~ "npx typed-mind CLI"
-  >> [TypedMindCoreProgram, TypedMindCLIProgram, TypedMindRendererProgram]
-
-VSCodeExtensionPackage ~ "TypedMind VS Code Extension"
-  >> [TypedMindVSCodeProgram, TypedMindLSPProgram]
-
-StaticWebsiteAsset ~ "TypedMind Static Website"
-  >> [WebsiteProgram]
-
-TestSuiteAsset ~ "TypedMind Test Suite"
-  >> [TestSuiteProgram]
 
 # Workspace management functions
 manageWorkspaces :: () => void
@@ -35,13 +22,40 @@ buildAll :: () => Promise<void>
 testAll :: () => Promise<void>
   "Runs tests across all packages"
 
-# Separate programs for different system components
-TypedMindCoreProgram -> CoreParser v1.0.0
-TypedMindCLIProgram -> CLITool v1.0.0
-TypedMindLSPProgram -> LanguageServer v1.0.0
-TypedMindRendererProgram -> VisualizationRenderer v1.0.0
-TypedMindVSCodeProgram -> VSCodeExtension v1.0.0
-TestSuiteProgram -> TestRunner v1.0.0
+# Assets - Each package is an Asset containing one Program
+TypedMindCore ~ "@sammons/typed-mind core parser package"
+  >> [TypedMindParser]
+
+TypedMindCLI ~ "@sammons/typed-mind-cli command-line interface"
+  >> [CLIProgram]
+  <- [TypedMindCore, TypedMindRenderer] # Dependencies from package.json
+
+TypedMindLSP ~ "@sammons/typed-mind-lsp language server"
+  >> [LSPProgram]
+  <- [TypedMindCore] # Dependencies from package.json
+
+TypedMindRenderer ~ "@sammons/typed-mind-renderer visualization renderer"
+  >> [RendererProgram]
+  <- [TypedMindCore] # Dependencies from package.json
+
+TypedMindVSCode ~ "@sammons/typed-mind-vscode-extension VS Code extension"
+  >> [VSCodeProgram]
+  <- [TypedMindLSP] # Dependencies from package.json
+
+TypedMindWebsite ~ "@sammons/typed-mind-static-website static website"
+  >> [WebsiteProgram]
+
+TypedMindTestSuite ~ "@sammons/typed-mind-test-suite test suite"
+  >> [TestProgram]
+  <- [TypedMindCore] # Dependencies from package.json
+
+# Programs - Each Asset contains exactly one Program
+TypedMindParser -> CoreParser v1.0.0
+CLIProgram -> CLITool v1.0.0
+LSPProgram -> LanguageServer v1.0.0
+RendererProgram -> VisualizationRenderer v1.0.0
+VSCodeProgram -> VSCodeExtension v1.0.0
+TestProgram -> TestRunner v1.0.0
 
 # Static website program (most complex subsystem)
 WebsiteProgram -> WebsiteRoot v1.0.0
