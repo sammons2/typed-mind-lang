@@ -120,6 +120,14 @@ body {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-logo {
+  height: 32px;
+  width: 32px;
 }
 
 .nav-menu {
@@ -173,6 +181,20 @@ body {
   padding: 120px 0 80px;
   text-align: center;
   background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-background) 100%);
+}
+
+.hero-logo {
+  margin-bottom: 2rem;
+}
+
+.hero-logo-img {
+  height: 120px;
+  width: 120px;
+  transition: var(--transition);
+}
+
+.hero-logo-img:hover {
+  transform: scale(1.05);
 }
 
 .hero-title {

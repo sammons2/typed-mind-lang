@@ -6,7 +6,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sammons/backend-app-lang"
+    "url": "https://github.com/sammons/typed-mind-lang"
   },
   "homepage": "https://sammons.github.io/typed-mind-playground",
   "scripts": {
