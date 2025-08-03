@@ -14,7 +14,7 @@ force AI to create a cohesive program architecture with a relatively token effic
 Entities link bidirectionally, so for example it is not enough to declare a function,
 the file must also be declared. The function must be exported by a file. And the function must be 
 consumed by another entity to avoid dead code. The TypeMind checker will validate these scenarios.
-`
+`;
 
 export class GrammarDocGenerator {
   generateMarkdown(): string {
@@ -24,6 +24,10 @@ export class GrammarDocGenerator {
     sections.push('# TypedMind DSL Grammar Reference');
     sections.push('');
     sections.push('This document is auto-generated from the parser patterns.');
+    sections.push('');
+    
+    // Add the explanation
+    sections.push(explanation.trim());
     sections.push('');
 
     // Table of Contents
