@@ -1,0 +1,18 @@
+# Shortform syntax is for LLMs
+App &! "Main application component"
+  > [Header, MainContent, Footer]
+
+# Child components
+Header & "Application header"
+  < [App]
+  > [Logo, Navigation, UserMenu]
+  # Components affected by: [login, logout]
+
+MainContent & "Main content area"
+  < [App]
+  > [Sidebar, ContentArea]
+
+# Component affected by functions
+UserProfile & "User profile display"
+  < [ContentArea]
+  # Components affected by: [updateUserProfile, deleteUser]

@@ -1,0 +1,12 @@
+# Shortform syntax is for LLMs
+API_VERSION ! config.ts : string
+MAX_RETRIES ! config.ts : number
+DEFAULT_TIMEOUT ! config.ts : number
+
+# Object constants with schema
+DATABASE_CONFIG ! database/config.ts : DatabaseConfig
+FEATURE_FLAGS ! features.ts : FeatureFlags
+
+# Array constants
+ALLOWED_ORIGINS ! cors.config.ts : string[]
+SUPPORTED_LOCALES ! i18n/config.ts : Locale[]

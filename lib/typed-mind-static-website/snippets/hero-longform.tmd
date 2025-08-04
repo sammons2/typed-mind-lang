@@ -1,0 +1,65 @@
+# Longform syntax is for humans
+program TodoApp {
+  entry: api
+  version: "1.0.0"
+}
+
+file api {
+  path: "api.ts"
+  imports: [CreateTodoDto, Todo]
+  exports: [TodoService]
+}
+
+class TodoService {
+  extends: BaseService
+  methods: [createTodo, getTodos]
+}
+
+function createTodo {
+  signature: "(input: CreateTodoDto) => Todo"
+  description: "Creates a new todo item"
+  input: CreateTodoDto
+  output: Todo
+}
+
+function getTodos {
+  signature: "() => Todo[]"
+  description: "Retrieves all todo items"
+  output: Todo
+}
+
+dto CreateTodoDto {
+  description: "Input for creating todos"
+  fields: {
+    title: {
+      type: "string"
+      description: "Todo title"
+    }
+    completed: {
+      type: "boolean"
+      description: "Completion status"
+    }
+  }
+}
+
+dto Todo {
+  description: "Todo entity"
+  fields: {
+    id: {
+      type: "string"
+      description: "Unique identifier"
+    }
+    title: {
+      type: "string"
+      description: "Todo title"
+    }
+    completed: {
+      type: "boolean"
+      description: "Completion status"
+    }
+    createdAt: {
+      type: "Date"
+      description: "Creation timestamp"
+    }
+  }
+}

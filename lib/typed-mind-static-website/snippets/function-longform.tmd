@@ -1,0 +1,24 @@
+# Longform syntax is for humans
+function validateEmail {
+  signature: "(email: string) => boolean"
+  description: "Validates email format"
+}
+
+# Function with DTO references
+function login {
+  signature: "(credentials: LoginDto) => AuthToken"
+  description: "Authenticates user and returns token"
+  input: LoginDto
+  output: AuthToken
+  calls: [validateCredentials, generateToken]
+  consumes: [JWT_SECRET]
+}
+
+# Function affecting UI
+function updateUserProfile {
+  signature: "(data: ProfileDto) => User"
+  description: "Updates user profile"
+  input: ProfileDto
+  output: User
+  affects: [ProfileComponent, HeaderComponent]
+}

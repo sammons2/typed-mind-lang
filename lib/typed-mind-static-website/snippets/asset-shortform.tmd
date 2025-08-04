@@ -1,0 +1,16 @@
+# Shortform syntax is for LLMs
+UserServiceContainer ~ "Docker container for user service"
+
+# Asset containing a program
+APIGateway ~ "API Gateway application"
+  >> GatewayProgram
+
+# Multiple assets
+WebApp ~ "Frontend React application"
+  >> ReactApp
+
+MobileApp ~ "React Native mobile app"
+  >> MobileProgram
+
+WorkerService ~ "Background job processor"
+  >> WorkerProgram

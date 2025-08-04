@@ -1,0 +1,15 @@
+# Shortform syntax is for LLMs
+# Define your data models
+User % "User entity"
+  - id: string "Unique identifier"
+  - name: string "Full name"
+  - email: string "Email address"
+
+# Add service classes
+UserService <: BaseService
+  => [getUser, createUser, updateUser]
+
+getUser :: (id: string) => User
+  "Retrieves a user by ID"
+  -> User
+  ~> [validateId, queryDatabase]

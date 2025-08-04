@@ -1,0 +1,14 @@
+# Shortform syntax is for LLMs
+UserService <: BaseService, IUserService
+  => [findById, create, update, delete]
+
+# Class methods are defined as functions
+findById :: (id: string) => User
+  "Finds a user by ID"
+  ~> [validateId, queryDatabase]
+
+create :: (data: CreateUserDto) => User
+  "Creates a new user"
+  <- CreateUserDto
+  -> User
+  ~> [validate, save]

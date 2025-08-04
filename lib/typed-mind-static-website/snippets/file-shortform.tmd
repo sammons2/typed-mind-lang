@@ -1,0 +1,31 @@
+# Shortform syntax is for LLMs
+FileExample -> UserController v1.0.0
+
+UserController @ controllers/user.controller.ts:
+  <- [User, CreateUserDto, UserService]
+  -> [UserController]
+
+# Classes and functions defined in this file
+UserController <: BaseController
+  => [getUser, createUser]
+
+BaseController <: 
+  => [handleError]
+
+getUser :: (id: string) => User
+  "Gets a user by ID"
+  -> User
+
+createUser :: (data: CreateUserDto) => User
+  "Creates a new user"
+  <- CreateUserDto
+  -> User
+
+User % "User entity"
+  - id: string "User ID"
+
+CreateUserDto % "User creation input"
+  - name: string "User name"
+
+UserService <: 
+  => [save, find]

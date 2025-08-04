@@ -1,0 +1,22 @@
+# Shortform syntax is for LLMs
+DTOExample -> models v1.0.0
+
+# Data model file
+models @ models.ts:
+  -> [BaseEntity, User, UserRole]
+
+BaseEntity % "Base entity with common fields"
+  - id: string "Unique identifier"
+  - createdAt: Date "Creation timestamp"
+  - updatedAt: Date "Last update timestamp"
+
+# DTO with optional fields
+User % "User entity"
+  - id: string "User ID"
+  - email: string "Email address"
+  - name: string "Full name"
+  - role: UserRole "User role" (optional)
+  - avatar: string "Avatar URL" (optional)
+
+UserRole % "User role enumeration"
+  - name: string "Role name"

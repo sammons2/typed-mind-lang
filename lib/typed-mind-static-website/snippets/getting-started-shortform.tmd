@@ -1,0 +1,13 @@
+# Shortform syntax is for LLMs
+MyFirstApp -> main v1.0.0
+
+main @ main.ts:
+  -> [App]
+
+App <: Application
+  => [start, stop]
+
+start :: () => void
+  "Starts the application"
+  ~> [initialize, listen]
+  $< [PORT, NODE_ENV]

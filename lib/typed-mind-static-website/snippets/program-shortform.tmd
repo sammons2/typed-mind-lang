@@ -1,0 +1,15 @@
+# Shortform syntax is for LLMs
+MyApplication -> main v1.0.0
+
+# Main application file
+main @ main.ts:
+  -> [App]
+
+App <: Application
+  => [start, stop]
+
+start :: () => void
+  "Starts the application"
+
+stop :: () => void
+  "Stops the application"

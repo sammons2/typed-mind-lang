@@ -1,0 +1,76 @@
+# Longform syntax is for humans
+program ClassExample {
+  entry: services
+  version: "1.0.0"
+}
+
+file services {
+  path: "services.ts"
+  exports: [UserService, BaseService, IUserService]
+}
+
+class UserService {
+  extends: BaseService
+  implements: [IUserService]
+  methods: [findById, create, update, delete]
+}
+
+class BaseService {
+  methods: [validate]
+}
+
+class IUserService {
+  methods: [findById, create]
+}
+
+# Class methods are defined as functions
+function findById {
+  signature: "(id: string) => User"
+  description: "Finds a user by ID"
+  calls: [validateId, queryDatabase]
+  output: User
+}
+
+function create {
+  signature: "(data: CreateUserDto) => User"
+  description: "Creates a new user"
+  input: CreateUserDto
+  output: User
+  calls: [validate, save]
+}
+
+function validateId {
+  signature: "(id: string) => boolean"
+  description: "Validates ID format"
+}
+
+function queryDatabase {
+  signature: "(query: string) => User"
+  description: "Queries the database"
+  output: User
+}
+
+function validate {
+  signature: "(data: any) => boolean"
+  description: "Validates input data"
+}
+
+function save {
+  signature: "(data: any) => User"
+  description: "Saves data"
+  output: User
+}
+
+dto User {
+  description: "User entity"
+  fields: {
+    id: { type: "string", description: "User ID" }
+  }
+}
+
+dto CreateUserDto {
+  description: "User creation input"
+  fields: {
+    name: { type: "string", description: "User name" }
+  }
+}

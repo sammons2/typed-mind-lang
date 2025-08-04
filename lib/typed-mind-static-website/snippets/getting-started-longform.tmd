@@ -1,0 +1,22 @@
+# Longform syntax is for humans
+program MyFirstApp {
+  entryPoint: main
+  version: "1.0.0"
+}
+
+file main {
+  path: "main.ts"
+  exports: [App]
+}
+
+class App {
+  extends: Application
+  methods: [start, stop]
+}
+
+function start {
+  signature: () => void
+  description: "Starts the application"
+  calls: [initialize, listen]
+  consumes: [PORT, NODE_ENV]
+}

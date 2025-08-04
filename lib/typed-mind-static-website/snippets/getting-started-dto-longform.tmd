@@ -1,0 +1,23 @@
+# Longform syntax is for humans
+# Define your data models
+dto User {
+  description: "User entity"
+  fields: [
+    { name: "id", type: "string", description: "Unique identifier" },
+    { name: "name", type: "string", description: "Full name" },
+    { name: "email", type: "string", description: "Email address" }
+  ]
+}
+
+# Add service classes
+class UserService {
+  extends: BaseService
+  methods: [getUser, createUser, updateUser]
+}
+
+function getUser {
+  signature: (id: string) => User
+  description: "Retrieves a user by ID"
+  output: User
+  calls: [validateId, queryDatabase]
+}

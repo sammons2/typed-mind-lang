@@ -1,0 +1,78 @@
+# Longform syntax is for humans
+program FileExample {
+  entry: controllers
+  version: "1.0.0"
+}
+
+file controllers {
+  path: "controllers/user.controller.ts"
+  imports: [User, CreateUserDto, UserService]
+  exports: [UserController, BaseController]
+}
+
+file models {
+  path: "models.ts"
+  exports: [User, CreateUserDto]
+}
+
+file services {
+  path: "services.ts"
+  exports: [UserService]
+}
+
+class UserController {
+  extends: BaseController
+  methods: [getUser, createUser]
+}
+
+class BaseController {
+  methods: [handleError]
+}
+
+function getUser {
+  signature: "(id: string) => User"
+  description: "Gets a user by ID"
+  output: User
+}
+
+function createUser {
+  signature: "(data: CreateUserDto) => User"
+  description: "Creates a new user"
+  input: CreateUserDto
+  output: User
+}
+
+function handleError {
+  signature: "(error: Error) => void"
+  description: "Handles errors"
+}
+
+dto User {
+  description: "User entity"
+  fields: {
+    id: { type: "string", description: "User ID" }
+  }
+}
+
+dto CreateUserDto {
+  description: "User creation input"
+  fields: {
+    name: { type: "string", description: "User name" }
+  }
+}
+
+class UserService {
+  methods: [save, find]
+}
+
+function save {
+  signature: "(data: any) => User"
+  description: "Saves user data"
+  output: User
+}
+
+function find {
+  signature: "(id: string) => User"
+  description: "Finds user by ID"
+  output: User
+}

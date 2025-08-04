@@ -1,0 +1,19 @@
+# Shortform syntax is for LLMs
+DATABASE_URL $env "Database connection string" (required)
+PORT $env "Server port"
+  = "3000"
+NODE_ENV $env "Environment mode"
+  = "development"
+
+# IAM/Security parameters
+AWS_ROLE_ARN $iam "AWS role for service" (required)
+SERVICE_ACCOUNT $iam "GCP service account"
+
+# Runtime configuration
+MAX_WORKERS $runtime "Maximum worker threads"
+  = "4"
+MEMORY_LIMIT $runtime "Memory limit in MB"
+
+# Config file parameters
+FEATURE_FLAGS $config "Feature toggle configuration"
+API_RATE_LIMITS $config "Rate limiting rules"

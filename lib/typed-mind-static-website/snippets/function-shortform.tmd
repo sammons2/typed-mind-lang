@@ -1,0 +1,18 @@
+# Shortform syntax is for LLMs
+validateEmail :: (email: string) => boolean
+  "Validates email format"
+
+# Function with DTO references
+login :: (credentials: LoginDto) => AuthToken
+  "Authenticates user and returns token"
+  <- LoginDto
+  -> AuthToken
+  ~> [validateCredentials, generateToken]
+  $< [JWT_SECRET]
+
+# Function affecting UI
+updateUserProfile :: (data: ProfileDto) => User
+  "Updates user profile"
+  <- ProfileDto
+  -> User
+  ~ [ProfileComponent, HeaderComponent]

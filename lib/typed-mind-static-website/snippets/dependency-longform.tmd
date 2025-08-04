@@ -1,0 +1,39 @@
+# Longform syntax is for humans
+dependency axios {
+  description: "HTTP client library"
+  version: "3.0.0"
+}
+
+dependency express {
+  description: "Web framework"
+  version: "4.18.0"
+}
+
+dependency lodash {
+  description: "Utility library"
+}
+
+# Scoped packages
+dependency "@types/node" {
+  description: "Node.js type definitions"
+  version: "20.0.0"
+}
+
+dependency "@aws-sdk/client-s3" {
+  description: "AWS S3 client"
+  version: "3.400.0"
+}
+
+# Referenced in files
+file ServerMain {
+  path: "src/server.ts"
+  imports: [express, axios]
+  exports: [startServer]
+}
+
+# Dependencies are referenced in function calls
+function start {
+  signature: "() => void"
+  description: "Starts the server"
+  calls: ["express.listen"]
+}

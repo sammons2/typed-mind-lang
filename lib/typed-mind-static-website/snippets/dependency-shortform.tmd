@@ -1,0 +1,18 @@
+# Shortform syntax is for LLMs
+axios ^ "HTTP client library" v3.0.0
+express ^ "Web framework" v4.18.0
+lodash ^ "Utility library"
+
+# Scoped packages
+@types/node ^ "Node.js type definitions" v20.0.0
+@aws-sdk/client-s3 ^ "AWS S3 client" v3.400.0
+
+# Referenced in files
+ServerMain @ src/server.ts:
+  <- [express^, axios^]
+  -> [startServer]
+
+# Dependencies are marked with ^ in imports
+start :: () => void
+  "Starts the server"
+  ~> [express^.listen]

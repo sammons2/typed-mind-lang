@@ -1,0 +1,68 @@
+# Longform syntax is for humans
+program DTOExample {
+  entry: models
+  version: "1.0.0"
+}
+
+# Data model file
+file models {
+  path: "models.ts"
+  exports: [BaseEntity, User, UserRole]
+}
+
+dto BaseEntity {
+  description: "Base entity with common fields"
+  fields: {
+    id: {
+      type: "string"
+      description: "Unique identifier"
+    }
+    createdAt: {
+      type: "Date"
+      description: "Creation timestamp"
+    }
+    updatedAt: {
+      type: "Date"
+      description: "Last update timestamp"
+    }
+  }
+}
+
+# DTO with optional fields
+dto User {
+  description: "User entity"
+  fields: {
+    id: {
+      type: "string"
+      description: "User ID"
+    }
+    email: {
+      type: "string"
+      description: "Email address"
+    }
+    name: {
+      type: "string"
+      description: "Full name"
+    }
+    role: {
+      type: "UserRole"
+      description: "User role"
+      optional: true
+    }
+    avatar: {
+      type: "string"
+      description: "Avatar URL"
+      optional: true
+    }
+  }
+}
+
+dto UserRole {
+  description: "User role enumeration"
+  fields: {
+    name: {
+      type: "string"
+      description: "Role name"
+    }
+  }
+}

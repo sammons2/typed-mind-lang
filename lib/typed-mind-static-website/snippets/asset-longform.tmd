@@ -1,0 +1,26 @@
+# Longform syntax is for humans
+asset UserServiceContainer {
+  description: "Docker container for user service"
+}
+
+# Asset containing a program
+asset APIGateway {
+  description: "API Gateway application"
+  contains: [GatewayProgram]
+}
+
+# Multiple assets
+asset WebApp {
+  description: "Frontend React application"
+  contains: [ReactApp]
+}
+
+asset MobileApp {
+  description: "React Native mobile app"
+  contains: [MobileProgram]
+}
+
+asset WorkerService {
+  description: "Background job processor"
+  contains: [WorkerProgram]
+}
