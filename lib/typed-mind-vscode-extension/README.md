@@ -20,15 +20,6 @@ TypedMind is a domain-specific language (DSL) for describing program architectur
 
 [Learn more about TypedMind →](https://sammons.github.io/typed-mind-lang/)
 
-## 🎨 Colorblind-Friendly by Default
-
-This extension features an accessibility-first design with colors optimized for all types of color vision:
-
-- **10 distinct colors** for different entity types
-- **Text decorations** (bold, italic, underline) as secondary indicators
-- **WCAG AA compliant** contrast ratios
-- **Tested for** protanopia, deuteranopia, and tritanopia
-
 ## Commands
 
 This extension provides the following commands accessible via the Command Palette (Cmd/Ctrl+Shift+P):
@@ -41,7 +32,7 @@ This extension provides the following commands accessible via the Command Palett
 ## Features
 
 ### Language Support
-- **Syntax highlighting** with colorblind-friendly colors
+- **Syntax highlighting** for TypedMind entities
 - **Real-time validation** and diagnostics via Language Server Protocol
 - **IntelliSense** for entity names and operators
 - **Hover information** showing entity details and relationships
@@ -49,21 +40,6 @@ This extension provides the following commands accessible via the Command Palett
 - **Find all references** across your codebase (Right-click → Find All References)
 - **Semantic highlighting** for consistent entity coloring
 - **Quick fixes** for common validation errors
-
-### Entity Type Colors
-
-| Entity | Color | Style | Hex |
-|--------|-------|-------|-----|
-| **Program** | Coral Red | Bold | `#FF6B6B` |
-| **File** | Plum | Normal | `#DDA0DD` |
-| **Function** | Yellow | Normal | `#FFE66D` |
-| **Class** | Mint Green | Italic | `#95E1D3` |
-| **Constants** | Lavender | Underline | `#C7CEEA` |
-| **DTO** | Peach | Normal | `#FFB4A2` |
-| **Asset** | Sky Blue | Italic | `#B8E7FF` |
-| **UIComponent** | Powder Blue | Bold | `#A8DADC` |
-| **RunParameter** | Off White | Bold Italic | `#F1FAEE` |
-| **Dependency** | Sandy Orange | Normal | `#F4A261` |
 
 ## Installation
 
@@ -84,7 +60,7 @@ code --install-extension sammons.typed-mind-vscode-extension
 1. Build: `pnpm build`
 2. Package: `pnpm package`
 3. Install: `code --install-extension typed-mind-vscode-extension-*.vsix`
-4. Select **"TypedMind Colorblind Dark"** theme for best experience
+4. Extension will activate automatically for .tmd files
 
 ## Usage
 
@@ -97,23 +73,13 @@ The extension activates automatically for `.tmd` files.
 4. Run validation with Cmd/Ctrl+Shift+P → "TypedMind: Validate Current File"
 
 ### Theme Selection
-For optimal accessibility with colorblind-friendly colors:
-1. Open Command Palette (Cmd/Ctrl+K Cmd/Ctrl+T)
-2. Select "TypedMind Colorblind Dark" theme
+The extension works with any VS Code theme.
 
 ### Common Workflows
 - **Navigate code**: Cmd/Ctrl+Click on entity names to jump to definitions
 - **Find usages**: Right-click → Find All References
 - **View errors**: Problems panel shows all validation errors
 - **Quick fixes**: Hover over errors and click the lightbulb for fixes
-
-## Accessibility
-
-This extension prioritizes accessibility through:
-- **Luminance variation** - Colors differ in brightness, not just hue
-- **Pattern recognition** - Text styles provide non-color cues
-- **High contrast** - All colors meet WCAG standards
-- **Universal design** - Works for all users, not just colorblind
 
 ## Development
 
