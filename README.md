@@ -1,10 +1,16 @@
 <div align="center">
   <img src="typedmind_transparent.png" alt="TypedMind Logo" width="200" height="200">
+  
+  <h1>TypedMind</h1>
+  
+  <p>A domain-specific language (DSL) for describing and visualizing program architecture.</p>
+  
+  <h3>
+    <a href="https://sammons.github.io/typed-mind-lang/">🌐 Try TypedMind Online</a> • 
+    <a href="https://sammons.github.io/typed-mind-lang/#getting-started">📚 Getting Started</a> • 
+    <a href="https://sammons.github.io/typed-mind-lang/#examples">🎯 Examples</a>
+  </h3>
 </div>
-
-# TypedMind
-
-A domain-specific language (DSL) for describing and visualizing program architecture.
 
 ## Packages
 
@@ -16,7 +22,15 @@ This monorepo contains five packages:
 - **@sammons/typed-mind-lsp** - Language Server Protocol implementation
 - **@sammons/typed-mind-vscode-extension** - VS Code extension with syntax highlighting
 
-## Installation
+## Quick Start
+
+Visit [TypedMind Online](https://sammons.github.io/typed-mind-lang/) to try TypedMind in your browser, or install the CLI:
+
+```bash
+npm install -g @sammons/typed-mind-cli
+```
+
+## Installation (Development)
 
 ```bash
 # Install dependencies
