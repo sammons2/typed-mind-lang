@@ -36,8 +36,8 @@
     "prepublishOnly": "npm run clean && npm run build && npm test"
   },
   "dependencies": {
-    "@sammons/typed-mind": "^0.1.0",
-    "@sammons/typed-mind-renderer": "^0.1.0"
+    "@sammons/typed-mind": "workspace:*",
+    "@sammons/typed-mind-renderer": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",

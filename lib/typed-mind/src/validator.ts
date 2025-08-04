@@ -1,4 +1,4 @@
-import type { AnyEntity, ClassEntity, FunctionEntity, UIComponentEntity, AssetEntity, RunParameterEntity, ConstantsEntity, DependencyEntity, ValidationError, ValidationResult, EntityType, ReferenceType } from './types';
+import type { AnyEntity, ClassEntity, FunctionEntity, UIComponentEntity, AssetEntity, RunParameterEntity, ConstantsEntity, DependencyEntity, DTOEntity, ValidationError, ValidationResult, EntityType, ReferenceType } from './types';
 import type { ParseResult } from './parser';
 
 export class DSLValidator {
@@ -94,6 +94,7 @@ export class DSLValidator {
     this.checkMethodCalls(entities);
     this.checkUndefinedExports(entities);
     this.checkFunctionDTOs(entities);
+    this.checkDTOFieldTypes(entities);
     this.checkUIComponentRelationships(entities);
     this.checkFunctionUIComponentAffects(entities);
     this.checkAssetProgramRelationships(entities);
@@ -1099,6 +1100,29 @@ export class DSLValidator {
         if (param.consumedBy) {
           for (const funcName of param.consumedBy) {
             addReference(funcName, 'consumedBy', referencer);
+          }
+        }
+      }
+    }
+  }
+
+  private checkDTOFieldTypes(entities: Map<string, AnyEntity>): void {
+    // Check that DTO fields don't have Function type
+    for (const entity of entities.values()) {
+      if (entity.type === 'DTO') {
+        const dtoEntity = entity as DTOEntity;
+        
+        if (dtoEntity.fields) {
+          for (const field of dtoEntity.fields) {
+            // Check if field type is exactly 'Function' or contains 'Function' as a word
+            if (field.type && (field.type === 'Function' || /\bFunction\b/.test(field.type))) {
+              this.addError({
+                position: entity.position,
+                message: `DTO '${entity.name}' field '${field.name}' cannot have Function type`,
+                severity: 'error',
+                suggestion: `DTOs should only contain data fields. Use string, number, boolean, object, array, or other data types instead`,
+              });
+            }
           }
         }
       }

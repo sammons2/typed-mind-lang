@@ -342,8 +342,8 @@ sendRequest :: (prompt: SystemPrompt) => Promise<string>
 
 # Data types and DTOs
 TypedMindParser % "Browser-compatible parser"
-  - parse: Function "Parse function"
-  - validate: Function "Validation function"
+  - parseFunction: string "Name of parse function"
+  - validateFunction: string "Name of validation function"
 
 ParseResult % "Parse operation result"
   - valid: boolean "Is valid"
@@ -356,15 +356,15 @@ ValidationError % "Validation error details"
   - message: string "Error message"
 
 Monaco % "Monaco editor instance"
-  - editor: object "Editor instance"
-  - languages: object "Languages API"
+  - editorInstance: object "Editor instance reference"
+  - languagesAPI: object "Languages API reference"
 
 Editor % "Monaco editor interface"
-  - getValue: Function "Get editor content"
-  - setValue: Function "Set editor content"
+  - getValueMethod: string "Method name to get editor content"
+  - setValueMethod: string "Method name to set editor content"
 
 TYPEDMIND_EXAMPLES % "Playground code examples"
-  - examples: object[] "Array of example objects"
+  - examples: array "Array of example objects"
 
 UserMessage % "User chat message"
   - content: string "Message content"

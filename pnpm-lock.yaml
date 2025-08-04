@@ -54,11 +54,11 @@ importers:
   lib/typed-mind-cli:
     dependencies:
       '@sammons/typed-mind':
-        specifier: ^0.1.0
-        version: 0.1.0
+        specifier: workspace:*
+        version: link:../typed-mind
       '@sammons/typed-mind-renderer':
-        specifier: ^0.1.0
-        version: 0.1.0
+        specifier: workspace:*
+        version: link:../typed-mind-renderer
     devDependencies:
       '@types/node':
         specifier: ^22.10.5
@@ -729,10 +729,6 @@ packages:
     resolution: {integrity: sha512-HwHCH5GQTOeGYP5wBEBXFVhfQecwRl24Rugoqhh8YwGarsU09bHhOKuqlyW4ZolZCan3eTUax7UJbGSmKSM51A==}
     cpu: [x64]
     os: [win32]
-
-  '@sammons/typed-mind-renderer@0.1.0':
-    resolution: {integrity: sha512-63WvydWpL2LHmJAjteby6uNN1N2g1CSkUzIsKOe6yJEiOJnfsEP4NHd65h7tFcOubzlP+NYUga0Cvp+7rYPL7Q==}
-    engines: {node: '>=22.0.0'}
 
   '@sammons/typed-mind@0.1.0':
     resolution: {integrity: sha512-DcS2KKc9LgaaFaEQHGMPJZ7Y3p7VYah3EM0d3HIEEjE4vtbCQz2KGbNvm7ZpywsXVpWr6pBIOoo7PhvoC1yz7A==}
@@ -3132,10 +3128,6 @@ snapshots:
 
   '@rollup/rollup-win32-x64-msvc@4.45.3':
     optional: true
-
-  '@sammons/typed-mind-renderer@0.1.0':
-    dependencies:
-      '@sammons/typed-mind': 0.1.0
 
   '@sammons/typed-mind@0.1.0': {}
 

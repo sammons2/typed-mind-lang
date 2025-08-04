@@ -102,6 +102,19 @@ async function main() {
         console.log('\u2713 No errors found!');
         process.exit(0);
       } else {
+        // Display each error
+        for (const error of result.errors) {
+          const severity = error.severity === 'warning' ? 'WARNING' : 'ERROR';
+          console.error(`${severity} at line ${error.position.line}, col ${error.position.column}: ${error.message}`);
+          const errorLine = content.split('\n')[error.position.line - 1] || '';
+          console.error(`  ${error.position.line} | ${errorLine}`);
+          console.error(`     ${' '.repeat(String(error.position.line).length)}${''.padStart(error.position.column, ' ')}^`);
+          if (error.suggestion) {
+            console.error(`  Suggestion: ${error.suggestion}`);
+          }
+          console.error(''); // Empty line between errors
+        }
+        
         console.error(`\u2717 Found ${result.errors.length} error(s)`);
         process.exit(1);
       }
@@ -134,6 +147,19 @@ async function main() {
         console.log('\u2713 No errors found!');
         process.exit(0);
       } else {
+        // Display each error
+        for (const error of result.errors) {
+          const severity = error.severity === 'warning' ? 'WARNING' : 'ERROR';
+          console.error(`${severity} at line ${error.position.line}, col ${error.position.column}: ${error.message}`);
+          const errorLine = content.split('\n')[error.position.line - 1] || '';
+          console.error(`  ${error.position.line} | ${errorLine}`);
+          console.error(`     ${' '.repeat(String(error.position.line).length)}${''.padStart(error.position.column, ' ')}^`);
+          if (error.suggestion) {
+            console.error(`  Suggestion: ${error.suggestion}`);
+          }
+          console.error(''); // Empty line between errors
+        }
+        
         console.error(`\u2717 Found ${result.errors.length} error(s)`);
         process.exit(1);
       }
