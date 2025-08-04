@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="typedmind_transparent.png" alt="TypedMind Logo" width="200" height="200">
+</div>
+
 # TypedMind
 
 A domain-specific language (DSL) for describing and visualizing program architecture.

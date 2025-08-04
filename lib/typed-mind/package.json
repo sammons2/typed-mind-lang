@@ -7,11 +7,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sammons/backend-app-lang"
+    "url": "https://github.com/sammons/typed-mind-lang"
   },
-  "homepage": "https://github.com/sammons/backend-app-lang#readme",
+  "homepage": "https://github.com/sammons/typed-mind-lang#readme",
   "bugs": {
-    "url": "https://github.com/sammons/backend-app-lang/issues"
+    "url": "https://github.com/sammons/typed-mind-lang/issues"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

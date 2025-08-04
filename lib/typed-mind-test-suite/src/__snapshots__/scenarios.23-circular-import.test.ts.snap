@@ -20,7 +20,7 @@ exports[`scenario-23-circular-import > should validate circular import 1`] = `
     {
       "column": 1,
       "line": 2,
-      "message": "Circular import detected: /home/sammons/Desktop/backend-app-lang/lib/typed-mind-test-suite/scenarios/imports/circular/module-a.tmd -> /home/sammons/Desktop/backend-app-lang/lib/typed-mind-test-suite/scenarios/imports/circular/module-b.tmd -> /home/sammons/Desktop/backend-app-lang/lib/typed-mind-test-suite/scenarios/imports/circular/module-a.tmd",
+      "message": "Circular import detected: /home/sammons/Desktop/typed-mind-lang/lib/typed-mind-test-suite/scenarios/imports/circular/module-a.tmd -> /home/sammons/Desktop/typed-mind-lang/lib/typed-mind-test-suite/scenarios/imports/circular/module-b.tmd -> /home/sammons/Desktop/typed-mind-lang/lib/typed-mind-test-suite/scenarios/imports/circular/module-a.tmd",
       "severity": "error",
       "suggestion": undefined,
     },

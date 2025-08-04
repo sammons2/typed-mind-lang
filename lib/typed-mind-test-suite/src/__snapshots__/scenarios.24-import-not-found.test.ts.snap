@@ -6,7 +6,7 @@ exports[`scenario-24-import-not-found > should validate import not found 1`] = `
     {
       "column": 1,
       "line": 2,
-      "message": "Failed to import './non-existent-file.tmd': Error: ENOENT: no such file or directory, open '/home/sammons/Desktop/backend-app-lang/lib/typed-mind-test-suite/scenarios/non-existent-file.tmd'",
+      "message": "Failed to import './non-existent-file.tmd': Error: ENOENT: no such file or directory, open '/home/sammons/Desktop/typed-mind-lang/lib/typed-mind-test-suite/scenarios/non-existent-file.tmd'",
       "severity": "error",
       "suggestion": undefined,
     },
