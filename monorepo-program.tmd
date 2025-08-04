@@ -158,7 +158,7 @@ TokenInput & "Token input field"
 # Browser parser and Monaco integration
 BrowserParser @ lib/typed-mind-static-website/assets/js/typedmind-parser-browser.js:
   <- [Monaco, Editor, ParseResult, ValidationError]
-  -> [TypedMindParser]
+  -> [parseTypedMind]
 
 MonacoIntegration @ lib/typed-mind-static-website/assets/js/typedmind-monaco-simple.js:
   <- [BrowserParser, LZString, Monaco, Editor, ParseResult, ValidationError]
@@ -274,6 +274,11 @@ parse :: (code: string) => ParseResult
   <- [TypedMindParser]
   -> [ParseResult]
 
+parseTypedMind :: (code: string) => ParseResult
+  "Browser-compatible TypedMind parser"
+  <- [TypedMindParser]
+  -> [ParseResult]
+
 displayProblems :: (problems: ValidationError[]) => void
   "Displays validation problems"
   <- [ValidationError]
@@ -341,9 +346,6 @@ sendRequest :: (prompt: SystemPrompt) => Promise<string>
   "Base API request method"
 
 # Data types and DTOs
-TypedMindParser % "Browser-compatible parser"
-  - parseFunction: string "Name of parse function"
-  - validateFunction: string "Name of validation function"
 
 ParseResult % "Parse operation result"
   - valid: boolean "Is valid"
@@ -360,8 +362,9 @@ Monaco % "Monaco editor instance"
   - languagesAPI: object "Languages API reference"
 
 Editor % "Monaco editor interface"
-  - getValueMethod: string "Method name to get editor content"
-  - setValueMethod: string "Method name to set editor content"
+  - value: string "Current editor content"
+  - language: string "Editor language mode"
+  - readOnly: boolean "Is editor read-only"
 
 TYPEDMIND_EXAMPLES % "Playground code examples"
   - examples: array "Array of example objects"
