@@ -16,7 +16,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "typed-mind": "./dist/cli.js"
+    "typed-mind": "./dist/cli.js",
+    "tmd": "./dist/cli.js"
   },
   "files": [
     "dist",
