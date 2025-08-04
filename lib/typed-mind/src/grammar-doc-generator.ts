@@ -55,7 +55,7 @@ export class GrammarDocGenerator {
       'Class': 'Defines a class with inheritance',
       'ClassFile': 'Defines a class-file fusion entity (both class and file)',
       'Constants': 'Defines a constants/configuration file',
-      'DTO': 'Defines a Data Transfer Object',
+      'DTO': 'Defines a Data Transfer Object (data fields only, no behavior)',
       'Asset': 'Defines a static asset',
       'UIComponent': 'Defines a UI component (&! for root)',
       'RunParameter': 'Defines a runtime parameter',
@@ -199,6 +199,48 @@ export class GrammarDocGenerator {
     sections.push('# Dependencies');
     sections.push('react ^ "UI library" v18.0.0');
     sections.push('typescript ^ "TypeScript compiler" v5.0.0');
+    sections.push('```');
+    sections.push('');
+
+    // Add architectural best practices
+    sections.push('## Best Practices');
+    sections.push('');
+    sections.push('### Separate Data from Behavior: DTOs vs Classes');
+    sections.push('**Key Principle**: ');
+    sections.push('- **DTOs contain only data fields** (for serialization, config, parameters, etc.)');
+    sections.push('- **Classes contain DTOs and Functions** (behavior that acts on data)');
+    sections.push('');
+    sections.push('```tmd');
+    sections.push('# ✅ Good: DTOs contain only data');
+    sections.push('CreateUserDTO : "Data for creating a user"');
+    sections.push('  - name: string "User\'s full name"');
+    sections.push('  - email: string "User\'s email address"');
+    sections.push('  - password: string "Hashed password"');
+    sections.push('');
+    sections.push('ConfigDTO : "Application configuration"');
+    sections.push('  - databaseUrl: string "Database connection"');
+    sections.push('  - port: number "Server port"');
+    sections.push('  - logLevel: string "Logging level"');
+    sections.push('');
+    sections.push('# ✅ Good: Classes contain DTOs and behavior');
+    sections.push('UserService <: BaseService');
+    sections.push('  <- CreateUserDTO, UserResponseDTO  # Uses DTOs for data');
+    sections.push('  => [createUser, getUsers, updateUser]  # Contains behavior');
+    sections.push('');
+    sections.push('# ❌ Bad: DTOs with function references');
+    sections.push('UserServiceDTO : "Service with functions"');
+    sections.push('  - createFunction: string "Name of create function"  # NO! This is behavior, not data');
+    sections.push('```');
+    sections.push('');
+    sections.push('### Use ClassFile for Services and Controllers');
+    sections.push('ClassFile entities (`#:`) combine class behavior with file structure, eliminating the need for separate class and file declarations:');
+    sections.push('');
+    sections.push('```tmd');
+    sections.push('# Good: ClassFile combines file and class');
+    sections.push('UserController #: src/controllers/user.controller.ts <: BaseController');
+    sections.push('  <- [UserService, ValidationMiddleware]');
+    sections.push('  => [create, read, update, delete]  # Class methods');
+    sections.push('  -> [userRouter]  # File exports');
     sections.push('```');
 
     return sections.join('\n');
