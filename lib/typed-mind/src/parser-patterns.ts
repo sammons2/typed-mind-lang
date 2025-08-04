@@ -106,8 +106,8 @@ export const GENERAL_PATTERNS = {
   // Import statement check - both @import and import
   IMPORT_STATEMENT: /^(?:@import|import)\s+"([^"]+)"(?:\s+as\s+(\w+))?$/,
   
-  // Inline comment extraction
-  INLINE_COMMENT: /^(.+?)\s*#\s*(.+)$/,
+  // Inline comment extraction - must not match #: operator
+  INLINE_COMMENT: /^(.+?)\s+#\s+(.+)$/,
 } as const;
 
 // Entity type names for validation
