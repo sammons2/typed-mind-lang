@@ -1,0 +1,373 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 1.0.0)'
+        required: true
+        type: string
+      create_tag:
+        description: 'Create git tag for this version'
+        required: false
+        default: true
+        type: boolean
+      draft:
+        description: 'Create as draft release'
+        required: false
+        default: false
+        type: boolean
+      prerelease:
+        description: 'Mark as pre-release'
+        required: false
+        default: false
+        type: boolean
+
+# Required secrets:
+# NPM_TOKEN - npm authentication token with publish access
+# VSCE_TOKEN - Visual Studio Code Marketplace publisher access token
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+      tag_name: ${{ steps.get_version.outputs.tag_name }}
+      is_prerelease: ${{ steps.get_version.outputs.is_prerelease }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get version from input or tag
+        id: get_version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            version="${{ github.event.inputs.version }}"
+            tag_name="v${version}"
+            is_prerelease="${{ github.event.inputs.prerelease }}"
+          else
+            tag_name="${{ github.ref_name }}"
+            version="${tag_name#v}"
+            # Check if it's a prerelease (contains alpha, beta, rc, etc.)
+            if [[ "$version" =~ (alpha|beta|rc|pre) ]]; then
+              is_prerelease="true"
+            else
+              is_prerelease="false"
+            fi
+          fi
+          
+          echo "version=${version}" >> $GITHUB_OUTPUT
+          echo "tag_name=${tag_name}" >> $GITHUB_OUTPUT
+          echo "is_prerelease=${is_prerelease}" >> $GITHUB_OUTPUT
+          
+          echo "Release version: ${version}"
+          echo "Tag name: ${tag_name}"
+          echo "Is prerelease: ${is_prerelease}"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate package versions
+        run: |
+          expected_version="${{ steps.get_version.outputs.version }}"
+          
+          check_version() {
+            local package_path=$1
+            local package_name=$2
+            local actual_version=$(jq -r '.version' "$package_path/package.json")
+            
+            if [ "$actual_version" != "$expected_version" ]; then
+              echo "❌ Version mismatch in $package_name: expected $expected_version, got $actual_version"
+              return 1
+            else
+              echo "✅ $package_name version: $actual_version"
+              return 0
+            fi
+          }
+          
+          echo "Validating package versions against release version $expected_version..."
+          
+          check_version "lib/typed-mind" "@sammons/typed-mind"
+          check_version "lib/typed-mind-cli" "@sammons/typed-mind-cli"
+          check_version "lib/typed-mind-lsp" "@sammons/typed-mind-lsp"
+          check_version "lib/typed-mind-renderer" "@sammons/typed-mind-renderer"
+          check_version "lib/typed-mind-vscode-extension" "typed-mind (VS Code extension)"
+          
+          echo "All package versions validated successfully!"
+
+      - name: Run tests
+        run: pnpm run test
+
+      - name: Build all packages
+        run: pnpm run build
+
+  create-tag:
+    runs-on: ubuntu-latest
+    needs: validate
+    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.create_tag == 'true' }}
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create and push tag
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a "${{ needs.validate.outputs.tag_name }}" -m "Release ${{ needs.validate.outputs.version }}"
+          git push origin "${{ needs.validate.outputs.tag_name }}"
+
+  publish-npm:
+    runs-on: ubuntu-latest
+    needs: [validate, create-tag]
+    if: ${{ always() && needs.validate.result == 'success' && (needs.create-tag.result == 'success' || needs.create-tag.result == 'skipped') }}
+    permissions:
+      contents: read
+      id-token: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate.outputs.tag_name }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm run build
+
+      - name: Publish NPM packages
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          publish_package() {
+            local package_dir=$1
+            local package_name=$2
+            
+            echo "Publishing $package_name..."
+            cd "$package_dir"
+            
+            # Check if already published
+            if npm view "$package_name@${{ needs.validate.outputs.version }}" version &>/dev/null; then
+              echo "⚠️ $package_name@${{ needs.validate.outputs.version }} already published, skipping"
+            else
+              npm publish --access public --provenance
+              echo "✅ $package_name@${{ needs.validate.outputs.version }} published"
+            fi
+            
+            cd - > /dev/null
+          }
+          
+          # Publish in dependency order
+          publish_package "lib/typed-mind" "@sammons/typed-mind"
+          publish_package "lib/typed-mind-renderer" "@sammons/typed-mind-renderer"
+          publish_package "lib/typed-mind-lsp" "@sammons/typed-mind-lsp"
+          publish_package "lib/typed-mind-cli" "@sammons/typed-mind-cli"
+
+  publish-vscode:
+    runs-on: ubuntu-latest
+    needs: [validate, create-tag]
+    if: ${{ always() && needs.validate.result == 'success' && (needs.create-tag.result == 'success' || needs.create-tag.result == 'skipped') }}
+    permissions:
+      contents: read
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate.outputs.tag_name }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build all packages
+        run: pnpm run build
+
+      - name: Package and publish VS Code extension
+        working-directory: lib/typed-mind-vscode-extension
+        env:
+          VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
+        run: |
+          echo "Building VS Code extension..."
+          pnpm run build
+          
+          echo "Packaging extension..."
+          npx @vscode/vsce package --no-dependencies
+          
+          # Check if already published
+          if npx @vscode/vsce show sammons.typed-mind --json 2>/dev/null | jq -e --arg version "${{ needs.validate.outputs.version }}" '.versions[] | select(.version == $version)' > /dev/null; then
+            echo "⚠️ VS Code extension typed-mind@${{ needs.validate.outputs.version }} already published, skipping"
+          else
+            echo "Publishing VS Code extension..."
+            npx @vscode/vsce publish --packagePath typed-mind-${{ needs.validate.outputs.version }}.vsix
+            echo "✅ VS Code extension typed-mind@${{ needs.validate.outputs.version }} published"
+          fi
+
+      - name: Upload extension artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vscode-extension-${{ needs.validate.outputs.version }}
+          path: lib/typed-mind-vscode-extension/typed-mind-${{ needs.validate.outputs.version }}.vsix
+          retention-days: 90
+
+  create-release:
+    runs-on: ubuntu-latest
+    needs: [validate, publish-npm, publish-vscode]
+    if: ${{ always() && needs.validate.result == 'success' }}
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.validate.outputs.tag_name }}
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get the previous release tag
+          previous_tag=$(git tag --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+' | head -2 | tail -1)
+          current_tag="${{ needs.validate.outputs.tag_name }}"
+          
+          if [ -z "$previous_tag" ]; then
+            previous_tag=$(git rev-list --max-parents=0 HEAD)
+            echo "No previous release tag found, using first commit"
+          fi
+          
+          echo "Generating changelog from $previous_tag to $current_tag"
+          
+          # Generate changelog
+          {
+            echo "## What's Changed"
+            echo ""
+            
+            # Get commits between tags
+            git log --pretty=format:"- %s" "$previous_tag..$current_tag" | \
+              grep -v "^- Merge " | \
+              grep -v "^- chore: bump version" | \
+              head -20
+            
+            if [ $(git log --oneline "$previous_tag..$current_tag" | wc -l) -gt 20 ]; then
+              echo ""
+              echo "...and more changes. See full diff: https://github.com/${{ github.repository }}/compare/$previous_tag...$current_tag"
+            fi
+            
+            echo ""
+            echo "## Published Packages"
+            echo ""
+            echo "### NPM Packages"
+            echo "- \`@sammons/typed-mind@${{ needs.validate.outputs.version }}\`"
+            echo "- \`@sammons/typed-mind-cli@${{ needs.validate.outputs.version }}\`"
+            echo "- \`@sammons/typed-mind-lsp@${{ needs.validate.outputs.version }}\`"
+            echo "- \`@sammons/typed-mind-renderer@${{ needs.validate.outputs.version }}\`"
+            echo ""
+            echo "### VS Code Extension"
+            echo "- \`typed-mind@${{ needs.validate.outputs.version }}\` - [Install from Marketplace](https://marketplace.visualstudio.com/items?itemName=sammons.typed-mind)"
+            echo ""
+            echo "## Installation"
+            echo ""
+            echo "\`\`\`bash"
+            echo "# Install CLI"
+            echo "npm install -g @sammons/typed-mind-cli"
+            echo ""
+            echo "# Or install core library"
+            echo "npm install @sammons/typed-mind"
+            echo "\`\`\`"
+          } > RELEASE_NOTES.md
+          
+          # Store changelog in output
+          {
+            echo 'changelog<<EOF'
+            cat RELEASE_NOTES.md
+            echo EOF
+          } >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ needs.validate.outputs.tag_name }}
+          release_name: TypedMind ${{ needs.validate.outputs.version }}
+          body: ${{ steps.changelog.outputs.changelog }}
+          draft: ${{ github.event.inputs.draft || false }}
+          prerelease: ${{ needs.validate.outputs.is_prerelease }}
+
+      - name: Download VS Code extension artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: vscode-extension-${{ needs.validate.outputs.version }}
+          path: ./artifacts
+
+      - name: Upload VS Code extension to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/typed-mind-${{ needs.validate.outputs.version }}.vsix
+          asset_name: typed-mind-${{ needs.validate.outputs.version }}.vsix
+          asset_content_type: application/zip
+
+      - name: Create release summary
+        run: |
+          echo "=== RELEASE SUMMARY ===" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🎉 **TypedMind ${{ needs.validate.outputs.version }} Released!**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Published Components" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ NPM packages published to registry" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ VS Code extension published to marketplace" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ GitHub release created with assets" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Quick Links" >> $GITHUB_STEP_SUMMARY
+          echo "- 📦 [NPM: @sammons/typed-mind](https://www.npmjs.com/package/@sammons/typed-mind)" >> $GITHUB_STEP_SUMMARY
+          echo "- 🖥️ [VS Code Extension](https://marketplace.visualstudio.com/items?itemName=sammons.typed-mind)" >> $GITHUB_STEP_SUMMARY
+          echo "- 📋 [GitHub Release](https://github.com/${{ github.repository }}/releases/tag/${{ needs.validate.outputs.tag_name }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The release is now live and ready for use! 🚀" >> $GITHUB_STEP_SUMMARY

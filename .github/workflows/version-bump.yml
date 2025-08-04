@@ -1,0 +1,228 @@
+name: Version Bump
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      dry_run:
+        description: 'Dry run (do not create PR)'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  version-bump:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Configure git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Get current versions
+        id: current_versions
+        run: |
+          echo "core_version=$(jq -r '.version' lib/typed-mind/package.json)" >> $GITHUB_OUTPUT
+          echo "cli_version=$(jq -r '.version' lib/typed-mind-cli/package.json)" >> $GITHUB_OUTPUT
+          echo "lsp_version=$(jq -r '.version' lib/typed-mind-lsp/package.json)" >> $GITHUB_OUTPUT
+          echo "renderer_version=$(jq -r '.version' lib/typed-mind-renderer/package.json)" >> $GITHUB_OUTPUT
+          echo "vscode_version=$(jq -r '.version' lib/typed-mind-vscode-extension/package.json)" >> $GITHUB_OUTPUT
+
+      - name: Calculate new version
+        id: new_version
+        run: |
+          current_version="${{ steps.current_versions.outputs.core_version }}"
+          IFS='.' read -ra VERSION_PARTS <<< "$current_version"
+          major=${VERSION_PARTS[0]}
+          minor=${VERSION_PARTS[1]}
+          patch=${VERSION_PARTS[2]}
+          
+          case "${{ github.event.inputs.version_type }}" in
+            major)
+              major=$((major + 1))
+              minor=0
+              patch=0
+              ;;
+            minor)
+              minor=$((minor + 1))
+              patch=0
+              ;;
+            patch)
+              patch=$((patch + 1))
+              ;;
+          esac
+          
+          new_version="${major}.${minor}.${patch}"
+          echo "version=${new_version}" >> $GITHUB_OUTPUT
+          echo "New version will be: ${new_version}"
+
+      - name: Update package versions
+        if: ${{ !github.event.inputs.dry_run }}
+        run: |
+          new_version="${{ steps.new_version.outputs.version }}"
+          
+          # Update all package.json files
+          jq --arg version "$new_version" '.version = $version' lib/typed-mind/package.json > tmp.json && mv tmp.json lib/typed-mind/package.json
+          jq --arg version "$new_version" '.version = $version' lib/typed-mind-cli/package.json > tmp.json && mv tmp.json lib/typed-mind-cli/package.json
+          jq --arg version "$new_version" '.version = $version' lib/typed-mind-lsp/package.json > tmp.json && mv tmp.json lib/typed-mind-lsp/package.json
+          jq --arg version "$new_version" '.version = $version' lib/typed-mind-renderer/package.json > tmp.json && mv tmp.json lib/typed-mind-renderer/package.json
+          jq --arg version "$new_version" '.version = $version' lib/typed-mind-vscode-extension/package.json > tmp.json && mv tmp.json lib/typed-mind-vscode-extension/package.json
+          
+          # Update internal dependencies to use exact versions
+          jq --arg version "$new_version" '
+            .dependencies = (.dependencies // {} | 
+              if has("@sammons/typed-mind") then .["@sammons/typed-mind"] = $version else . end |
+              if has("@sammons/typed-mind-renderer") then .["@sammons/typed-mind-renderer"] = $version else . end |
+              if has("@sammons/typed-mind-lsp") then .["@sammons/typed-mind-lsp"] = $version else . end
+            )
+          ' lib/typed-mind-cli/package.json > tmp.json && mv tmp.json lib/typed-mind-cli/package.json
+          
+          jq --arg version "$new_version" '
+            .dependencies = (.dependencies // {} | 
+              if has("@sammons/typed-mind") then .["@sammons/typed-mind"] = $version else . end
+            )
+          ' lib/typed-mind-lsp/package.json > tmp.json && mv tmp.json lib/typed-mind-lsp/package.json
+          
+          jq --arg version "$new_version" '
+            .dependencies = (.dependencies // {} | 
+              if has("@sammons/typed-mind") then .["@sammons/typed-mind"] = $version else . end
+            )
+          ' lib/typed-mind-renderer/package.json > tmp.json && mv tmp.json lib/typed-mind-renderer/package.json
+          
+          # Update VS Code extension dependency (workspace reference stays as is)
+          # The vscode extension uses "workspace:*" which is correct for monorepo
+
+      - name: Update pnpm lockfile
+        if: ${{ !github.event.inputs.dry_run }}
+        run: pnpm install --lockfile-only
+
+      - name: Check for changelog
+        id: changelog
+        run: |
+          if [ -f "CHANGELOG.md" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update changelog
+        if: ${{ !github.event.inputs.dry_run && steps.changelog.outputs.exists == 'true' }}
+        run: |
+          new_version="${{ steps.new_version.outputs.version }}"
+          date=$(date +%Y-%m-%d)
+          
+          # Create temporary changelog content
+          echo "# Changelog" > CHANGELOG.new.md
+          echo "" >> CHANGELOG.new.md
+          echo "## [$new_version] - $date" >> CHANGELOG.new.md
+          echo "" >> CHANGELOG.new.md
+          echo "### Changed" >> CHANGELOG.new.md
+          echo "- Version bump to $new_version" >> CHANGELOG.new.md
+          echo "" >> CHANGELOG.new.md
+          
+          # Append existing changelog content (skip the first line if it's just "# Changelog")
+          if [ -f "CHANGELOG.md" ]; then
+            tail -n +2 CHANGELOG.md >> CHANGELOG.new.md
+          fi
+          
+          mv CHANGELOG.new.md CHANGELOG.md
+
+      - name: Show changes (dry run)
+        if: ${{ github.event.inputs.dry_run }}
+        run: |
+          echo "This is a dry run. The following changes would be made:"
+          echo "Current version: ${{ steps.current_versions.outputs.core_version }}"
+          echo "New version: ${{ steps.new_version.outputs.version }}"
+          echo ""
+          echo "Files that would be updated:"
+          echo "- lib/typed-mind/package.json"
+          echo "- lib/typed-mind-cli/package.json"
+          echo "- lib/typed-mind-lsp/package.json"
+          echo "- lib/typed-mind-renderer/package.json"
+          echo "- lib/typed-mind-vscode-extension/package.json"
+          echo "- pnpm-lock.yaml"
+          if [ "${{ steps.changelog.outputs.exists }}" == "true" ]; then
+            echo "- CHANGELOG.md"
+          fi
+
+      - name: Create Pull Request
+        if: ${{ !github.event.inputs.dry_run }}
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: |
+            chore: bump version to ${{ steps.new_version.outputs.version }}
+            
+            - Update all package versions to ${{ steps.new_version.outputs.version }}
+            - Update internal dependencies
+            - Update lockfile
+          title: "chore: bump version to ${{ steps.new_version.outputs.version }}"
+          body: |
+            ## Version Bump: ${{ github.event.inputs.version_type }}
+            
+            This PR updates all package versions from `${{ steps.current_versions.outputs.core_version }}` to `${{ steps.new_version.outputs.version }}`.
+            
+            ### Changed Packages
+            - `@sammons/typed-mind`: ${{ steps.current_versions.outputs.core_version }} → ${{ steps.new_version.outputs.version }}
+            - `@sammons/typed-mind-cli`: ${{ steps.current_versions.outputs.cli_version }} → ${{ steps.new_version.outputs.version }}
+            - `@sammons/typed-mind-lsp`: ${{ steps.current_versions.outputs.lsp_version }} → ${{ steps.new_version.outputs.version }}
+            - `@sammons/typed-mind-renderer`: ${{ steps.current_versions.outputs.renderer_version }} → ${{ steps.new_version.outputs.version }}
+            - `typed-mind` (VS Code extension): ${{ steps.current_versions.outputs.vscode_version }} → ${{ steps.new_version.outputs.version }}
+            
+            ### Files Updated
+            - All `package.json` files in the monorepo
+            - Internal dependency versions updated to exact versions
+            - `pnpm-lock.yaml` regenerated
+            ${{ steps.changelog.outputs.exists == 'true' && '- `CHANGELOG.md` updated' || '' }}
+            
+            **Ready for review and merge before creating a release.**
+          branch: version-bump/${{ steps.new_version.outputs.version }}
+          delete-branch: true
+          labels: |
+            version-bump
+            chore

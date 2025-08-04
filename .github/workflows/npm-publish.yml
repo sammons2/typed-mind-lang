@@ -1,0 +1,275 @@
+name: NPM Publish
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Git tag to publish (leave empty for latest commit)'
+        required: false
+        type: string
+      dry_run:
+        description: 'Dry run (do not actually publish)'
+        required: false
+        default: false
+        type: boolean
+
+# Required secrets:
+# NPM_TOKEN - npm authentication token with publish access
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.inputs.tag || github.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      - name: Get pnmp store directory
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint all packages
+        run: pnpm run lint
+
+      - name: Build all packages
+        run: pnpm run build
+
+      - name: Run tests
+        run: pnpm run test
+
+      - name: Get package versions
+        id: versions
+        run: |
+          echo "core_version=$(jq -r '.version' lib/typed-mind/package.json)" >> $GITHUB_OUTPUT
+          echo "cli_version=$(jq -r '.version' lib/typed-mind-cli/package.json)" >> $GITHUB_OUTPUT
+          echo "lsp_version=$(jq -r '.version' lib/typed-mind-lsp/package.json)" >> $GITHUB_OUTPUT
+          echo "renderer_version=$(jq -r '.version' lib/typed-mind-renderer/package.json)" >> $GITHUB_OUTPUT
+
+      - name: Check if packages already published
+        id: check_published
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          check_package() {
+            local package_name=$1
+            local version=$2
+            if npm view "${package_name}@${version}" version &>/dev/null; then
+              echo "${package_name}@${version} already published"
+              return 0
+            else
+              echo "${package_name}@${version} not published"
+              return 1
+            fi
+          }
+          
+          core_published=false
+          cli_published=false
+          lsp_published=false
+          renderer_published=false
+          
+          if check_package "@sammons/typed-mind" "${{ steps.versions.outputs.core_version }}"; then
+            core_published=true
+          fi
+          
+          if check_package "@sammons/typed-mind-cli" "${{ steps.versions.outputs.cli_version }}"; then
+            cli_published=true
+          fi
+          
+          if check_package "@sammons/typed-mind-lsp" "${{ steps.versions.outputs.lsp_version }}"; then
+            lsp_published=true
+          fi
+          
+          if check_package "@sammons/typed-mind-renderer" "${{ steps.versions.outputs.renderer_version }}"; then
+            renderer_published=true
+          fi
+          
+          echo "core_published=${core_published}" >> $GITHUB_OUTPUT
+          echo "cli_published=${cli_published}" >> $GITHUB_OUTPUT
+          echo "lsp_published=${lsp_published}" >> $GITHUB_OUTPUT
+          echo "renderer_published=${renderer_published}" >> $GITHUB_OUTPUT
+
+      - name: Dry run summary
+        if: ${{ github.event.inputs.dry_run }}
+        run: |
+          echo "=== DRY RUN MODE ==="
+          echo "The following packages would be published:"
+          echo ""
+          
+          if [ "${{ steps.check_published.outputs.core_published }}" == "false" ]; then
+            echo "✓ @sammons/typed-mind@${{ steps.versions.outputs.core_version }}"
+          else
+            echo "⚠ @sammons/typed-mind@${{ steps.versions.outputs.core_version }} (already published)"
+          fi
+          
+          if [ "${{ steps.check_published.outputs.renderer_published }}" == "false" ]; then
+            echo "✓ @sammons/typed-mind-renderer@${{ steps.versions.outputs.renderer_version }}"
+          else
+            echo "⚠ @sammons/typed-mind-renderer@${{ steps.versions.outputs.renderer_version }} (already published)"
+          fi
+          
+          if [ "${{ steps.check_published.outputs.lsp_published }}" == "false" ]; then
+            echo "✓ @sammons/typed-mind-lsp@${{ steps.versions.outputs.lsp_version }}"
+          else
+            echo "⚠ @sammons/typed-mind-lsp@${{ steps.versions.outputs.lsp_version }} (already published)"
+          fi
+          
+          if [ "${{ steps.check_published.outputs.cli_published }}" == "false" ]; then
+            echo "✓ @sammons/typed-mind-cli@${{ steps.versions.outputs.cli_version }}"
+          else
+            echo "⚠ @sammons/typed-mind-cli@${{ steps.versions.outputs.cli_version }} (already published)"
+          fi
+          
+          echo ""
+          echo "Publishing order: core → renderer → lsp → cli"
+          echo "=== END DRY RUN ==="
+
+      # Publish in dependency order: core first, then packages that depend on it
+      
+      - name: Publish @sammons/typed-mind (core)
+        if: ${{ !github.event.inputs.dry_run && steps.check_published.outputs.core_published == 'false' }}
+        working-directory: lib/typed-mind
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "Publishing @sammons/typed-mind@${{ steps.versions.outputs.core_version }}"
+          npm publish --access public --provenance
+
+      - name: Publish @sammons/typed-mind-renderer
+        if: ${{ !github.event.inputs.dry_run && steps.check_published.outputs.renderer_published == 'false' }}
+        working-directory: lib/typed-mind-renderer
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "Publishing @sammons/typed-mind-renderer@${{ steps.versions.outputs.renderer_version }}"
+          npm publish --access public --provenance
+
+      - name: Publish @sammons/typed-mind-lsp
+        if: ${{ !github.event.inputs.dry_run && steps.check_published.outputs.lsp_published == 'false' }}
+        working-directory: lib/typed-mind-lsp
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "Publishing @sammons/typed-mind-lsp@${{ steps.versions.outputs.lsp_version }}"
+          npm publish --access public --provenance
+
+      - name: Publish @sammons/typed-mind-cli
+        if: ${{ !github.event.inputs.dry_run && steps.check_published.outputs.cli_published == 'false' }}
+        working-directory: lib/typed-mind-cli
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "Publishing @sammons/typed-mind-cli@${{ steps.versions.outputs.cli_version }}"
+          npm publish --access public --provenance
+
+      - name: Verify publications
+        if: ${{ !github.event.inputs.dry_run }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "Verifying published packages..."
+          
+          verify_package() {
+            local package_name=$1
+            local version=$2
+            local max_attempts=10
+            local attempt=1
+            
+            while [ $attempt -le $max_attempts ]; do
+              if npm view "${package_name}@${version}" version &>/dev/null; then
+                echo "✓ ${package_name}@${version} is available"
+                return 0
+              else
+                echo "⏳ Waiting for ${package_name}@${version} to be available (attempt $attempt/$max_attempts)"
+                sleep 30
+                attempt=$((attempt + 1))
+              fi
+            done
+            
+            echo "❌ ${package_name}@${version} not available after $max_attempts attempts"
+            return 1
+          }
+          
+          # Verify each package that should have been published
+          if [ "${{ steps.check_published.outputs.core_published }}" == "false" ]; then
+            verify_package "@sammons/typed-mind" "${{ steps.versions.outputs.core_version }}"
+          fi
+          
+          if [ "${{ steps.check_published.outputs.renderer_published }}" == "false" ]; then
+            verify_package "@sammons/typed-mind-renderer" "${{ steps.versions.outputs.renderer_version }}"
+          fi
+          
+          if [ "${{ steps.check_published.outputs.lsp_published }}" == "false" ]; then
+            verify_package "@sammons/typed-mind-lsp" "${{ steps.versions.outputs.lsp_version }}"
+          fi
+          
+          if [ "${{ steps.check_published.outputs.cli_published }}" == "false" ]; then
+            verify_package "@sammons/typed-mind-cli" "${{ steps.versions.outputs.cli_version }}"
+          fi
+          
+          echo "All packages verified successfully!"
+
+      - name: Create publication summary
+        if: ${{ !github.event.inputs.dry_run }}
+        run: |
+          echo "=== NPM PUBLICATION SUMMARY ===" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Package | Version | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|---------|---------|" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ steps.check_published.outputs.core_published }}" == "false" ]; then
+            echo "| @sammons/typed-mind | ${{ steps.versions.outputs.core_version }} | ✅ Published |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| @sammons/typed-mind | ${{ steps.versions.outputs.core_version }} | ⚠️ Already published |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ steps.check_published.outputs.renderer_published }}" == "false" ]; then
+            echo "| @sammons/typed-mind-renderer | ${{ steps.versions.outputs.renderer_version }} | ✅ Published |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| @sammons/typed-mind-renderer | ${{ steps.versions.outputs.renderer_version }} | ⚠️ Already published |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ steps.check_published.outputs.lsp_published }}" == "false" ]; then
+            echo "| @sammons/typed-mind-lsp | ${{ steps.versions.outputs.lsp_version }} | ✅ Published |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| @sammons/typed-mind-lsp | ${{ steps.versions.outputs.lsp_version }} | ⚠️ Already published |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ steps.check_published.outputs.cli_published }}" == "false" ]; then
+            echo "| @sammons/typed-mind-cli | ${{ steps.versions.outputs.cli_version }} | ✅ Published |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| @sammons/typed-mind-cli | ${{ steps.versions.outputs.cli_version }} | ⚠️ Already published |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All packages are now available on npm! 🎉" >> $GITHUB_STEP_SUMMARY
