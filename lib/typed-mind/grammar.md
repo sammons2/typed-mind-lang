@@ -2,6 +2,14 @@
 
 This document is auto-generated from the parser patterns.
 
+## Note from Author
+TypedMind is meant to be a DSL to represent a variety of programs and
+force AI to create a cohesive program architecture with a relatively token efficient syntax.
+
+Entities link bidirectionally, so for example it is not enough to declare a function,
+the file must also be declared. The function must be exported by a file. And the function must be 
+consumed by another entity to avoid dead code. The TypeMind checker will validate these scenarios.
+
 ## Table of Contents
 
 1. [Entity Types](#entity-types)
@@ -183,44 +191,36 @@ These patterns are used for general parsing tasks:
 
 ```tmd
 # Program definition
-TodoApp -> AppEntry "Main todo application" v1.0.0
+TodoApp -> main "Main todo application" v1.0.0
 
-# File with imports and exports
-UserService @ src/services/user.ts:
-  <- [Database, UserModel]
-  -> [createUser, getUser, updateUser]
-  "Handles user business logic"
+# Entry file
+main @ src/index.ts:
+  <- [App]
+  -> [startApp]
+  "Application entry point"
 
-# Function with full specification
-createUser :: (data: UserCreateDTO) => Promise<User>
-  "Creates a new user in the database"
-  <- UserCreateDTO
-  -> User
-  ~> [validateUser, Database.insert, sendWelcomeEmail]
-  ~ [UserList, UserCount]
-  $< [DATABASE_URL, SMTP_HOST]
-
-# DTO with fields
-UserCreateDTO % "Data for creating a new user"
-  - name: string "User full name"
-  - email: string "User email address"
-  - password: string "User password (will be hashed)"
-  - age?: number "User age (optional)"
+# Start function
+startApp :: () => void
+  "Starts the application"
+  ~ [App]
+  $< [DATABASE_URL, API_KEY]
 
 # UI Components
 App &! "Root application component"
-  > [Header, MainContent, Footer]
+  > [TodoList, AddTodoForm]
 
-UserList & "Displays list of users"
-  < [MainContent]
-  > [UserCard]
+TodoList & "Displays list of todos"
+  < [App]
+
+AddTodoForm & "Form to add new todos"
+  < [App]
 
 # Runtime parameters
 DATABASE_URL $env "PostgreSQL connection string" (required)
-SMTP_HOST $env "Email server host"
-  = "localhost"
+API_KEY $env "API authentication key"
+  = "default-key"
 
 # Dependencies
-express ^ "Web framework" v4.18.0
-@types/node ^ "Node.js type definitions" v20.0.0
+react ^ "UI library" v18.0.0
+typescript ^ "TypeScript compiler" v5.0.0
 ```
