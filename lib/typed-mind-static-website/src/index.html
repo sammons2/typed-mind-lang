@@ -862,11 +862,14 @@ getUser :: (id: string) => models.User
                 <div class="step">
                     <div class="step-number">1</div>
                     <div class="step-content">
-                        <h3>Install the VS Code Extension</h3>
-                        <p>Get full IDE support with syntax highlighting and validation</p>
-                        <pre><code class="language-bash"># Search for "TypedMind" in VS Code Extensions
-# Or install from the command line:
-code --install-extension typedmind.vscode-typedmind</code></pre>
+                        <h3>Install the CLI</h3>
+                        <p>Get the TypedMind command-line interface for validating and rendering your architecture files</p>
+                        <pre><code class="language-bash">npm install -g @sammons/typed-mind-cli
+
+# Or with pnpm, yarn, or bun:
+pnpm add -g @sammons/typed-mind-cli
+yarn global add @sammons/typed-mind-cli
+bun add -g @sammons/typed-mind-cli</code></pre>
                     </div>
                 </div>
                 
@@ -920,8 +923,43 @@ start :: () => void
                 <div class="step">
                     <div class="step-number">3</div>
                     <div class="step-content">
-                        <h3>Add Components and DTOs</h3>
-                        <p>Build out your architecture incrementally</p>
+                        <h3>Use the CLI to Check Your Architecture</h3>
+                        <p>Validate your TypedMind files and visualize them with the CLI:</p>
+                        <pre><code class="language-bash"># Check for validation errors
+typed-mind check my-app.tmd
+
+# Or use the short alias
+tmd check my-app.tmd
+
+# Example output:
+✅ my-app.tmd - Valid
+   Program: MyFirstApp v1.0.0
+   Files: 1, Classes: 1, Functions: 2
+
+# View your architecture as a diagram
+typed-mind render my-app.tmd
+
+# For more options
+typed-mind --help</code></pre>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Use with Your LLM</h3>
+                        <p>Share your .tmd files with LLMs for architecture discussions and code generation</p>
+                        <div class="tip">
+                            <strong>Pro Tip:</strong> Have your LLM read the <a href="https://github.com/sammons/typed-mind-lang/blob/main/lib/typed-mind/grammar.md" target="_blank">TypedMind Grammar Documentation</a> to learn the complete syntax. TypedMind's concise syntax helps LLMs understand your entire architecture without token limitations.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <h3>Install the VS Code Extension</h3>
+                        <p>Get full IDE support with syntax highlighting, validation, and IntelliSense</p>
                         <div class="code-toggle">
                             <button class="toggle-btn active" data-syntax="longform">Longform</button>
                             <button class="toggle-btn" data-syntax="shortform">Shortform</button>
@@ -967,16 +1005,6 @@ getUser :: (id: string) => User
                     </div>
                 </div>
                 
-                <div class="step">
-                    <div class="step-number">4</div>
-                    <div class="step-content">
-                        <h3>Use with Your LLM</h3>
-                        <p>Share your .tmd files with LLMs for architecture discussions and code generation</p>
-                        <div class="tip">
-                            <strong>Pro Tip:</strong> Have your LLM read the <a href="https://github.com/sammons/typed-mind-lang/blob/main/lib/typed-mind/generated-grammar.md" target="_blank">TypedMind Grammar Documentation</a> to learn the complete syntax. TypedMind's concise syntax helps LLMs understand your entire architecture without token limitations.
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </section>
