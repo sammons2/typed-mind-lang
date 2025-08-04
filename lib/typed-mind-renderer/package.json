@@ -1,8 +1,16 @@
 {
   "name": "@sammons/typed-mind-renderer",
-  "version": "0.1.0",
+  "version": "0.1.3",
   "description": "Interactive HTML/D3.js renderer for TypedMind DSL - generates beautiful visualizations of software architectures",
-  "keywords": ["typedmind", "dsl", "renderer", "visualization", "d3", "html", "architecture-diagram"],
+  "keywords": [
+    "typedmind",
+    "dsl",
+    "renderer",
+    "visualization",
+    "d3",
+    "html",
+    "architecture-diagram"
+  ],
   "author": "sammons",
   "license": "MIT",
   "repository": {
