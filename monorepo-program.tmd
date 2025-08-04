@@ -60,23 +60,61 @@ TestProgram -> TestRunner v1.0.0
 # Static website program (most complex subsystem)
 WebsiteProgram -> WebsiteRoot v1.0.0
 
+# Core parser classes and functions
+DSLChecker <:
+  => [checkSyntax, validateStructure, reportErrors]
+
+Parser <:
+  => [parseTokens, buildAST, handleErrors]
+
+Validator <:
+  => [validateEntities, checkExports, validateReferences]
+
 # Entry point files for each program
 CoreParser @ lib/typed-mind/src/index.ts:
   -> [DSLChecker, Parser, Validator]
 
+# CLI functions
+main :: () => Promise<void>
+  "Main CLI entry point function"
+  <- [DSLChecker, Parser, Validator]
+
 CLITool @ lib/typed-mind-cli/src/cli.ts:
   -> [main]
+
+# Language Server functions
+startServer :: () => Promise<void>
+  "Starts the TypedMind language server"
+  <- [DSLChecker, Parser, Validator]
 
 LanguageServer @ lib/typed-mind-lsp/src/server.ts:
   -> [startServer]
 
+# Visualization Renderer classes
+RendererCore <:
+  => [renderGraph, renderAST, exportSVG, exportPNG]
+
 VisualizationRenderer @ lib/typed-mind-renderer/src/index.ts:
-  -> [TypedMindRenderer]
+  -> [RendererCore]
+
+# VS Code Extension functions
+activate :: (context: vscode.ExtensionContext) => void
+  "Activates the VS Code extension"
+  <- [startServer]
+
+deactivate :: () => void
+  "Deactivates the VS Code extension"
 
 VSCodeExtension @ lib/typed-mind-vscode-extension/src/extension.ts:
   -> [activate, deactivate]
 
+# Test Runner functions
+runTests :: () => Promise<TestResults>
+  "Runs the TypedMind test suite"
+  <- [DSLChecker, Parser, Validator, TestResults]
+
 TestRunner @ lib/typed-mind-test-suite/src/runner.ts:
+  <- [TestResults]
   -> [runTests]
 
 WebsiteRoot @ lib/typed-mind-static-website/src/index.html:
@@ -414,6 +452,12 @@ TokenConfig % "API token configuration"
 TypedMindGrammar % "TypedMind language grammar"
   - rules: string "Grammar rules"
   - examples: string "Usage examples"
+
+TestResults % "Test execution results"
+  - passed: number "Number of passed tests"
+  - failed: number "Number of failed tests"
+  - total: number "Total number of tests"
+  - details: array "Test execution details"
 
 DeploymentConfig % "Deployment configuration"
   - build: object "Build settings"

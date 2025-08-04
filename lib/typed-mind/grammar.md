@@ -28,9 +28,9 @@ TypedMind supports the following entity types:
 | File | Defines a source code file |
 | Function | Defines a function with its type signature |
 | Class | Defines a class with inheritance |
-| ClassFile | Defines a class-file fusion entity (both class and file) |
+| ClassFile | Combines class and file definitions in one entity - perfect for services, controllers, and modules |
 | Constants | Defines a constants/configuration file |
-| DTO | Defines a Data Transfer Object (data fields only, no behavior) |
+| DTO | Defines a Data Transfer Object for data structures (config, parameters, serialization) - NO function fields allowed |
 | Asset | Defines a static asset |
 | UIComponent | Defines a UI component (&! for root) |
 | RunParameter | Defines a runtime parameter |
@@ -247,9 +247,22 @@ typescript ^ "TypeScript compiler" v5.0.0
 ## Best Practices
 
 ### Separate Data from Behavior: DTOs vs Classes
-**Key Principle**: 
-- **DTOs contain only data fields** (for serialization, config, parameters, etc.)
-- **Classes contain DTOs and Functions** (behavior that acts on data)
+
+**Key Principle**: DTOs are for data structures only, Classes are for behavior.
+
+#### What are DTOs?
+DTOs (Data Transfer Objects) represent pure data structures with no behavior:
+- Configuration objects
+- API request/response payloads
+- Database records
+- Function parameters
+- Any data that needs to be serialized/deserialized
+
+**Important**: DTOs cannot have fields of type `Function` or contain function names. The TypedMind validator will reject DTOs with function fields.
+
+#### Classes vs DTOs
+- **DTOs**: Only data fields (string, number, boolean, arrays, objects, other DTOs)
+- **Classes**: Contain behavior (methods) and can use DTOs for their data
 
 ```tmd
 # ✅ Good: DTOs contain only data
@@ -274,12 +287,34 @@ UserServiceDTO : "Service with functions"
 ```
 
 ### Use ClassFile for Services and Controllers
-ClassFile entities (`#:`) combine class behavior with file structure, eliminating the need for separate class and file declarations:
+
+ClassFile entities (`#:`) are a powerful fusion that combines both class and file definitions in a single entity.
+
+#### When to use ClassFile
+Use ClassFile when you have a class that is the primary export of a file:
+- Service classes (UserService, AuthService)
+- Controller classes (UserController, ProductController)
+- Utility classes (Logger, Validator)
+- Any class that "owns" its file
+
+#### Benefits of ClassFile
+1. **Eliminates redundancy**: No need to declare both a Class and a File
+2. **Clear ownership**: The class and file are explicitly linked
+3. **Supports all features**: Can have imports, exports, methods, and inheritance
+4. **Better for refactoring**: Moving the class automatically moves the file reference
 
 ```tmd
-# Good: ClassFile combines file and class
+# ✅ Good: ClassFile combines file and class
 UserController #: src/controllers/user.controller.ts <: BaseController
-  <- [UserService, ValidationMiddleware]
+  <- [UserService, ValidationMiddleware]  # File imports
   => [create, read, update, delete]  # Class methods
   -> [userRouter]  # File exports
+
+# ❌ Avoid: Separate class and file for the same entity
+UserController <: BaseController
+  => [create, read, update, delete]
+
+UserControllerFile @ src/controllers/user.controller.ts:
+  <- [UserService, ValidationMiddleware]
+  -> [UserController, userRouter]
 ```

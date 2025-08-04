@@ -53,9 +53,9 @@ export class GrammarDocGenerator {
       'File': 'Defines a source code file',
       'Function': 'Defines a function with its type signature',
       'Class': 'Defines a class with inheritance',
-      'ClassFile': 'Defines a class-file fusion entity (both class and file)',
+      'ClassFile': 'Combines class and file definitions in one entity - perfect for services, controllers, and modules',
       'Constants': 'Defines a constants/configuration file',
-      'DTO': 'Defines a Data Transfer Object (data fields only, no behavior)',
+      'DTO': 'Defines a Data Transfer Object for data structures (config, parameters, serialization) - NO function fields allowed',
       'Asset': 'Defines a static asset',
       'UIComponent': 'Defines a UI component (&! for root)',
       'RunParameter': 'Defines a runtime parameter',
@@ -206,9 +206,22 @@ export class GrammarDocGenerator {
     sections.push('## Best Practices');
     sections.push('');
     sections.push('### Separate Data from Behavior: DTOs vs Classes');
-    sections.push('**Key Principle**: ');
-    sections.push('- **DTOs contain only data fields** (for serialization, config, parameters, etc.)');
-    sections.push('- **Classes contain DTOs and Functions** (behavior that acts on data)');
+    sections.push('');
+    sections.push('**Key Principle**: DTOs are for data structures only, Classes are for behavior.');
+    sections.push('');
+    sections.push('#### What are DTOs?');
+    sections.push('DTOs (Data Transfer Objects) represent pure data structures with no behavior:');
+    sections.push('- Configuration objects');
+    sections.push('- API request/response payloads');
+    sections.push('- Database records');
+    sections.push('- Function parameters');
+    sections.push('- Any data that needs to be serialized/deserialized');
+    sections.push('');
+    sections.push('**Important**: DTOs cannot have fields of type `Function` or contain function names. The TypedMind validator will reject DTOs with function fields.');
+    sections.push('');
+    sections.push('#### Classes vs DTOs');
+    sections.push('- **DTOs**: Only data fields (string, number, boolean, arrays, objects, other DTOs)');
+    sections.push('- **Classes**: Contain behavior (methods) and can use DTOs for their data');
     sections.push('');
     sections.push('```tmd');
     sections.push('# ✅ Good: DTOs contain only data');
@@ -233,14 +246,36 @@ export class GrammarDocGenerator {
     sections.push('```');
     sections.push('');
     sections.push('### Use ClassFile for Services and Controllers');
-    sections.push('ClassFile entities (`#:`) combine class behavior with file structure, eliminating the need for separate class and file declarations:');
+    sections.push('');
+    sections.push('ClassFile entities (`#:`) are a powerful fusion that combines both class and file definitions in a single entity.');
+    sections.push('');
+    sections.push('#### When to use ClassFile');
+    sections.push('Use ClassFile when you have a class that is the primary export of a file:');
+    sections.push('- Service classes (UserService, AuthService)');
+    sections.push('- Controller classes (UserController, ProductController)');
+    sections.push('- Utility classes (Logger, Validator)');
+    sections.push('- Any class that "owns" its file');
+    sections.push('');
+    sections.push('#### Benefits of ClassFile');
+    sections.push('1. **Eliminates redundancy**: No need to declare both a Class and a File');
+    sections.push('2. **Clear ownership**: The class and file are explicitly linked');
+    sections.push('3. **Supports all features**: Can have imports, exports, methods, and inheritance');
+    sections.push('4. **Better for refactoring**: Moving the class automatically moves the file reference');
     sections.push('');
     sections.push('```tmd');
-    sections.push('# Good: ClassFile combines file and class');
+    sections.push('# ✅ Good: ClassFile combines file and class');
     sections.push('UserController #: src/controllers/user.controller.ts <: BaseController');
-    sections.push('  <- [UserService, ValidationMiddleware]');
+    sections.push('  <- [UserService, ValidationMiddleware]  # File imports');
     sections.push('  => [create, read, update, delete]  # Class methods');
     sections.push('  -> [userRouter]  # File exports');
+    sections.push('');
+    sections.push('# ❌ Avoid: Separate class and file for the same entity');
+    sections.push('UserController <: BaseController');
+    sections.push('  => [create, read, update, delete]');
+    sections.push('');
+    sections.push('UserControllerFile @ src/controllers/user.controller.ts:');
+    sections.push('  <- [UserService, ValidationMiddleware]');
+    sections.push('  -> [UserController, userRouter]');
     sections.push('```');
 
     return sections.join('\n');

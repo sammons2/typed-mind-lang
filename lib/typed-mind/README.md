@@ -32,11 +32,12 @@ if (validationResult.isValid) {
 
 TypedMind is a Domain Specific Language (DSL) for declaratively describing software architectures, including:
 
-- **Data Transfer Objects (DTOs)** - Define data structures and their validation rules
-- **Service classes** - Specify business logic and their dependencies
-- **UI components** - Describe user interface elements and their relationships
-- **Asset management** - Define static assets and routing configuration
-- **Cross-cutting concerns** - Handle validation, security, and other system-wide concerns
+- **Data Transfer Objects (DTOs)** - Pure data structures for configuration, serialization, and parameters (no functions allowed)
+- **Service classes** - Business logic with methods and dependencies
+- **ClassFile entities** - Fusion entities that combine class and file definitions - perfect for services and controllers
+- **UI components** - User interface elements and their relationships
+- **Asset management** - Static assets and routing configuration
+- **Cross-cutting concerns** - Validation, security, and other system-wide concerns
 
 ## Features
 
