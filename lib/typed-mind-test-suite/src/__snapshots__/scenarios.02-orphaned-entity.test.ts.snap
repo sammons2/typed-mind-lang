@@ -36,7 +36,7 @@ exports[`scenario-02-orphaned-entity > should validate 02 orphaned entity 1`] = 
       "line": 11,
       "message": "Class 'OrphanedClass' is not exported by any file",
       "severity": "error",
-      "suggestion": "Add 'OrphanedClass' to the exports of a file entity",
+      "suggestion": "Add 'OrphanedClass' to the exports of a file entity or convert to ClassFile with #: operator",
     },
   ],
   "file": "scenario-02-orphaned-entity.tmd",

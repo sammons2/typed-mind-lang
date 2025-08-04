@@ -28,6 +28,7 @@ TypedMind supports the following entity types:
 | File | Defines a source code file |
 | Function | Defines a function with its type signature |
 | Class | Defines a class with inheritance |
+| ClassFile | Defines a class-file fusion entity (both class and file) |
 | Constants | Defines a constants/configuration file |
 | DTO | Defines a Data Transfer Object |
 | Asset | Defines a static asset |
@@ -78,6 +79,16 @@ TypedMind supports the following entity types:
 **Description:** Defines a class with inheritance
 
 **Regex:** `^(\w+)\s*<:\s*(.*)$`
+
+#### Class File
+
+**Pattern:** `Name #: path [<: BaseClass[, Interface1, Interface2]]`
+
+**Example:** `UserController #: src/controllers/user.ts <: BaseController`
+
+**Description:** Defines a class-file fusion entity (both class and file)
+
+**Regex:** `^([A-Za-z][A-Za-z0-9_]*)\s*#:\s*([^\s<]+)(?:\s*<:\s*(.+))?$`
 
 #### Constants
 
@@ -159,7 +170,7 @@ These patterns are used for general parsing tasks:
 
 **Description:** Detects any entity declaration line
 
-**Regex:** `^[@\w\-/]+\s*(->|@|<:|!|::|%|~|&|\$|\^|\s*:)`
+**Regex:** `^[@\w\-/]+\s*(->|@|<:|#:|!|::|%|~|&|\$|\^|\s*:)`
 
 ### Longform Declaration
 
@@ -214,6 +225,14 @@ TodoList & "Displays list of todos"
 
 AddTodoForm & "Form to add new todos"
   < [App]
+
+# Class-file fusion example
+UserController #: src/controllers/user.ts <: BaseController
+  <- [UserService, ValidationService]
+  => [createUser, getUser, updateUser, deleteUser]
+
+BaseController #: src/controllers/base.ts
+  => [handleError, authenticate]
 
 # Runtime parameters
 DATABASE_URL $env "PostgreSQL connection string" (required)

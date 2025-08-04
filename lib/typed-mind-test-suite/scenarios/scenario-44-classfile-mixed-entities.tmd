@@ -1,0 +1,37 @@
+# Scenario 44: Mixed ClassFile and regular entities
+# This scenario tests ClassFile entities working alongside regular File and Class entities
+
+TodoApp -> main "Main application"
+
+main @ src/index.ts:
+  <- [UserController, RegularService, DataProcessor]
+  -> [startApp]
+
+startApp :: () => void
+  ~> [UserController.createUser, DataProcessor.process]
+
+# ClassFile entity
+UserController #: src/controllers/user.ts <: BaseController
+  <- [RegularService, UserRepository]
+  => [createUser, getUser, updateUser, deleteUser]
+
+# Regular Class entity (without file path)
+BaseController <:
+  => [handleError, authenticate]
+
+# Regular File entity (without class functionality)
+RegularService @ src/services/regular.ts:
+  <- [Database]
+  -> [RegularService]
+
+# Another ClassFile entity without inheritance
+UserRepository #: src/repositories/user.ts
+  <- [Database]
+  => [save, findById, findAll, delete]
+
+# Regular function with class method calls
+DataProcessor :: (data: any) => any
+  ~> [UserController.getUser, UserRepository.findById]
+
+Database @ src/database/connection.ts:
+  -> [Database]

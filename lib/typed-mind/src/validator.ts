@@ -1,4 +1,5 @@
 import type { AnyEntity, ClassEntity, FunctionEntity, UIComponentEntity, AssetEntity, RunParameterEntity, ConstantsEntity, DependencyEntity, ValidationError, ValidationResult, EntityType, ReferenceType } from './types';
+import type { ParseResult } from './parser';
 
 export class DSLValidator {
   private errors: ValidationError[] = [];
@@ -6,24 +7,24 @@ export class DSLValidator {
   // Define which entity types can be referenced by which reference types
   private static readonly VALID_REFERENCES: Record<ReferenceType, { from: EntityType[], to: EntityType[] }> = {
     imports: { 
-      from: ['File', 'Class'], 
-      to: ['Function', 'Class', 'Constants', 'DTO', 'Asset', 'UIComponent', 'RunParameter', 'File', 'Dependency'] 
+      from: ['File', 'Class', 'ClassFile'], 
+      to: ['Function', 'Class', 'ClassFile', 'Constants', 'DTO', 'Asset', 'UIComponent', 'RunParameter', 'File', 'Dependency'] 
     },
     exports: { 
-      from: ['File'], 
-      to: ['Function', 'Class', 'Constants', 'DTO', 'Asset', 'UIComponent', 'File'] 
+      from: ['File', 'ClassFile'], 
+      to: ['Function', 'Class', 'ClassFile', 'Constants', 'DTO', 'Asset', 'UIComponent', 'File'] 
     },
     calls: { 
       from: ['Function'], 
       to: ['Function', 'Class'] // Class is allowed because of method calls
     },
     extends: { 
-      from: ['Class'], 
-      to: ['Class'] 
+      from: ['Class', 'ClassFile'], 
+      to: ['Class', 'ClassFile'] 
     },
     implements: { 
-      from: ['Class'], 
-      to: ['Class'] // In TypedMind, interfaces are represented as Classes
+      from: ['Class', 'ClassFile'], 
+      to: ['Class', 'ClassFile'] // In TypedMind, interfaces are represented as Classes
     },
     contains: { 
       from: ['UIComponent'], 
@@ -71,12 +72,18 @@ export class DSLValidator {
     }
   };
 
-  validate(entities: Map<string, AnyEntity>): ValidationResult {
+  validate(entities: Map<string, AnyEntity>, parseResult?: ParseResult): ValidationResult {
     this.errors = [];
 
     // First populate referencedBy fields
     this.populateReferencedBy(entities);
 
+    // Check naming conflicts from parser
+    if (parseResult?.namingConflicts) {
+      this.processNamingConflicts(parseResult.namingConflicts);
+    }
+    
+    this.checkNamingConflicts(entities);
     this.checkOrphans(entities);
     this.checkImports(entities);
     this.checkCircularDeps(entities);
@@ -97,6 +104,97 @@ export class DSLValidator {
       valid: this.errors.length === 0,
       errors: this.errors,
     };
+  }
+
+  private processNamingConflicts(namingConflicts: Array<{name: string; existingEntity: AnyEntity; newEntity: AnyEntity}>): void {
+    for (const conflict of namingConflicts) {
+      const { name, existingEntity, newEntity } = conflict;
+      
+      // Check if this is a Class-File conflict specifically
+      if ((existingEntity.type === 'Class' && newEntity.type === 'File') ||
+          (existingEntity.type === 'File' && newEntity.type === 'Class')) {
+        
+        const fileEntity = existingEntity.type === 'File' ? existingEntity : newEntity;
+        const classEntity = existingEntity.type === 'Class' ? existingEntity : newEntity;
+        
+        // Add error for both entities
+        this.addError({
+          position: classEntity.position,
+          message: `Entity name '${name}' is used by both a File and a Class. Consider using the #: operator for class-file fusion.`,
+          severity: 'error',
+          suggestion: `Replace with: ${name} #: ${fileEntity.path} <: BaseClass`,
+        });
+        
+        this.addError({
+          position: fileEntity.position,
+          message: `Entity name '${name}' is used by both a File and a Class. Consider using the #: operator for class-file fusion.`,
+          severity: 'error',
+          suggestion: `Replace with: ${name} #: ${fileEntity.path} <: BaseClass`,
+        });
+      } else {
+        // Other naming conflicts
+        this.addError({
+          position: newEntity.position,
+          message: `Duplicate entity name '${name}' found in multiple ${existingEntity.type}, ${newEntity.type} entities`,
+          severity: 'error',
+          suggestion: 'Entity names must be unique across the entire codebase',
+        });
+      }
+    }
+  }
+
+  private checkNamingConflicts(entities: Map<string, AnyEntity>): void {
+    // Group entities by name to detect naming conflicts
+    const nameGroups = new Map<string, AnyEntity[]>();
+    
+    for (const entity of entities.values()) {
+      const name = entity.name;
+      if (!nameGroups.has(name)) {
+        nameGroups.set(name, []);
+      }
+      nameGroups.get(name)!.push(entity);
+    }
+    
+    // Check for Class-File naming conflicts
+    for (const [name, entitiesWithSameName] of nameGroups) {
+      if (entitiesWithSameName.length > 1) {
+        const hasClass = entitiesWithSameName.some(e => e.type === 'Class');
+        const hasFile = entitiesWithSameName.some(e => e.type === 'File');
+        
+        if (hasClass && hasFile) {
+          // Find the class and file entities
+          const classEntity = entitiesWithSameName.find(e => e.type === 'Class');
+          const fileEntity = entitiesWithSameName.find(e => e.type === 'File');
+          
+          if (classEntity && fileEntity) {
+            this.addError({
+              position: classEntity.position,
+              message: `Entity name '${name}' is used by both a File and a Class. Consider using the #: operator for class-file fusion.`,
+              severity: 'error',
+              suggestion: `Replace with: ${name} #: ${fileEntity.path} <: BaseClass`,
+            });
+            
+            this.addError({
+              position: fileEntity.position,
+              message: `Entity name '${name}' is used by both a File and a Class. Consider using the #: operator for class-file fusion.`,
+              severity: 'error',
+              suggestion: `Replace with: ${name} #: ${fileEntity.path} <: BaseClass`,
+            });
+          }
+        } else {
+          // Other naming conflicts (not Class-File specific)
+          const [first] = entitiesWithSameName;
+          if (first) {
+            this.addError({
+              position: first.position,
+              message: `Duplicate entity name '${name}' found in multiple ${entitiesWithSameName.map(e => e.type).join(', ')} entities`,
+              severity: 'error',
+              suggestion: 'Entity names must be unique across the entire codebase',
+            });
+          }
+        }
+      }
+    }
   }
 
   private checkOrphans(entities: Map<string, AnyEntity>): void {
@@ -278,12 +376,18 @@ export class DSLValidator {
       if ('path' in entity && entity.path) {
         const existing = paths.get(entity.path);
         if (existing) {
-          this.addError({
-            position: entity.position,
-            message: `Duplicate path '${entity.path}'`,
-            severity: 'error',
-            suggestion: `Already used by '${existing.name}'`,
-          });
+          // Allow ClassFile entities to have the same path as their component entities would
+          const isClassFileConflict = (entity.type === 'ClassFile' || existing.type === 'ClassFile') &&
+            (entity.type === 'File' || entity.type === 'Class' || existing.type === 'File' || existing.type === 'Class');
+          
+          if (!isClassFileConflict) {
+            this.addError({
+              position: entity.position,
+              message: `Duplicate path '${entity.path}'`,
+              severity: 'error',
+              suggestion: `Already used by '${existing.name}'`,
+            });
+          }
         } else {
           paths.set(entity.path, entity);
         }
@@ -392,13 +496,14 @@ export class DSLValidator {
 
     // Check that all classes and standalone functions are exported by at least one file
     // Note: Methods of classes don't need to be exported separately
+    // Note: ClassFile entities automatically export themselves
     for (const [name, entity] of entities) {
       if (entity.type === 'Class' && !exportedEntities.has(name)) {
         this.addError({
           position: entity.position,
           message: `Class '${name}' is not exported by any file`,
           severity: 'error',
-          suggestion: `Add '${name}' to the exports of a file entity`,
+          suggestion: `Add '${name}' to the exports of a file entity or convert to ClassFile with #: operator`,
         });
       } else if (entity.type === 'Function' && !exportedEntities.has(name) && !classMethods.has(name)) {
         this.addError({
@@ -408,6 +513,7 @@ export class DSLValidator {
           suggestion: `Either add '${name}' to the exports of a file entity or define it as a method of a class`,
         });
       }
+      // ClassFile entities are automatically exported, so no check needed
     }
   }
 
@@ -462,20 +568,20 @@ export class DSLValidator {
                 message: `Call to '${call}' references unknown entity '${objectName}'`,
                 severity: 'error',
               });
-            } else if (targetEntity.type !== 'Class') {
+            } else if (targetEntity.type !== 'Class' && targetEntity.type !== 'ClassFile') {
               this.addError({
                 position: entity.position,
-                message: `Cannot call method '${methodName}' on ${targetEntity.type} '${objectName}'. Only Classes can have methods`,
+                message: `Cannot call method '${methodName}' on ${targetEntity.type} '${objectName}'. Only Classes and ClassFiles can have methods`,
                 severity: 'error',
-                suggestion: `Either define '${objectName}' as a Class or use a different call syntax`,
+                suggestion: `Either define '${objectName}' as a Class/ClassFile or use a different call syntax`,
               });
             } else {
-              // Check if the method exists on the class
+              // Check if the method exists on the class/classfile
               const classEntity = targetEntity as ClassEntity;
               if (!classEntity.methods.includes(methodName as string)) {
                 this.addError({
                   position: entity.position,
-                  message: `Method '${methodName}' not found on class '${objectName}'`,
+                  message: `Method '${methodName}' not found on ${targetEntity.type.toLowerCase()} '${objectName}'`,
                   severity: 'error',
                   suggestion: `Available methods: ${classEntity.methods.join(', ')}`,
                 });

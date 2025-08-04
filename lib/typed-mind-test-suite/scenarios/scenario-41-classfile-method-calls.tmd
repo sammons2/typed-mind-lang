@@ -1,0 +1,26 @@
+# Scenario 41: ClassFile method calls validation
+# This scenario tests that method calls work correctly with ClassFile entities
+
+TodoApp -> main "Main application"
+
+main @ src/index.ts:
+  <- [UserController]
+  -> [startApp]
+
+startApp :: () => void
+  ~> [UserController.createUser, UserController.getUser]
+
+# ClassFile entity with methods
+UserController #: src/controllers/user.ts <: BaseController
+  <- [UserService]
+  => [createUser, getUser, updateUser, deleteUser]
+
+BaseController #: src/controllers/base.ts
+  => [handleError, authenticate]
+
+UserService @ src/services/user.ts:
+  -> [UserService]
+
+# Test function that calls invalid method (should error)
+testInvalidCall :: () => void
+  ~> [UserController.nonExistentMethod]

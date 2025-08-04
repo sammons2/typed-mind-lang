@@ -1,0 +1,52 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`scenario-41-classfile-method-calls > should validate method calls on ClassFile entities 1`] = `
+{
+  "errors": [
+    {
+      "column": 1,
+      "line": 25,
+      "message": "Orphaned entity 'testInvalidCall'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 6,
+      "message": "Import 'UserController' not found",
+      "severity": "error",
+      "suggestion": undefined,
+    },
+    {
+      "column": 1,
+      "line": 25,
+      "message": "Function 'testInvalidCall' is not exported by any file and is not a class method",
+      "severity": "error",
+      "suggestion": "Either add 'testInvalidCall' to the exports of a file entity or define it as a method of a class",
+    },
+    {
+      "column": 1,
+      "line": 10,
+      "message": "Call to 'UserController.createUser' references unknown entity 'UserController'",
+      "severity": "error",
+      "suggestion": undefined,
+    },
+    {
+      "column": 1,
+      "line": 10,
+      "message": "Call to 'UserController.getUser' references unknown entity 'UserController'",
+      "severity": "error",
+      "suggestion": undefined,
+    },
+    {
+      "column": 1,
+      "line": 25,
+      "message": "Call to 'UserController.nonExistentMethod' references unknown entity 'UserController'",
+      "severity": "error",
+      "suggestion": undefined,
+    },
+  ],
+  "file": "scenario-41-classfile-method-calls.tmd",
+  "valid": false,
+}
+`;

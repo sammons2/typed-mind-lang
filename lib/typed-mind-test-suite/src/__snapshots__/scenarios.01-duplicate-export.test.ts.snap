@@ -22,7 +22,7 @@ exports[`scenario-01-duplicate-export > should validate 01 duplicate export 1`] 
       "line": 13,
       "message": "Class 'BaseService' is not exported by any file",
       "severity": "error",
-      "suggestion": "Add 'BaseService' to the exports of a file entity",
+      "suggestion": "Add 'BaseService' to the exports of a file entity or convert to ClassFile with #: operator",
     },
     {
       "column": 1,

@@ -43,7 +43,7 @@ exports[`scenario-21-aliased-import > should validate aliased import 1`] = `
       "line": 5,
       "message": "Class 'DB.Connection' is not exported by any file",
       "severity": "error",
-      "suggestion": "Add 'DB.Connection' to the exports of a file entity",
+      "suggestion": "Add 'DB.Connection' to the exports of a file entity or convert to ClassFile with #: operator",
     },
     {
       "column": 1,

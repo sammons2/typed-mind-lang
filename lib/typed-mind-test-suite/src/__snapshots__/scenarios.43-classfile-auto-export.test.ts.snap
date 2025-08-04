@@ -1,0 +1,38 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`scenario-43-classfile-auto-export > should validate that ClassFile entities are automatically exported 1`] = `
+{
+  "errors": [
+    {
+      "column": 1,
+      "line": 31,
+      "message": "Orphaned entity 'RegularClass'",
+      "severity": "error",
+      "suggestion": "Remove or reference this entity",
+    },
+    {
+      "column": 1,
+      "line": 6,
+      "message": "Import 'UserController' not found",
+      "severity": "error",
+      "suggestion": undefined,
+    },
+    {
+      "column": 1,
+      "line": 6,
+      "message": "Import 'ProductController' not found",
+      "severity": "error",
+      "suggestion": undefined,
+    },
+    {
+      "column": 1,
+      "line": 31,
+      "message": "Class 'RegularClass' is not exported by any file",
+      "severity": "error",
+      "suggestion": "Add 'RegularClass' to the exports of a file entity or convert to ClassFile with #: operator",
+    },
+  ],
+  "file": "scenario-43-classfile-auto-export.tmd",
+  "valid": false,
+}
+`;

@@ -1,0 +1,29 @@
+# Scenario 39: Basic ClassFile functionality test
+# This scenario tests basic ClassFile parsing and functionality
+
+TodoApp -> main "Main application"
+
+main @ src/index.ts:
+  <- [TodoController]
+  -> [startApp]
+
+startApp :: () => void
+  ~> [TodoController.createTodo]
+
+# ClassFile entity - combines class and file functionality
+TodoController #: src/controllers/todo.ts <: BaseController
+  <- [TodoService, ValidationService]
+  => [createTodo, getTodo, updateTodo, deleteTodo]
+
+BaseController #: src/controllers/base.ts
+  => [handleError, authenticate]
+
+TodoService @ src/services/todo.ts:
+  <- [Database]
+  -> [TodoService]
+
+Database @ src/database/connection.ts:
+  -> [Database]
+
+ValidationService @ src/services/validation.ts:
+  -> [ValidationService]

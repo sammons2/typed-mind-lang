@@ -53,6 +53,7 @@ export class GrammarDocGenerator {
       'File': 'Defines a source code file',
       'Function': 'Defines a function with its type signature',
       'Class': 'Defines a class with inheritance',
+      'ClassFile': 'Defines a class-file fusion entity (both class and file)',
       'Constants': 'Defines a constants/configuration file',
       'DTO': 'Defines a Data Transfer Object',
       'Asset': 'Defines a static asset',
@@ -182,6 +183,14 @@ export class GrammarDocGenerator {
     sections.push('AddTodoForm & "Form to add new todos"');
     sections.push('  < [App]');
     sections.push('');
+    sections.push('# Class-file fusion example');
+    sections.push('UserController #: src/controllers/user.ts <: BaseController');
+    sections.push('  <- [UserService, ValidationService]');
+    sections.push('  => [createUser, getUser, updateUser, deleteUser]');
+    sections.push('');
+    sections.push('BaseController #: src/controllers/base.ts');
+    sections.push('  => [handleError, authenticate]');
+    sections.push('');
     sections.push('# Runtime parameters');
     sections.push('DATABASE_URL $env "PostgreSQL connection string" (required)');
     sections.push('API_KEY $env "API authentication key"');
@@ -221,7 +230,7 @@ export class GrammarDocGenerator {
     lines.push('import_statement = ("@import" | "import") string_literal ["as" identifier];');
     lines.push('');
     lines.push('(* Entity Declarations *)');
-    lines.push('entity = program | file | function | class | dto | asset | component | parameter | dependency | constants;');
+    lines.push('entity = program | file | function | class | classfile | dto | asset | component | parameter | dependency | constants;');
     lines.push('');
     lines.push('(* Program Entity *)');
     lines.push('program = identifier "->" identifier [string_literal] ["v" version];');
@@ -246,6 +255,10 @@ export class GrammarDocGenerator {
     lines.push('class = identifier "<:" [identifier] ["," identifier_list] [class_body];');
     lines.push('class_body = (methods | description)*;');
     lines.push('methods = "=>" "[" identifier_list "]";');
+    lines.push('');
+    lines.push('(* ClassFile Entity *)');
+    lines.push('classfile = identifier "#:" path ["<:" [identifier] ["," identifier_list]] [classfile_body];');
+    lines.push('classfile_body = (imports | exports | methods | description)*;');
     lines.push('');
     lines.push('(* DTO Entity *)');
     lines.push('dto = identifier "%" [string_literal] [dto_body];');

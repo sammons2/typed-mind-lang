@@ -1,0 +1,28 @@
+# Scenario 40: ClassFile naming conflict detection
+# This scenario tests that naming conflicts between File and Class entities are detected
+
+TodoApp -> main "Main application"
+
+main @ src/index.ts:
+  <- [UserController]
+  -> [startApp]
+
+startApp :: () => void
+
+# This should cause a naming conflict error
+UserController @ src/controllers/user.ts:
+  <- [UserService]
+  -> [UserController]
+
+# Separate class with same name - should trigger naming conflict
+UserController <: BaseController
+
+# Helper function to ensure both entities exist
+someFunction :: () => void
+  ~> [UserController.someMethod]
+
+BaseController <:
+  => [handleError]
+
+UserService @ src/services/user.ts:
+  -> [UserService]

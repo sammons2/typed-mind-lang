@@ -1,0 +1,32 @@
+# Scenario 43: ClassFile automatic export validation
+# This scenario tests that ClassFile entities are automatically exported
+
+TodoApp -> main "Main application"
+
+main @ src/index.ts:
+  <- [UserController, ProductController]
+  -> [startApp]
+
+startApp :: () => void
+
+# ClassFile entities are automatically exported by themselves
+UserController #: src/controllers/user.ts <: BaseController
+  <- [UserService]
+  => [createUser, getUser]
+
+ProductController #: src/controllers/product.ts
+  <- [ProductService]
+  => [createProduct, getProduct]
+
+BaseController #: src/controllers/base.ts
+  => [handleError]
+
+UserService @ src/services/user.ts:
+  -> [UserService]
+
+ProductService @ src/services/product.ts:
+  -> [ProductService]
+
+# Regular class that needs to be explicitly exported (should cause error)
+RegularClass <:
+  => [someMethod]

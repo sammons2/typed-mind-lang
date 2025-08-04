@@ -14,6 +14,9 @@ export const ENTITY_PATTERNS = {
   // Class: UserController <: BaseController, IController
   CLASS: /^(\w+)\s*<:\s*(.*)$/,
   
+  // ClassFile: ClassName #: path/to/file.ts <: BaseClass
+  CLASS_FILE: /^([A-Za-z][A-Za-z0-9_]*)\s*#:\s*([^\s<]+)(?:\s*<:\s*(.+))?$/,
+  
   // Constants: AppConfig ! src/config.ts : ConfigSchema
   CONSTANTS: /^(\w+)\s*!\s*([^:]+)(?:\s*:\s*(\w+))?$/,
   
@@ -92,7 +95,7 @@ export const CONTINUATION_PATTERNS = {
 
 export const GENERAL_PATTERNS = {
   // Entity declaration check - entities can start with any letter
-  ENTITY_DECLARATION: /^[@\w\-/]+\s*(->|@|<:|!|::|%|~|&|\$|\^|\s*:)/,
+  ENTITY_DECLARATION: /^[@\w\-/]+\s*(->|@|<:|#:|!|::|%|~|&|\$|\^|\s*:)/,
   
   // Longform declaration check
   LONGFORM_DECLARATION: /^(program|file|function|class|dto|component|asset|constants|parameter|import|dependency)\s+/,
@@ -113,6 +116,7 @@ export const ENTITY_TYPE_NAMES = [
   'File', 
   'Function',
   'Class',
+  'ClassFile',
   'Constants',
   'DTO',
   'Asset',
@@ -144,6 +148,11 @@ export const PATTERN_DESCRIPTIONS = {
     pattern: 'Name <: BaseClass[, Interface1, Interface2]',
     example: 'UserController <: BaseController, IController',
     description: 'Defines a class with inheritance'
+  },
+  CLASS_FILE: {
+    pattern: 'Name #: path [<: BaseClass[, Interface1, Interface2]]',
+    example: 'UserController #: src/controllers/user.ts <: BaseController',
+    description: 'Defines a class-file fusion entity (both class and file)'
   },
   CONSTANTS: {
     pattern: 'Name ! path [: Schema]',

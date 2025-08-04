@@ -22,7 +22,7 @@ exports[`scenario-11-class-export-validation > should validate 11 class export v
       "line": 7,
       "message": "Class 'UnexportedClass' is not exported by any file",
       "severity": "error",
-      "suggestion": "Add 'UnexportedClass' to the exports of a file entity",
+      "suggestion": "Add 'UnexportedClass' to the exports of a file entity or convert to ClassFile with #: operator",
     },
     {
       "column": 1,

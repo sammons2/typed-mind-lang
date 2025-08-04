@@ -49,7 +49,7 @@ export class DSLChecker {
       allErrors.push(...errors);
     }
 
-    const result = this.validator.validate(allEntities);
+    const result = this.validator.validate(allEntities, parseResult);
     result.errors.push(...allErrors);
     result.valid = result.errors.length === 0;
 

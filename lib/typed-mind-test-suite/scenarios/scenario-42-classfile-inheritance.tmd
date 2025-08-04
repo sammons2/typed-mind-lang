@@ -1,0 +1,47 @@
+# Scenario 42: ClassFile inheritance and implements
+# This scenario tests ClassFile inheritance features
+
+TodoApp -> main "Main application"
+
+main @ src/index.ts:
+  <- [UserController, AdminController]
+  -> [startApp]
+
+startApp :: () => void
+  ~> [UserController.createUser, AdminController.manageUsers]
+
+# Base ClassFile entity
+BaseController #: src/controllers/base.ts
+  => [handleError, authenticate, validateInput]
+
+# ClassFile with inheritance from another ClassFile
+UserController #: src/controllers/user.ts <: BaseController, IUserController
+  <- [UserService, ValidationService]
+  => [createUser, getUser, updateUser, deleteUser]
+
+# ClassFile with inheritance from another ClassFile and multiple interfaces
+AdminController #: src/controllers/admin.ts <: BaseController, IAdminController, IAuditController
+  <- [AdminService, AuditService]
+  => [manageUsers, auditActions, generateReports]
+
+# Interface definitions (represented as Classes in TypedMind)
+IUserController <:
+  => [createUser, getUser, updateUser, deleteUser]
+
+IAdminController <:
+  => [manageUsers, generateReports]
+
+IAuditController <:
+  => [auditActions]
+
+UserService @ src/services/user.ts:
+  -> [UserService]
+
+ValidationService @ src/services/validation.ts:
+  -> [ValidationService]
+
+AdminService @ src/services/admin.ts:
+  -> [AdminService]
+
+AuditService @ src/services/audit.ts:
+  -> [AuditService]

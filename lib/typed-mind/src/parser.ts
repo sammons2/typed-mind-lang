@@ -4,6 +4,7 @@ import type {
   FileEntity,
   FunctionEntity,
   ClassEntity,
+  ClassFileEntity,
   ConstantsEntity,
   DTOEntity,
   DTOField,
@@ -21,6 +22,11 @@ import { GrammarValidator } from './grammar-validator';
 export interface ParseResult {
   entities: Map<string, AnyEntity>;
   imports: ImportStatement[];
+  namingConflicts?: Array<{
+    name: string;
+    existingEntity: AnyEntity;
+    newEntity: AnyEntity;
+  }>;
   grammarErrors?: Array<{
     entity: string;
     type: string;
@@ -33,6 +39,7 @@ export class DSLParser {
   private lines: string[] = [];
   private entities = new Map<string, AnyEntity>();
   private imports: ImportStatement[] = [];
+  private namingConflicts: Array<{name: string; existingEntity: AnyEntity; newEntity: AnyEntity}> = [];
   private longformParser = new LongformParser();
   private grammarValidator = new GrammarValidator();
   private validateGrammar = false;
@@ -42,6 +49,7 @@ export class DSLParser {
     this.lines = input.split('\n');
     this.entities.clear();
     this.imports = [];
+    this.namingConflicts = [];
 
     let currentEntity: AnyEntity | null = null;
     const entityStack: AnyEntity[] = [];
@@ -81,6 +89,16 @@ export class DSLParser {
       if (this.isEntityDeclaration(trimmed)) {
         currentEntity = this.parseEntity(trimmed, lineNum + 1);
         if (currentEntity) {
+          // Check for naming conflicts before setting
+          const existingEntity = this.entities.get(currentEntity.name);
+          if (existingEntity && existingEntity.type !== currentEntity.type) {
+            this.namingConflicts.push({
+              name: currentEntity.name,
+              existingEntity,
+              newEntity: currentEntity
+            });
+          }
+          
           this.entities.set(currentEntity.name, currentEntity);
           entityStack.push(currentEntity);
         }
@@ -94,6 +112,11 @@ export class DSLParser {
       entities: this.entities,
       imports: this.imports,
     };
+    
+    // Add naming conflicts if any were detected
+    if (this.namingConflicts.length > 0) {
+      result.namingConflicts = this.namingConflicts;
+    }
 
     // Optionally validate grammar
     if (this.validateGrammar) {
@@ -201,6 +224,36 @@ export class DSLParser {
         raw: line,
         comment,
       } as FunctionEntity;
+    }
+
+    // ClassFile: UserController #: src/controllers/user.ts <: BaseController
+    const classFileMatch = cleanLine.match(ENTITY_PATTERNS.CLASS_FILE);
+    if (classFileMatch) {
+      const inheritance = classFileMatch[3]?.trim();
+      let baseClass: string | undefined;
+      let interfaces: string[] = [];
+      
+      if (inheritance) {
+        const parts = inheritance.split(',').map((s) => s.trim());
+        if (parts.length > 0 && parts[0]) {
+          baseClass = parts[0];
+          interfaces = parts.slice(1);
+        }
+      }
+      
+      return {
+        name: classFileMatch[1] as string,
+        type: 'ClassFile',
+        path: classFileMatch[2]?.trim() as string,
+        extends: baseClass,
+        implements: interfaces,
+        methods: [],
+        imports: [],
+        exports: [classFileMatch[1] as string], // Class-file fusion automatically exports the class
+        position,
+        raw: line,
+        comment,
+      } as ClassFileEntity;
     }
 
     // Class: UserController <: BaseController, IController or just TodoModel <:
@@ -365,7 +418,7 @@ export class DSLParser {
   private parseContinuation(entity: AnyEntity, line: string, _lineNum: number): void {
     // Imports: <- [Database, UserModel]
     const importMatch = line.match(/^<-\s*\[([^\]]+)\]/);
-    if (importMatch && 'imports' in entity) {
+    if (importMatch && ('imports' in entity && Array.isArray(entity.imports))) {
       entity.imports = this.parseList(importMatch[1] as string);
       return;
     }
@@ -569,6 +622,8 @@ export class DSLParser {
         return { ...baseEntity, type: 'Function', signature: '', calls: [] } as FunctionEntity;
       case 'Class':
         return { ...baseEntity, type: 'Class', implements: [], methods: [] } as ClassEntity;
+      case 'ClassFile':
+        return { ...baseEntity, type: 'ClassFile', path: '', implements: [], methods: [], imports: [], exports: [name] } as ClassFileEntity;
       case 'Constants':
         return { ...baseEntity, type: 'Constants', path: '' } as ConstantsEntity;
       default:
