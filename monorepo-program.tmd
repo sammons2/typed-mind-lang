@@ -60,6 +60,25 @@ TestProgram -> TestRunner v1.0.0
 # Static website program (most complex subsystem)
 WebsiteProgram -> WebsiteRoot v1.0.0
 
+# Entry point files for each program
+CoreParser @ lib/typed-mind/src/index.ts:
+  -> [DSLChecker, Parser, Validator]
+
+CLITool @ lib/typed-mind-cli/src/cli.ts:
+  -> [main]
+
+LanguageServer @ lib/typed-mind-lsp/src/server.ts:
+  -> [startServer]
+
+VisualizationRenderer @ lib/typed-mind-renderer/src/index.ts:
+  -> [TypedMindRenderer]
+
+VSCodeExtension @ lib/typed-mind-vscode-extension/src/extension.ts:
+  -> [activate, deactivate]
+
+TestRunner @ lib/typed-mind-test-suite/src/runner.ts:
+  -> [runTests]
+
 WebsiteRoot @ lib/typed-mind-static-website/src/index.html:
   <- [BrowserParser, MonacoIntegration, WebsiteAssets, PlaygroundPage]
   -> [LandingPage]

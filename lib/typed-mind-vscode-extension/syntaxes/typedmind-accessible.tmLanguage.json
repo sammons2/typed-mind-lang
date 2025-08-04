@@ -3,11 +3,11 @@
   "name": "TypedMind",
   "patterns": [
     { "include": "#comments" },
+    { "include": "#strings" },
     { "include": "#dto-fields" },
     { "include": "#referenced-entities" },
     { "include": "#entities" },
     { "include": "#operators" },
-    { "include": "#strings" },
     { "include": "#keywords" },
     { "include": "#wildcards" }
   ],

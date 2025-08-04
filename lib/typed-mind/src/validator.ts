@@ -1,4 +1,4 @@
-import type { AnyEntity, ClassEntity, FunctionEntity, UIComponentEntity, AssetEntity, RunParameterEntity, ConstantsEntity, DependencyEntity, DTOEntity, ValidationError, ValidationResult, EntityType, ReferenceType } from './types';
+import type { AnyEntity, ClassEntity, FunctionEntity, UIComponentEntity, AssetEntity, RunParameterEntity, ConstantsEntity, DependencyEntity, DTOEntity, ProgramEntity, ValidationError, ValidationResult, EntityType, ReferenceType } from './types';
 import type { ParseResult } from './parser';
 
 export class DSLValidator {
@@ -357,7 +357,7 @@ export class DSLValidator {
   }
 
   private checkEntryPoint(entities: Map<string, AnyEntity>): void {
-    const programs = Array.from(entities.values()).filter((e) => e.type === 'Program');
+    const programs = Array.from(entities.values()).filter((e) => e.type === 'Program') as ProgramEntity[];
 
     if (programs.length === 0) {
       this.addError({
@@ -367,7 +367,26 @@ export class DSLValidator {
         suggestion: 'Add a Program entity: AppName -> EntryFile',
       });
     }
-    // Multiple programs are now allowed
+
+    // Check that each Program's entry point references an existing File entity
+    for (const program of programs) {
+      const entryFile = entities.get(program.entry);
+      if (!entryFile) {
+        this.addError({
+          position: program.position,
+          message: `Program '${program.name}' references undefined entry point '${program.entry}'`,
+          severity: 'error',
+          suggestion: `Define a File entity: ${program.entry} @ path/to/file.ext:`,
+        });
+      } else if (entryFile.type !== 'File') {
+        this.addError({
+          position: program.position,
+          message: `Program '${program.name}' entry point '${program.entry}' must be a File entity, but found ${entryFile.type}`,
+          severity: 'error',
+          suggestion: `Change '${program.entry}' to a File entity: ${program.entry} @ path/to/file.ext:`,
+        });
+      }
+    }
   }
 
   private checkUniquePaths(entities: Map<string, AnyEntity>): void {
