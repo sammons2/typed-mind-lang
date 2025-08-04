@@ -27,7 +27,7 @@ CLIFile @ src/cli/index.ts:
   -> [cli, parseArgs, displayHelp]
 
 CommandsFile @ src/cli/commands.ts:
-  <- [TaskRunnerFile, LoggerFile, FileUtilsFile]
+  <- [TaskRunnerFile, Logger, FileUtils]
   -> [registerCommands, runCommand, buildCommand, watchCommand, testCommand, deployCommand]
 
 # Core functionality
@@ -48,21 +48,22 @@ TaskSchedulerFile @ src/core/task-scheduler.ts:
 
 # Task types
 TasksFile @ src/tasks/index.ts:
-  <- [ProcessUtilsFile, FileUtilsFile, taskDefinitions]
+  <- [ProcessUtils, FileUtils, taskDefinitions]
   -> [ShellTask, FileTask, HttpTask, DockerTask, K8sTask]
 
 # Plugins
 PluginsFile @ src/plugins/index.ts:
-  <- [PluginAPIFile, FileUtilsFile]
+  <- [PluginAPI, FileUtils]
   -> [loadPlugins, registerPlugin]
 
-PluginAPIFile @ src/plugins/api.ts:
+PluginAPI #: src/plugins/api.ts # Plugin API class and file
   <- [TaskRegistryFile]
-  -> [pluginAPI, createContext, exposeAPI]
+  => [registerTask, registerCommand, emit, on]
+  -> [createContext, exposeAPI]
 
 # Configuration
 ConfigLoaderFile @ src/config/config-loader.ts:
-  <- [SchemaValidatorFile, FileUtilsFile]
+  <- [SchemaValidatorFile, FileUtils]
   -> [configLoader, loadConfig, validateConfig]
 
 SchemaValidatorFile @ src/config/schema-validator.ts:
@@ -70,17 +71,20 @@ SchemaValidatorFile @ src/config/schema-validator.ts:
 
 # Utils
 UtilsFile @ src/utils/index.ts:
-  <- [LoggerFile, FileUtilsFile, ProcessUtilsFile]
+  <- [Logger, FileUtils, ProcessUtils]
   -> [getLogger, getFileUtils, getProcessUtils, networkUtils]
 
-LoggerFile @ src/utils/logger.ts:
-  -> [logger, createLogger]
+Logger #: src/utils/logger.ts # Logger class and file
+  => [info, warn, error, debug]
+  -> [createLogger]
 
-FileUtilsFile @ src/utils/file-utils.ts:
-  -> [fileUtils, findFiles, copyFiles, cleanDirectory]
+FileUtils #: src/utils/file-utils.ts # File utilities class and file
+  => [glob, read, write, copy, remove]
+  -> [findFiles, copyFiles, cleanDirectory]
 
-ProcessUtilsFile @ src/utils/process-utils.ts:
-  -> [processUtils, spawn, exec, shell]
+ProcessUtils #: src/utils/process-utils.ts # Process utilities class and file
+  => [spawn, exec, shell, kill]
+  -> [spawn, exec, shell]
 
 # Worker pool
 WorkerPoolFile @ src/workers/worker-pool.ts:
@@ -145,23 +149,8 @@ schemaValidator <:
   => [validate, getErrors]
   <- [ajv]
 
-pluginAPI <:
-  => [registerTask, registerCommand, emit, on]
-
 workerPool <:
   => [execute, terminate, getWorkerCount]
-
-logger <:
-  => [info, warn, error, debug, setLevel]
-  <- [winston, chalk]
-
-fileUtils <:
-  => [glob, read, write, copy, remove, ensureDir, clean]
-  <- [glob, fs-extra, chokidar]
-
-processUtils <:
-  => [spawn, exec, shell, kill]
-  <- [execa, cross-spawn]
 
 networkUtils <:
   => [fetch, download, upload]
@@ -201,17 +190,17 @@ registerCommands :: () => void
 # Command functions
 runCommand :: (taskName: string, options: RunOptions) => Promise<void>
   <- RunOptions
-  ~> [taskRunner.runTask, logger.info]
+  ~> [taskRunner.runTask, createLogger]
   $< [PARALLEL_JOBS, NODE_VERSION]
 
 buildCommand :: (options: BuildOptions) => Promise<void>
   <- BuildOptions
-  ~> [taskRunner.runTasks, fileUtils.clean]
+  ~> [taskRunner.runTasks, cleanDirectory]
   $< [NPM_VERSION]
 
 watchCommand :: (pattern: string, options: WatchOptions) => Promise<void>
   <- WatchOptions
-  ~> [fileUtils.glob, taskRunner.runTask]
+  ~> [findFiles, taskRunner.runTask]
 
 testCommand :: (options: TestOptions) => Promise<void>
   <- TestOptions
@@ -267,7 +256,7 @@ cancelTask :: (taskId: string) => void
 # Config functions
 loadConfig :: (path: string) => Promise<Config>
   -> Config
-  ~> [fileUtils.read, schemaValidator.validate]
+  ~> [findFiles, schemaValidator.validate]
   $< [CONFIG_FILE, TASKMASTER_HOME]
 
 validateConfig :: (config: Config) => ValidationResult
@@ -280,19 +269,18 @@ validateTaskSchema :: (definition: TaskDefinition) => ValidationResult
 
 # Plugin functions
 loadPlugins :: () => Promise<void>
-  ~> [fileUtils.glob, registerPlugin]
+  ~> [findFiles, registerPlugin]
   $< [PLUGIN_DIR]
 
 registerPlugin :: (plugin: Plugin) => void
   <- Plugin
-  ~> [pluginAPI.registerTask]
+  ~> [createContext, exposeAPI]
 
 createContext :: (task: Task) => PluginContext
   <- Task
   -> PluginContext
 
-exposeAPI :: () => PluginAPI
-  -> PluginAPI
+exposeAPI :: () => void
 
 # Worker functions
 createWorker :: () => Worker
@@ -307,30 +295,23 @@ taskWorker :: (message: WorkerMessage) => Promise<WorkerResult>
   -> WorkerResult
 
 # Utility functions
-getLogger :: () => Logger
-  -> Logger
+getLogger :: () => void
   $< [LOG_LEVEL, NO_COLOR]
 
-getFileUtils :: () => FileUtils
-  -> FileUtils
+getFileUtils :: () => void
 
-getProcessUtils :: () => ProcessUtils
-  -> ProcessUtils
+getProcessUtils :: () => void
   $< [DEFAULT_SHELL]
 
-createLogger :: (options: LoggerOptions) => Logger
+createLogger :: (options: LoggerOptions) => void
   <- LoggerOptions
-  -> Logger
 
 findFiles :: (pattern: string, options?: GlobOptions) => Promise<string[]>
   <- GlobOptions
-  ~> [fileUtils.glob]
 
 copyFiles :: (src: string, dest: string) => Promise<void>
-  ~> [fileUtils.copy]
 
 cleanDirectory :: (path: string) => Promise<void>
-  ~> [fileUtils.remove, fileUtils.ensureDir]
   $< [CACHE_DIR]
 
 spawn :: (command: string, args: string[], options?: SpawnOptions) => Promise<SpawnResult>
@@ -419,7 +400,8 @@ ValidationError % "Validation error"
 Plugin % "Plugin definition"
   - name: string "Plugin name"
   - version: string "Plugin version"
-  - registerFunctionName: string "Registration function name"
+  - path: string "Path to plugin module"
+  - enabled: boolean "Whether plugin is enabled"
 
 Task % "Task instance"
   - definition: TaskDefinition "Task definition"
@@ -484,34 +466,35 @@ PluginContext % "Plugin context"
   - task: Task "Current task"
   - api: PluginAPI "Plugin API"
 
-PluginAPI % "Plugin API interface"
-  - registerTaskFunctionName: string "Register task function name"
-  - registerCommandFunctionName: string "Register command function name"
-  - emitFunctionName: string "Emit event function name"
-  - onFunctionName: string "Event listener function name"
+# Classes
+PluginAPI < "Plugin API interface"
+  .registerTask(definition: TaskDefinition): void
+  .registerCommand(name: string, handler: Function): void
+  .emit(event: string, data: any): void
+  .on(event: string, handler: Function): void
 
-Logger % "Logger interface"
-  - infoFunctionName: string "Info log function name"
-  - warnFunctionName: string "Warning log function name"
-  - errorFunctionName: string "Error log function name"
-  - debugFunctionName: string "Debug log function name"
+Logger < "Logger interface"
+  .info(message: string, meta?: object): void
+  .warn(message: string, meta?: object): void
+  .error(message: string, meta?: object): void
+  .debug(message: string, meta?: object): void
 
-FileUtils % "File utilities interface"
-  - globFunctionName: string "Glob function name"
-  - readFunctionName: string "Read file function name"
-  - writeFunctionName: string "Write file function name"
-  - copyFunctionName: string "Copy function name"
-  - removeFunctionName: string "Remove function name"
+FileUtils < "File utilities interface"
+  .glob(pattern: string, options?: GlobOptions): Promise<string[]>
+  .read(path: string): Promise<string>
+  .write(path: string, content: string): Promise<void>
+  .copy(src: string, dest: string): Promise<void>
+  .remove(path: string): Promise<void>
 
-ProcessUtils % "Process utilities interface"
-  - spawnMethod: string "Name of spawn method"
-  - execMethod: string "Name of exec method"
-  - shellMethod: string "Name of shell method"
-  - killMethod: string "Name of kill process method"
+ProcessUtils < "Process utilities interface"
+  .spawn(command: string, args?: string[], options?: SpawnOptions): Promise<SpawnResult>
+  .exec(command: string, options?: ExecOptions): Promise<ExecResult>
+  .shell(command: string, options?: ShellOptions): Promise<ShellResult>
+  .kill(pid: number, signal?: string): Promise<void>
 
 # DTOs file
 DTOsFile @ src/types/index.ts:
-  -> [CLIArgs, RunOptions, BuildOptions, WatchOptions, TestOptions, DeployOptions, TaskContext, TaskResult, TaskDefinition, TaskInfo, Config, ValidationResult, ValidationError, Plugin, Task, Worker, WorkerMessage, WorkerResult, DependencyGraph, GlobOptions, SpawnOptions, SpawnResult, ExecOptions, ExecResult, ShellOptions, ShellResult, LoggerOptions, PluginContext, PluginAPI, Logger, FileUtils, ProcessUtils, TaskConstants, WorkerConstants]
+  -> [CLIArgs, RunOptions, BuildOptions, WatchOptions, TestOptions, DeployOptions, TaskContext, TaskResult, TaskDefinition, TaskInfo, Config, ValidationResult, ValidationError, Plugin, Task, Worker, WorkerMessage, WorkerResult, DependencyGraph, GlobOptions, SpawnOptions, SpawnResult, ExecOptions, ExecResult, ShellOptions, ShellResult, LoggerOptions, PluginContext, TaskConstants, WorkerConstants]
 
 # Constants
 ConstantsFile @ src/constants/index.ts:
