@@ -1,15 +1,11 @@
 # Longform syntax is for humans
 program MyFirstApp {
-  entryPoint: main
+  entryPoint: App
   version: "1.0.0"
 }
 
-file main {
-  path: "main.ts"
-  exports: [App]
-}
-
-class App {
+# ClassFile fusion operator eliminates boilerplate
+App #: main.ts {
   extends: Application
   methods: [start, stop]
 }

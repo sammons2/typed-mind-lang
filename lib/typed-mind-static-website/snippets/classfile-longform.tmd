@@ -1,0 +1,57 @@
+# Longform syntax is for humans
+program ClassFileExample {
+  entry: UserService
+  version: "1.0.0"
+}
+
+# ClassFile combines file and class definition - eliminates boilerplate!
+# Compare: Before you needed separate file and class definitions
+# file UserService { path: "src/services/user.ts", ... }
+# class UserService { extends: BaseService, ... }
+
+UserService #: src/services/user.ts {
+  extends: BaseService
+  methods: [findById, create]
+  imports: [User, CreateUserDto, BaseService]
+}
+
+# Define the base service
+BaseService #: src/base/base-service.ts {
+  methods: [validate]
+}
+
+# Class methods are defined as functions
+function findById {
+  signature: "(id: string) => User"
+  description: "Finds a user by ID"
+  output: User
+}
+
+function create {
+  signature: "(data: CreateUserDto) => User"
+  description: "Creates a new user"
+  input: CreateUserDto
+  output: User
+}
+
+function validate {
+  signature: "(data: any) => boolean"
+  description: "Validates input data"
+}
+
+dto User {
+  description: "User entity"
+  fields: {
+    id: { type: "string", description: "User ID" }
+    name: { type: "string", description: "Full name" }
+    email: { type: "string", description: "Email address" }
+  }
+}
+
+dto CreateUserDto {
+  description: "User creation input"
+  fields: {
+    name: { type: "string", description: "User name" }
+    email: { type: "string", description: "Email address" }
+  }
+}

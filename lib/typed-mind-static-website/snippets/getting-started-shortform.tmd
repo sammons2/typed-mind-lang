@@ -1,10 +1,8 @@
 # Shortform syntax is for LLMs
-MyFirstApp -> main v1.0.0
+MyFirstApp -> App v1.0.0
 
-main @ main.ts:
-  -> [App]
-
-App <: Application
+# ClassFile fusion operator eliminates boilerplate
+App #: main.ts <: Application
   => [start, stop]
 
 start :: () => void

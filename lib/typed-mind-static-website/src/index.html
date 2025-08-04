@@ -218,6 +218,11 @@ Todo % "Todo entity"
                     <p>Full IDE support with syntax highlighting, hover tooltips, and validation</p>
                 </div>
                 <div class="feature-card">
+                    <div class="feature-icon">🔗</div>
+                    <h3>ClassFile Fusion</h3>
+                    <p>New <code>#:</code> operator combines file and class definitions, eliminating naming conflicts and boilerplate</p>
+                </div>
+                <div class="feature-card">
                     <div class="feature-icon">🏗️</div>
                     <h3>Modern Patterns</h3>
                     <p>Supports classes, DTOs, UI components, assets, dependencies, and runtime parameters</p>
@@ -236,6 +241,7 @@ Todo % "Todo entity"
                     <button class="tab-button active" data-tab="program">Program</button>
                     <button class="tab-button" data-tab="file">File</button>
                     <button class="tab-button" data-tab="class">Class</button>
+                    <button class="tab-button" data-tab="classfile">ClassFile</button>
                     <button class="tab-button" data-tab="function">Function</button>
                     <button class="tab-button" data-tab="dto">DTO</button>
                     <button class="tab-button" data-tab="uicomponent">UI Component</button>
@@ -341,6 +347,49 @@ create :: (data: CreateUserDto) => User
   <- CreateUserDto
   -> User
   ~> [validate, save]</code></pre>
+                    </div>
+                    
+                    <div class="tab-pane" id="classfile-tab">
+                        <h3>ClassFile</h3>
+                        <p>Combines file and class definition using the fusion operator <code>#:</code> to prevent naming conflicts and reduce boilerplate.</p>
+                        <div class="code-toggle">
+                            <button class="toggle-btn active" data-syntax="longform">Longform</button>
+                            <button class="toggle-btn" data-syntax="shortform">Shortform</button>
+                        </div>
+                        <pre class="longform-code"><code class="language-typedmind"># Longform syntax is for humans
+# ClassFile combines file and class definition
+UserService #: src/services/user.ts {
+  extends: BaseService
+  implements: [IUserService]
+  methods: [findById, create, update, delete]
+  imports: [User, CreateUserDto, Database, Logger]
+}
+
+# Eliminates the need for separate file definition
+# Compare with traditional approach:
+# file UserService { path: "src/services/user.ts", ... }
+# class UserService { extends: BaseService, ... }
+
+# Another example
+NotificationService #: src/services/notification.ts {
+  extends: BaseService
+  methods: [sendEmail, sendSms, markAsRead]
+  imports: [EmailProvider, SmsProvider, Notification]
+}</code></pre>
+                        <pre class="shortform-code" style="display: none;"><code class="language-typedmind"># Shortform syntax is for LLMs
+# ClassFile with #: operator eliminates boilerplate
+UserService #: src/services/user.ts <: BaseService, IUserService
+  <- [User, CreateUserDto, Database, Logger]
+  => [findById, create, update, delete]
+
+# Much cleaner than separate file + class definitions:
+# UserService @ src/services/user.ts: <- [...] -> [UserService]
+# UserService <: BaseService, IUserService => [...]
+
+# Another example
+NotificationService #: src/services/notification.ts <: BaseService
+  <- [EmailProvider, SmsProvider, Notification]
+  => [sendEmail, sendSms, markAsRead]</code></pre>
                     </div>
                     
                     <div class="tab-pane" id="function-tab">

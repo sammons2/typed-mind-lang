@@ -1,20 +1,17 @@
 # Longform syntax is for humans
 program TodoApp {
-  entry: api
+  entry: TodoService
   version: "1.0.0"
 }
 
-file api {
-  path: "api.ts"
-  imports: [CreateTodoDto, Todo]
-  exports: [TodoService]
-}
-
-class TodoService {
+# Use ClassFile fusion operator for cleaner syntax
+TodoService #: api.ts {
   extends: BaseService
   methods: [createTodo, getTodos]
+  imports: [CreateTodoDto, Todo, BaseService]
 }
 
+# Define class methods as functions
 function createTodo {
   signature: "(input: CreateTodoDto) => Todo"
   description: "Creates a new todo item"
@@ -26,6 +23,21 @@ function getTodos {
   signature: "() => Todo[]"
   description: "Retrieves all todo items"
   output: Todo
+}
+
+# Define the base service for completeness
+file BaseServiceModule {
+  path: "base-service.ts"
+  exports: [BaseService]
+}
+
+class BaseService {
+  methods: [validate]
+}
+
+function validate {
+  signature: "(data: any) => boolean"
+  description: "Validates input data"
 }
 
 dto CreateTodoDto {

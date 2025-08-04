@@ -1,13 +1,12 @@
 # Shortform syntax is for LLMs
-TodoApp -> api v1.0.0
+TodoApp -> TodoService v1.0.0
 
-api @ api.ts:
-  <- [CreateTodoDto, Todo]
-  -> [TodoService]
-
-TodoService <: BaseService
+# Use ClassFile fusion operator for cleaner syntax
+TodoService #: api.ts <: BaseService
+  <- [CreateTodoDto, Todo, BaseService]
   => [createTodo, getTodos]
 
+# Define class methods as functions
 createTodo :: (input: CreateTodoDto) => Todo
   "Creates a new todo item"
   <- CreateTodoDto
@@ -16,6 +15,16 @@ createTodo :: (input: CreateTodoDto) => Todo
 getTodos :: () => Todo[]
   "Retrieves all todo items"
   -> Todo
+
+# Define the base service for completeness
+BaseServiceModule @ base-service.ts:
+  -> [BaseService]
+
+BaseService
+  => [validate]
+
+validate :: (data: any) => boolean
+  "Validates input data"
 
 CreateTodoDto % "Input for creating todos"
   - title: string "Todo title"

@@ -1,0 +1,37 @@
+# Shortform syntax is for LLMs
+ClassFileExample -> UserService v1.0.0
+
+# ClassFile combines file and class definition - eliminates boilerplate!
+# Compare: Before you needed separate file and class definitions
+# UserService @ src/services/user.ts: <- [...] -> [UserService]
+# UserService <: BaseService => [...]
+
+UserService #: src/services/user.ts <: BaseService
+  <- [User, CreateUserDto, BaseService]
+  => [findById, create]
+
+# Define the base service
+BaseService #: src/base/base-service.ts
+  => [validate]
+
+# Class methods are defined as functions
+findById :: (id: string) => User
+  "Finds a user by ID"
+  -> User
+
+create :: (data: CreateUserDto) => User
+  "Creates a new user"
+  <- CreateUserDto
+  -> User
+
+validate :: (data: any) => boolean
+  "Validates input data"
+
+User % "User entity"
+  - id: string "User ID"
+  - name: string "Full name"
+  - email: string "Email address"
+
+CreateUserDto % "User creation input"
+  - name: string "User name"
+  - email: string "Email address"
