@@ -156,9 +156,10 @@ Config @ src/config.ts  # ERROR: Use ! for constants
 
 ### 7. DTO Declaration
 **Syntax**: `DTOName : "Description"`
+**Purpose**: DTOs contain only data fields - no functions or behavior. Use for serialization, config objects, API parameters, etc.
 
 ```tmd
-# ✅ Valid Examples
+# ✅ Valid Examples - Data only
 UserCreateDTO : "Data for creating a user"
   - name: string "User's full name"
   - email: string "User's email address"
@@ -170,8 +171,17 @@ UserResponseDTO : "User data returned to client"
   - email: string
   - createdAt: Date
 
+ConfigDTO : "Application settings"
+  - port: number "Server port"
+  - dbUrl: string "Database URL"
+  - enableLogging: boolean "Enable debug logs"
+
 # ❌ Invalid - Missing description
 UserDTO  # ERROR: DTOs need : "description"
+
+# ❌ Invalid - Contains behavior references
+ServiceDTO : "Service configuration"
+  - processFunction: string "Function name"  # NO! Use Classes for behavior
 ```
 
 ### 8. UI Component Declaration
@@ -366,20 +376,37 @@ UserController <: BaseController
 UserControllerFile @ src/controllers/user.controller.ts:
 ```
 
-### 3. Define Clear DTO Contracts
+### 3. Separate Data from Behavior: DTOs vs Classes
+**Key Principle**: 
+- **DTOs contain only data fields** (for serialization, config, parameters, etc.)
+- **Classes contain DTOs and Functions** (behavior that acts on data)
+
 ```tmd
-# Input DTOs
+# ✅ Good: DTOs contain only data
 CreateTodoDTO : "Data for creating a todo"
   - title: string "Todo title (required)"
   - description: string "Optional description"
   - dueDate?: Date "Optional due date"
 
-# Output DTOs  
 TodoResponseDTO : "Todo data sent to client"
   - id: string "Unique identifier"
   - title: string
   - completed: boolean
   - createdAt: Date
+
+ConfigDTO : "Application configuration"
+  - databaseUrl: string "Database connection"
+  - port: number "Server port"
+  - logLevel: string "Logging level"
+
+# ✅ Good: Classes contain DTOs and behavior
+TodoService <: BaseService
+  <- CreateTodoDTO, TodoResponseDTO  # Uses DTOs for data
+  => [createTodo, getTodos, updateTodo]  # Contains behavior
+
+# ❌ Bad: DTOs with function references
+TodoServiceDTO : "Service with functions"
+  - createFunction: string "Name of create function"  # NO! This is behavior, not data
 ```
 
 ### 4. Document Runtime Requirements
