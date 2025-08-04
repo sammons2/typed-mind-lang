@@ -926,10 +926,10 @@ start :: () => void
                         <h3>Use the CLI to Check Your Architecture</h3>
                         <p>Validate your TypedMind files and visualize them with the CLI:</p>
                         <pre><code class="language-bash"># Check for validation errors
-typed-mind check my-app.tmd
+typed-mind -c my-app.tmd
 
 # Or use the short alias
-tmd check my-app.tmd
+tmd -c my-app.tmd
 
 # Example output:
 ✅ my-app.tmd - Valid
@@ -937,7 +937,7 @@ tmd check my-app.tmd
    Files: 1, Classes: 1, Functions: 2
 
 # View your architecture as a diagram
-typed-mind render my-app.tmd
+typed-mind --render my-app.tmd
 
 # For more options
 typed-mind --help</code></pre>
@@ -1070,7 +1070,7 @@ getUser :: (id: string) => User
             </div>
             
             <div class="footer-bottom">
-                <p>&copy; 2024 Sammons Software LLC. Open source under MIT License.</p>
+                <p>&copy; 2025 Sammons Software LLC. Open source under MIT License.</p>
             </div>
         </div>
     </footer>
