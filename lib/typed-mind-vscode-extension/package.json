@@ -1,13 +1,13 @@
 {
-  "name": "typed-mind-vscode-extension",
+  "name": "typed-mind",
   "displayName": "TypedMind DSL",
-  "description": "VS Code extension for TypedMind DSL (.tmd files)",
-  "version": "1.0.0",
+  "description": "Language support for TypedMind DSL - a declarative architecture description language with bidirectional validation",
+  "version": "0.1.0",
   "author": "sammons",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sammons/typed-mind-vscode-extension"
+    "url": "https://github.com/sammons/typed-mind-lang"
   },
   "publisher": "sammons",
   "icon": "icon.png",
