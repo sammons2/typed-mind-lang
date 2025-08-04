@@ -86,4 +86,4 @@ To use a custom domain:
 ## Live URL
 
 Once deployed, your TypedMind Playground will be available at:
-**https://sammons.github.io/typed-mind-playground**
+**https://sammons.github.io/typed-mind-lang**

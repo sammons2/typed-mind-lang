@@ -79,7 +79,6 @@
 | lib/typed-mind-static-website/src/playground.html | Interactive TypedMind playground with Monaco editor and AI assistant integration |
 | lib/typed-mind-static-website/src/refactored-playground.html | Refactored version of the playground with improved architecture and additional features |
 | lib/typed-mind-static-website/src/robots.txt | Robots.txt file allowing all web crawlers and AI bots to index the site |
-| lib/typed-mind-static-website/vercel.json | Vercel configuration file with build settings, security headers, and cache control for static assets |
 | lib/typed-mind-test-suite/TEST_COVERAGE.md | Documentation file tracking test coverage for TypedMind DSL scenarios and validation rules |
 | lib/typed-mind-test-suite/package.json | Package configuration for TypedMind test suite with vitest and workspace dependency setup |
 | lib/typed-mind-test-suite/program.tmd | TypedMind DSL program file defining test suite structure and main test file reference |
