@@ -1,0 +1,101 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Scenario 46: Function Undefined Method Calls > should detect functions with undefined method calls 1`] = `
+[
+  {
+    "message": "Cannot use 'calls' to reference DTO 'RequestDTO'",
+    "position": {
+      "column": 1,
+      "line": 14,
+    },
+    "severity": "error",
+    "suggestion": "'calls' can only reference: Function, Class",
+  },
+  {
+    "message": "Orphaned entity 'RequestDTO'",
+    "position": {
+      "column": 1,
+      "line": 38,
+    },
+    "severity": "error",
+    "suggestion": "Remove or reference this entity",
+  },
+  {
+    "message": "Orphaned entity 'ValidService'",
+    "position": {
+      "column": 1,
+      "line": 44,
+    },
+    "severity": "error",
+    "suggestion": "Remove or reference this entity",
+  },
+  {
+    "message": "Orphaned entity 'DataUtils'",
+    "position": {
+      "column": 1,
+      "line": 47,
+    },
+    "severity": "error",
+    "suggestion": "Remove or reference this entity",
+  },
+  {
+    "message": "Class 'ValidService' is not exported by any file",
+    "position": {
+      "column": 1,
+      "line": 44,
+    },
+    "severity": "error",
+    "suggestion": "Add 'ValidService' to the exports of a file entity or convert to ClassFile with #: operator",
+  },
+  {
+    "message": "Class 'DataUtils' is not exported by any file",
+    "position": {
+      "column": 1,
+      "line": 47,
+    },
+    "severity": "error",
+    "suggestion": "Add 'DataUtils' to the exports of a file entity or convert to ClassFile with #: operator",
+  },
+  {
+    "message": "Call to 'UndefinedService.process' references unknown entity 'UndefinedService'",
+    "position": {
+      "column": 1,
+      "line": 8,
+    },
+    "severity": "error",
+  },
+  {
+    "message": "Call to 'NonExistentClass.method' references unknown entity 'NonExistentClass'",
+    "position": {
+      "column": 1,
+      "line": 8,
+    },
+    "severity": "error",
+  },
+  {
+    "message": "Cannot call method 'handle' on DTO 'RequestDTO'. Only Classes and ClassFiles can have methods",
+    "position": {
+      "column": 1,
+      "line": 14,
+    },
+    "severity": "error",
+    "suggestion": "Either define 'RequestDTO' as a Class/ClassFile or use a different call syntax",
+  },
+  {
+    "message": "Call to 'someConstant.execute' references unknown entity 'someConstant'",
+    "position": {
+      "column": 1,
+      "line": 14,
+    },
+    "severity": "error",
+  },
+  {
+    "message": "Call to 'InvalidClass.validate' references unknown entity 'InvalidClass'",
+    "position": {
+      "column": 1,
+      "line": 20,
+    },
+    "severity": "error",
+  },
+]
+`;

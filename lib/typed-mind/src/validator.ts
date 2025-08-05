@@ -94,6 +94,7 @@ export class DSLValidator {
     this.checkMethodCalls(entities);
     this.checkUndefinedExports(entities);
     this.checkFunctionDTOs(entities);
+    this.checkFunctionDependencies(entities);
     this.checkDTOFieldTypes(entities);
     this.checkUIComponentRelationships(entities);
     this.checkFunctionUIComponentAffects(entities);
@@ -1119,6 +1120,29 @@ export class DSLValidator {
         if (param.consumedBy) {
           for (const funcName of param.consumedBy) {
             addReference(funcName, 'consumedBy', referencer);
+          }
+        }
+      }
+    }
+  }
+
+  private checkFunctionDependencies(entities: Map<string, AnyEntity>): void {
+    // Check that all function dependencies (from <- [...]) exist
+    for (const entity of entities.values()) {
+      if (entity.type === 'Function') {
+        const funcEntity = entity as FunctionEntity & { _dependencies?: string[] };
+        
+        // Check if there are unresolved dependencies
+        if (funcEntity._dependencies) {
+          for (const dep of funcEntity._dependencies) {
+            if (!entities.has(dep)) {
+              this.addError({
+                position: entity.position,
+                message: `Function dependency '${dep}' not found`,
+                severity: 'error',
+                suggestion: `Define '${dep}' as an entity or remove it from the dependency list`,
+              });
+            }
           }
         }
       }

@@ -1,0 +1,53 @@
+# Test Function with undefined method calls
+TestApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  -> [processData, handleRequest, validateInput]
+
+# Function calling undefined entities/methods
+processData :: (input: DataInput) => DataOutput
+  <- DataInput
+  -> DataOutput
+  ~> [UndefinedService.process, NonExistentClass.method]
+
+# Function calling methods on non-class entities  
+handleRequest :: (req: Request) => Response
+  <- Request
+  -> Response
+  ~> [RequestDTO.handle, someConstant.execute]
+
+# Function with valid and invalid calls mixed
+validateInput :: (data: any) => boolean
+  ~> [ValidService.check, InvalidClass.validate, DataUtils.transform]
+
+# Valid entities
+DataInput % "Input data"
+  - value: string "Data value"
+
+DataOutput % "Output data"  
+  - result: string "Processed result"
+
+Request % "HTTP Request"
+  - path: string "Request path"
+  - method: string "HTTP method"
+
+Response % "HTTP Response"
+  - status: number "Status code"
+  - body: any "Response body"
+
+RequestDTO % "Request DTO"
+  - headers: object "Request headers"
+
+someConstant * "Constants"
+  API_URL: "https://api.example.com"
+
+ValidService <:
+  => [check]
+
+DataUtils <:
+  => [transform]
+
+# Methods
+check :: () => boolean
+
+transform :: (data: any) => any

@@ -108,6 +108,9 @@ export class DSLParser {
       }
     }
 
+    // Post-process function dependencies
+    this.distributeFunctionDependencies();
+
     const result: ParseResult = {
       entities: this.entities,
       imports: this.imports,
@@ -418,9 +421,27 @@ export class DSLParser {
   private parseContinuation(entity: AnyEntity, line: string, _lineNum: number): void {
     // Imports: <- [Database, UserModel]
     const importMatch = line.match(/^<-\s*\[([^\]]+)\]/);
-    if (importMatch && ('imports' in entity && Array.isArray(entity.imports))) {
-      entity.imports = this.parseList(importMatch[1] as string);
-      return;
+    if (importMatch) {
+      // Special handling for Functions - distribute by entity type
+      if (entity.type === 'Function') {
+        const funcEntity = entity as FunctionEntity;
+        const items = this.parseList(importMatch[1] as string);
+        
+        // We'll need access to entities to check types, so for now just store them
+        // The validator will need to handle the validation
+        if (!funcEntity.calls) funcEntity.calls = [];
+        if (!funcEntity.affects) funcEntity.affects = [];
+        if (!funcEntity.consumes) funcEntity.consumes = [];
+        
+        // For now, store all in a temporary field that validator can process
+        (funcEntity as any)._dependencies = items;
+        return;
+      }
+      // For other entities with imports field
+      else if ('imports' in entity && Array.isArray(entity.imports)) {
+        entity.imports = this.parseList(importMatch[1] as string);
+        return;
+      }
     }
 
     // Exports: -> [createUser, getUser]
@@ -628,6 +649,64 @@ export class DSLParser {
         return { ...baseEntity, type: 'Constants', path: '' } as ConstantsEntity;
       default:
         return null;
+    }
+  }
+
+  private distributeFunctionDependencies(): void {
+    // Process functions with _dependencies field
+    for (const entity of this.entities.values()) {
+      if (entity.type === 'Function') {
+        const funcEntity = entity as FunctionEntity & { _dependencies?: string[] };
+        if (funcEntity._dependencies) {
+          const unresolvedDeps: string[] = [];
+          
+          // Distribute dependencies based on entity types
+          for (const dep of funcEntity._dependencies) {
+            const depEntity = this.entities.get(dep);
+            if (depEntity) {
+              switch (depEntity.type) {
+                case 'Function':
+                case 'Class':
+                case 'ClassFile':
+                  // These are calls
+                  if (!funcEntity.calls.includes(dep)) {
+                    funcEntity.calls.push(dep);
+                  }
+                  break;
+                case 'UIComponent':
+                  // These affect UI components
+                  if (!funcEntity.affects) funcEntity.affects = [];
+                  if (!funcEntity.affects.includes(dep)) {
+                    funcEntity.affects.push(dep);
+                  }
+                  break;
+                case 'Dependency':
+                case 'Asset':
+                case 'RunParameter':
+                case 'Constants':
+                  // These are consumed
+                  if (!funcEntity.consumes) funcEntity.consumes = [];
+                  if (!funcEntity.consumes.includes(dep)) {
+                    funcEntity.consumes.push(dep);
+                  }
+                  break;
+                // DTOs, Files, and Programs are not typically in dependency lists
+              }
+            } else {
+              // Keep unresolved dependencies for validator to check
+              unresolvedDeps.push(dep);
+            }
+          }
+          
+          // Keep unresolved dependencies for validator
+          if (unresolvedDeps.length > 0) {
+            funcEntity._dependencies = unresolvedDeps;
+          } else {
+            // Clean up temporary field if all were resolved
+            delete funcEntity._dependencies;
+          }
+        }
+      }
     }
   }
 }

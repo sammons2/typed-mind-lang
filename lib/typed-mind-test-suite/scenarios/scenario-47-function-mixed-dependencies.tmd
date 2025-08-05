@@ -1,0 +1,71 @@
+# Test Function with mixed dependency types in shorthand syntax
+MixedDepsApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  <- [lodash, DashboardUI, StatusPanel, App, DTOFile, AssetFile]  # Import dependencies
+  -> [processData, renderDashboard, transformData]
+
+DTOFile @ src/types.ts:
+  -> [InputData, OutputData]
+
+AssetFile @ src/assets/index.ts:
+  -> [IconAsset]
+
+# Function with mixed dependency types - should distribute correctly
+processData :: (input: InputData) => OutputData
+  <- [DashboardUI, IconAsset, InputData, transformData, lodash, AppConfig]
+  <- InputData      # Proper input DTO
+  -> OutputData     # Proper output DTO
+
+# Another function to test affects relationship
+renderDashboard :: () => void
+  <- [DashboardUI, StatusPanel]  # Both UIComponents - should go to affects
+  ~> [processData]  # Call processData to avoid orphan
+
+# Helper function
+transformData :: (data: any) => any
+  "Data transformation utility"
+
+# UI Components
+App &! "Root application"
+  > [DashboardUI, StatusPanel]
+
+DashboardUI & "Main dashboard component"
+  < [App]
+
+StatusPanel & "Status display panel"  
+  < [App]
+
+# Asset used by the app
+IconAsset ~ "Application icon"
+  >> MixedDepsApp  # Asset contains the program
+
+# DTOs
+InputData % "Input data structure"
+  - value: string "Data value"
+  - timestamp: number "When data was created"
+
+OutputData % "Processed output"
+  - result: string "Processing result"
+  - metadata: object "Additional metadata"
+
+# Constants
+AppConfig ! src/config.ts
+  "Application configuration"
+
+# External dependency
+lodash ^ "Utility library" v4.17.21
+
+# ConfigFile that uses the config
+ConfigController #: src/controllers/config.ts
+  <- [AppConfig]
+  => [getConfig, updateConfig]
+
+getConfig :: () => object
+updateConfig :: (config: object) => void
+
+# This should validate successfully with proper distribution:
+# - processData.affects = [DashboardUI]
+# - processData.calls = [transformData]  
+# - processData.consumes = [IconAsset, lodash, AppConfig]
+# - InputData is ignored (DTOs aren't valid dependencies)

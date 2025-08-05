@@ -73,8 +73,8 @@ importers:
   lib/typed-mind-lsp:
     dependencies:
       '@sammons/typed-mind':
-        specifier: ^0.1.0
-        version: 0.1.0
+        specifier: workspace:*
+        version: link:../typed-mind
       vscode-languageserver:
         specifier: ^9.0.1
         version: 9.0.1

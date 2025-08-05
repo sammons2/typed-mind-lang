@@ -1,0 +1,25 @@
+# Test Function with undefined input DTO
+TestApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  -> [processUser, validateData, transformResult]
+
+# Function with undefined input DTO
+processUser :: (data: UserInput) => ProcessedUser
+  <- UserInput
+  -> ProcessedUser
+
+# Function with undefined output DTO  
+validateData :: (input: any) => ValidationResult
+  -> ValidationResult
+
+# Function with both undefined
+transformResult :: (data: TransformInput) => TransformOutput
+  <- TransformInput
+  -> TransformOutput
+
+# Only ProcessedUser is defined
+ProcessedUser % "Processed user data"
+  - id: string "User ID"
+  - name: string "Full name"
+  - email: string "Email address"
