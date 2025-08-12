@@ -16,7 +16,15 @@ consumed by another entity to avoid dead code. The TypeMind checker will validat
 2. [Entity Patterns](#entity-patterns)
 3. [Continuation Patterns](#continuation-patterns)
 4. [General Patterns](#general-patterns)
-5. [Examples](#examples)
+5. [Quick Reference Example](#quick-reference-example)
+6. [Comprehensive Examples](#comprehensive-examples)
+7. [Key Features](#key-features)
+8. [DTO Field Syntax](#dto-field-syntax)
+9. [Method Call Syntax](#method-call-syntax)
+10. [Function Auto-Distribution Details](#function-auto-distribution-details)
+11. [Entity Naming Rules](#entity-naming-rules)
+12. [Validation Rules](#validation-rules)
+13. [Best Practices](#best-practices)
 
 ## Entity Types
 
@@ -142,6 +150,77 @@ Logo ~ "Company logo"                       # Asset
 react ^ "UI library" v18.0.0                # Dependency
 ```
 
+## Comprehensive Examples
+
+### Complete Application Example
+```tmd
+# Program definition
+TodoApp -> main "Todo application" v1.0.0
+
+# Entry file
+main @ src/index.ts:
+  <- [TodoService, AuthService]
+  -> [startApp]
+
+# Start function with auto-distribution
+startApp :: () => Promise<void>
+  "Starts the application with all dependencies"
+  <- [ConfigDTO, initializeDatabase, AuthService, TodoApp, DATABASE_URL]
+  # Auto-distributed to:
+  # input: ConfigDTO
+  # calls: [initializeDatabase, AuthService]
+  # affects: [TodoApp]
+  # consumes: [DATABASE_URL]
+
+# ClassFile fusion - combines class and file
+TodoService #: src/services/todo.ts <: BaseService
+  <- [TodoDTO, CreateTodoDTO, Database, Logger]
+  => [createTodo, getTodos, updateTodo, deleteTodo]
+  -> [todoHelper]  # Additional export
+
+# Function with method calls
+createTodo :: (data: CreateTodoDTO) => Promise<TodoDTO>
+  <- CreateTodoDTO  # Input DTO
+  -> TodoDTO        # Output DTO
+  ~> [validateTodo, Database.insert, Logger.info]  # Method calls
+  ~ [TodoList]      # Affects UI
+
+# DTOs with comprehensive field syntax
+CreateTodoDTO % "Data for creating a todo"
+  - title: string "Todo title"
+  - description?: string "Optional description"
+  - dueDate: Date "Due date" (optional)
+  - priority: number "Priority level (1-5)"
+  - tags: string[] "Associated tags"
+  - metadata: object "Additional metadata"
+
+TodoDTO % "Complete todo object"
+  - id: string "Unique identifier"
+  - title: string "Todo title"
+  - description: string "Description" (optional)
+  - completed: boolean "Completion status"
+  - dueDate: Date "Due date" (optional)
+  - createdAt: Date "Creation timestamp"
+  - updatedAt: Date "Last update timestamp"
+
+# UI Components with containment
+TodoApp &! "Root todo application"
+  > [Header, TodoList, CreateForm, Footer]
+
+TodoList & "List of todos"
+  < [TodoApp]
+  > [TodoItem]
+
+# Runtime parameters
+DATABASE_URL $env "PostgreSQL connection string" (required)
+API_KEY $env "External API key"
+  = "default-dev-key"
+
+# External dependencies
+react ^ "React framework" v18.0.0
+express ^ "Web framework" v4.18.0
+```
+
 ## Key Features
 
 ### ClassFile Fusion (`#:`)
@@ -162,6 +241,62 @@ processOrder :: (order: OrderDTO) => void
   # affects (UI), consumes (RunParams/Assets/Constants)
 ```
 
+#### Distribution Rules
+
+| Entity Type | Distributed To | Description |
+|-------------|----------------|-------------|
+| Function | `calls` | Function calls another function |
+| Class/ClassFile | `calls` | Function calls class methods |
+| UIComponent | `affects` | Function modifies UI state |
+| RunParameter | `consumes` | Function uses runtime parameter |
+| Asset | `consumes` | Function uses static asset |
+| Constants | `consumes` | Function uses configuration |
+| Dependency | `consumes` | Function uses external library |
+| DTO (single) | `input` | Function takes DTO as parameter |
+| DTO (multiple) | ignored | Use explicit `<- DTOName` for input |
+
+#### Auto-Distribution Examples
+```tmd
+# Mixed dependencies before auto-distribution
+processPayment :: (payment: PaymentDTO) => Receipt
+  <- [PaymentDTO, validateCard, PaymentGateway, PaymentUI, STRIPE_KEY, stripe]
+
+# After auto-distribution:
+# input: PaymentDTO
+# calls: [validateCard, PaymentGateway]
+# affects: [PaymentUI]
+# consumes: [STRIPE_KEY, stripe]
+```
+
+### Method Call Syntax
+
+Functions can call other functions and class methods using the `~>` operator:
+
+#### Basic Function Calls
+```tmd
+processData :: () => void
+  ~> [validateInput, transform, saveResult]
+```
+
+#### Class Method Calls
+```tmd
+# Calling methods on Classes/ClassFiles
+createUser :: (data: UserDTO) => void
+  ~> [UserService.create, Logger.info]
+
+# Recursive/self-referencing calls are allowed
+fibonacci :: (n: number) => number
+  ~> [fibonacci]  # Recursive call to itself
+```
+
+#### Method Call Rules
+- Direct function names: `functionName`
+- Class methods: `ClassName.methodName`
+- ClassFile methods: `ClassFileName.methodName`
+- Called methods must be defined in the entity's `=> [...]` list
+- Circular function calls are detected and reported as errors
+- Self-referencing (recursive) calls are allowed
+
 ## Validation Rules
 
 ### Bidirectional Consistency
@@ -172,6 +307,36 @@ TypedMind automatically maintains bidirectional relationships:
 - Asset contains Program → Program must exist
 
 ### Entity Naming Rules
+
+#### Valid Entity Names
+- Must start with letter (a-z, A-Z) or underscore (_)
+- Can contain letters, numbers, underscores
+- Case-sensitive (UserService ≠ userService)
+- Unicode letters supported (e.g., 名前)
+
+#### Invalid Entity Names
+- Cannot start with numbers: `123Name` ❌
+- Cannot contain spaces: `User Service` ❌
+- Cannot use kebab-case: `user-service` ❌
+- Cannot be reserved keywords (varies by implementation)
+
+#### Naming Examples
+```tmd
+# Valid names
+UserService      # PascalCase
+userService      # camelCase
+user_service     # snake_case
+_privateService  # underscore prefix
+Service2         # numbers allowed (not first)
+名前Service      # Unicode letters
+
+# Invalid names
+123Service       # starts with number
+"User Service"   # contains spaces
+user-service     # kebab-case
+```
+
+#### Uniqueness Rules
 - Names must be unique across ALL entity types
 - Exception: ClassFile can replace separate Class + File with same name
 - The validator will suggest using ClassFile fusion when detecting Class/File name conflicts
@@ -239,6 +404,48 @@ UserDTO %                            # DTO: data only
 UserService #: src/services/user.ts # Class: behavior
   => [createUser, findUser]         # Has methods
 ```
+
+### DTO Field Syntax
+
+DTOs support rich type definitions for fields:
+
+#### Basic Field Syntax
+```tmd
+UserDTO %
+  - name: string "User full name"           # Required field
+  - email: string                           # No description
+  - age?: number "Optional age"             # Optional field with ?
+  - nickname: string "Nickname" (optional)  # Optional with annotation
+```
+
+#### Supported Field Types
+- **Primitives**: `string`, `number`, `boolean`, `any`, `void`, `null`, `undefined`
+- **Arrays**: `string[]`, `number[]`, `UserDTO[]`, `any[][]` (multi-dimensional)
+- **Objects**: `object`, `{ key: string, value: number }` (inline objects)
+- **Unions**: `string | number`, `"active" | "inactive" | "pending"`
+- **Tuples**: `[string, number]`, `[boolean, string, number]`
+- **DTO References**: `UserDTO`, `AddressDTO` (must be defined entities)
+- **Complex Types**: `Record<string, any>`, `Map<string, number>`, `Date`
+
+#### Complex Field Examples
+```tmd
+ComplexDTO % "Advanced field types"
+  - id: string "Unique identifier"
+  - metadata?: object "Optional metadata"
+  - tags: string[] "Array of tags"
+  - status: "draft" | "published" | "archived" "Union type"
+  - coordinates: [number, number] "Tuple for lat/lng"
+  - config: { apiUrl: string, timeout: number } "Inline object"
+  - matrix: number[][] "2D array"
+  - user: UserDTO "Reference to another DTO"
+  - children?: ComplexDTO[] "Self-referencing array"
+```
+
+#### Field Validation Rules
+- Field names must be valid identifiers (no spaces, start with letter/underscore)
+- Field types cannot be `Function` or contain function types
+- Optional fields can use either `?` suffix or `(optional)` annotation
+- Referenced DTOs must exist in the same scope
 
 ## Advanced Patterns via Purpose Fields
 
@@ -381,6 +588,130 @@ DataClass <: Base
   @ src/data.ts:  # Classes can't have paths!
 ```
 
+## DTO Field Syntax
+
+DTOs support comprehensive field definitions with types, descriptions, and optionality:
+
+### Field Patterns
+
+```tmd
+UserDTO %
+  - name: string "User full name"           # Required field
+  - email?: string "Email address"            # Optional field (? syntax)
+  - age: number "User age" (optional)        # Optional field (parentheses)
+  - tags: string[] "User tags"                # Array type
+  - metadata: object "Additional data"        # Generic object type
+  - createdAt: Date "Account creation"        # Built-in types
+  - profile: ProfileDTO "User profile"       # Reference to other DTO
+```
+
+### Supported Types
+- **Primitives**: `string`, `number`, `boolean`, `Date`
+- **Collections**: `string[]`, `number[]`, `Type[]`
+- **Generic**: `object`, `any`
+- **DTO References**: `OtherDTO` (must be defined elsewhere)
+- **Complex Types**: `Promise<Type>`, `Optional<Type>`, custom types
+
+### Field Rules
+- Field names must be valid identifiers (alphanumeric + underscore)
+- Types cannot be `Function` or reference function names
+- Descriptions are optional but recommended for clarity
+- Optional fields can use `?` suffix or `(optional)` annotation
+
+## Method Call Syntax
+
+Functions can call other functions, class methods, or static methods using the `~>` operator:
+
+### Call Patterns
+
+```tmd
+# Function calls
+processUser :: (data: UserDTO) => void
+  ~> [validateInput, createUser, sendNotification]
+
+# Class method calls (ClassName.methodName)
+handleRequest :: (req: Request) => Response
+  ~> [UserService.findById, OrderService.create]
+
+# Mixed calls
+complexProcess :: () => void
+  ~> [validateAuth, Database.connect, UserService.update, logEvent]
+```
+
+### Method Call Rules
+- Function names: Direct references to other Function entities
+- Class methods: `ClassName.methodName` where ClassName exists and has method
+- Static calls: `ModuleName.staticMethod` for utility functions
+- All called entities must be defined in the program
+- Circular function calls are detected and reported as warnings
+
+## Function Auto-Distribution Details
+
+The `<- [...]` syntax intelligently categorizes mixed dependencies based on entity types:
+
+### Distribution Rules
+
+| Entity Type | Distributed To | Description |
+|-------------|----------------|-------------|
+| Function, Class, ClassFile | `calls` (`~>`) | Function calls another function or class method |
+| UIComponent | `affects` (`~`) | Function modifies UI component state |
+| RunParameter, Asset, Constants, Dependency | `consumes` (`$<`) | Function uses external resources |
+| DTO (single) | `input` (`<-`) | Function takes DTO as input parameter |
+| DTO (multiple) | Error | Functions can only have one input DTO |
+
+### Distribution Examples
+
+```tmd
+# Mixed dependency list
+processOrder :: (order: OrderDTO) => Promise<Receipt>
+  <- [OrderDTO, validateOrder, PaymentService, OrderUI, STRIPE_KEY, Database]
+
+# Automatically distributed to:
+# input: OrderDTO
+# calls: [validateOrder, PaymentService, Database]
+# affects: [OrderUI]
+# consumes: [STRIPE_KEY]
+```
+
+### Auto-Distribution Benefits
+- **Concise syntax**: Single list instead of multiple continuation lines
+- **Type safety**: Parser validates entity types and relationships
+- **Bidirectional links**: All relationships are automatically maintained
+- **Error detection**: Invalid entity types or missing entities are caught
+
+## Entity Naming Rules
+
+### Naming Requirements
+- **Global uniqueness**: Entity names must be unique across ALL entity types
+- **Valid identifiers**: Must start with letter, can contain letters, numbers, underscores
+- **Case sensitive**: `UserService` and `userservice` are different entities
+- **Reserved names**: Cannot use TypedMind keywords or operators as names
+
+### ClassFile Fusion Exception
+ClassFile entities can replace separate Class + File pairs:
+
+```tmd
+# ❌ Naming conflict: separate Class and File
+UserService <: BaseService
+  => [createUser, findUser]
+
+UserService @ src/services/user.ts:  # ERROR: Name conflict!
+  -> [UserService]
+
+# ✅ Solution: Use ClassFile fusion
+UserService #: src/services/user.ts <: BaseService
+  => [createUser, findUser]                 # Class methods
+  <- [Database, Logger]                     # File imports
+  # UserService is auto-exported from file
+```
+
+### Name Validation Errors
+Common naming validation errors:
+- **Duplicate names**: Two entities with the same name
+- **Invalid characters**: Names with spaces, hyphens, or special characters
+- **Reserved keywords**: Using TypedMind operators as entity names
+- **Empty names**: Missing or empty entity names
+
 ## Best Practices
 
 - **Use ClassFile (`#:`)** for services, controllers, repositories
@@ -391,3 +722,6 @@ DataClass <: Base
 - **Establish conventions**: Create project-specific semantic patterns
 - **Bidirectional links**: Automatically maintained by the parser
 - **Check capability matrix**: Ensure entities have the right capabilities
+- **Name entities clearly**: Use descriptive, unique names across all types
+- **Document field types**: Include descriptions for all DTO fields
+- **Use method calls correctly**: Reference methods as `ClassName.methodName`

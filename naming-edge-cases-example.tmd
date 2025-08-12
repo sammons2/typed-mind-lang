@@ -1,0 +1,380 @@
+# Entity Naming Edge Cases Example
+# Demonstrates complex naming scenarios, ClassFile fusion, and naming validation edge cases
+
+GlobalIdentitySystem -> _SystemEntry "Advanced identity management system" v4.2.0
+
+# Entry point with underscore prefix (valid naming)
+_SystemEntry @ src/system/index.ts:
+  <- [IdentityManager, _PrivateAuthService, UserService2]
+  -> [initializeSystem]
+
+# Function with number suffix (valid)
+initializeSystem :: () => Promise<void>
+  "System initialization with complex naming patterns"
+  <- [SystemConfigDTO, IdentityManager, UserService2, _PrivateAuthService, SystemDashboard, DB_CONNECTION_URL]
+
+# ClassFile fusion resolving Class/File naming conflicts
+# Before: Would have naming conflict between UserService class and UserService file
+# Solution: Use ClassFile fusion to combine both
+UserService2 #: src/services/user-v2.ts <: BaseUserService
+  "User service combining class and file - resolves naming conflict"
+  <- [UserDTO, CreateUserDTO, Database_v2, Logger_Instance, _ValidationService]
+  => [createUser, findUserById, updateUserProfile, deactivateUser, validateUserData]
+  -> [userUtilities, userConstants]
+
+# Private service with underscore prefix (valid naming pattern)
+_PrivateAuthService #: src/internal/auth.ts
+  "Internal authentication service - private naming convention"
+  <- [AuthTokenDTO, _InternalConfigDTO, CryptoService]
+  => [_generateToken, _validateInternalAuth, _rotateKeys]
+  # Note: Methods can have underscore prefixes too
+
+# ClassFile demonstrating naming conflict resolution
+IdentityManager #: src/managers/identity.ts <: _BaseManager
+  "Identity management service using ClassFile to avoid Class/File conflict"
+  <- [IdentityDTO, ProfileDTO, _PrivateAuthService, Database_v2]
+  => [createIdentity, linkAccounts, mergeProfiles, resolveConflicts]
+  -> [identityHelpers]
+
+# Another ClassFile showing version suffix naming
+Database_v2 #: src/database/connection-v2.ts <: DatabaseConnection
+  "Database service v2 - demonstrates version suffixing"
+  <- [ConnectionConfigDTO, Pool_Manager, Logger_Instance]
+  => [connect_secure, execute_query, begin_transaction, commit_transaction]
+  -> [migrationUtils, schemaValidator]
+
+# Validation service with underscore naming
+_ValidationService #: src/internal/validation.ts
+  "Internal validation service - private convention"
+  <= [ValidationRuleDTO, _InternalConfigDTO]
+  => [validateEntity, applyBusinessRules, _checkInternalRules]
+
+# Service with instance suffix
+Logger_Instance #: src/logging/logger.ts <: BaseLogger
+  "Logger instance service - demonstrates instance naming"
+  <- [LogConfigDTO, _InternalConfigDTO]
+  => [log_info, log_error, log_debug, rotate_logs]
+
+# Pool manager with underscore
+Pool_Manager #: src/infrastructure/pool.ts
+  "Connection pool manager - demonstrates underscore naming"
+  <- [PoolConfigDTO, ConnectionMonitor]
+  => [createPool, destroyPool, getConnection, releaseConnection]
+
+# Base classes demonstrating inheritance naming
+BaseUserService #: src/base/user-service.ts
+  "Base user service for inheritance - demonstrates base naming"
+  => [handleError, validateInput, logOperation]
+
+_BaseManager #: src/base/manager.ts
+  "Base manager class - private base convention"
+  => [initializeManager, handleManagerError, cleanup]
+
+DatabaseConnection #: src/base/database.ts
+  "Base database connection class"
+  => [connect, disconnect, ping, getStatus]
+
+BaseLogger #: src/base/logger.ts
+  "Base logger implementation"
+  => [formatMessage, writeLog, handleLogError]
+
+# Monitor service with complex naming
+ConnectionMonitor #: src/monitoring/connection.ts
+  "Connection monitoring service"
+  <- [MonitoringConfigDTO, Logger_Instance]
+  => [startMonitoring, stopMonitoring, getConnectionStats, alertOnIssues]
+
+# Service demonstrating crypto naming
+CryptoService #: src/security/crypto.ts
+  "Cryptographic service - demonstrates domain-specific naming"
+  <- [CryptoConfigDTO, _InternalConfigDTO]
+  => [encrypt_data, decrypt_data, generate_key, hash_password]
+
+# Functions with various valid naming patterns
+createUser :: (userData: CreateUserDTO) => Promise<UserDTO>
+  "Create user function - standard naming"
+  <- CreateUserDTO
+  -> UserDTO
+  ~> [UserService2.createUser, _ValidationService.validateEntity, Logger_Instance.log_info]
+
+findUserById :: (userId: string) => Promise<UserDTO | null>
+  "Find user by ID - demonstrates return union type"
+  ~> [Database_v2.execute_query, UserService2.validateUserData]
+
+updateUserProfile :: (userId: string, profileData: ProfileDTO) => Promise<UserDTO>
+  "Update user profile - demonstrates multiple parameters"
+  <- ProfileDTO
+  -> UserDTO
+  ~> [_ValidationService.validateEntity, Database_v2.begin_transaction, Database_v2.commit_transaction]
+
+# Functions with underscore naming (valid for private/internal functions)
+_generateToken :: (userId: string) => string
+  "Internal token generation - private function naming"
+  ~> [CryptoService.generate_key, CryptoService.hash_password]
+
+_validateInternalAuth :: (token: string) => boolean
+  "Internal authentication validation - private naming"
+  ~> [CryptoService.decrypt_data, _checkInternalRules]
+
+_rotateKeys :: () => Promise<void>
+  "Internal key rotation - private operation"
+  ~> [CryptoService.generate_key, Database_v2.execute_query]
+
+# Functions with underscore separators (valid)
+log_info :: (message: string) => void
+  "Log info message - underscore separator naming"
+  ~> [formatMessage, writeLog]
+
+log_error :: (error: Error) => void
+  "Log error message - underscore separator naming" 
+  ~> [formatMessage, writeLog, handleLogError]
+
+execute_query :: (sql: string, params: any[]) => Promise<any[]>
+  "Execute database query - underscore naming"
+  ~> [connect_secure, ping]
+
+connect_secure :: () => Promise<void>
+  "Secure database connection - underscore naming"
+  ~> [Logger_Instance.log_info]
+
+# Utility functions with various naming patterns
+userUtilities :: () => object
+  "User utility functions export"
+
+userConstants :: () => object  
+  "User constants export"
+
+identityHelpers :: () => object
+  "Identity helper functions"
+
+migrationUtils :: () => object
+  "Database migration utilities"
+
+schemaValidator :: () => object
+  "Schema validation utilities"
+
+# DTOs with complex naming patterns
+CreateUserDTO % "User creation data - standard DTO naming"
+  - username: string "Unique username"
+  - email: string "User email address"
+  - profile: UserProfileDTO "User profile data"
+  - preferences: UserPreferencesDTO "User preferences"
+
+UserDTO % "Complete user entity - standard DTO naming"
+  - userId: string "Unique user identifier"
+  - username: string "Username"
+  - email: string "Email address"
+  - profile: UserProfileDTO "Profile information"
+  - createdAt: Date "Account creation date"
+  - lastLoginAt?: Date "Last login timestamp"
+  - isActive: boolean "Account active status"
+
+UserProfileDTO % "User profile information - nested DTO naming"
+  - firstName: string "First name"
+  - lastName: string "Last name"
+  - avatar?: string "Avatar image URL"
+  - bio?: string "User biography"
+  - location?: LocationDTO "User location"
+
+UserPreferencesDTO % "User preference settings - compound DTO naming"
+  - theme: "light" | "dark" | "system" "UI theme preference"
+  - language: string "Preferred language code"
+  - notifications: NotificationPrefsDTO "Notification preferences"
+  - privacy: PrivacySettingsDTO "Privacy settings"
+
+LocationDTO % "Location information - geographic DTO naming"
+  - city?: string "City name"
+  - state?: string "State or province"
+  - country: string "Country code"
+  - timezone: string "Timezone identifier"
+
+NotificationPrefsDTO % "Notification preferences - abbreviated DTO naming"
+  - email: boolean "Email notifications enabled"
+  - sms: boolean "SMS notifications enabled"
+  - push: boolean "Push notifications enabled"
+  - frequency: "immediate" | "daily" | "weekly" "Notification frequency"
+
+PrivacySettingsDTO % "Privacy settings configuration - compound DTO naming"
+  - profileVisibility: "public" | "friends" | "private" "Profile visibility"
+  - searchable: boolean "Allow search indexing"
+  - dataSharing: boolean "Allow data sharing"
+
+ProfileDTO % "Profile update data - simplified DTO naming"
+  - firstName?: string "Updated first name"
+  - lastName?: string "Updated last name"
+  - bio?: string "Updated biography"
+  - avatar?: string "Updated avatar URL"
+
+IdentityDTO % "Identity management data - domain-specific DTO naming"
+  - identityId: string "Unique identity identifier"
+  - primaryUserId: string "Primary user account ID"
+  - linkedAccounts: LinkedAccountDTO[] "Connected accounts"
+  - verificationStatus: VerificationStatusDTO "Identity verification status"
+
+LinkedAccountDTO % "Linked account information - compound DTO naming"
+  - provider: string "Account provider name"
+  - providerId: string "Provider account ID"
+  - linkDate: Date "Account linking date"
+  - status: "active" | "inactive" | "suspended" "Link status"
+
+VerificationStatusDTO % "Verification status details - status DTO naming"
+  - email: boolean "Email verified"
+  - phone: boolean "Phone verified"
+  - identity: boolean "Identity verified"
+  - lastVerified?: Date "Last verification date"
+
+AuthTokenDTO % "Authentication token data - compound DTO naming"
+  - token: string "JWT token"
+  - tokenType: "access" | "refresh" | "reset" "Token type"
+  - expiresAt: Date "Token expiration"
+  - scope: string[] "Token permissions"
+
+ValidationRuleDTO % "Validation rule definition - compound DTO naming"
+  - ruleName: string "Rule identifier"
+  - ruleType: "required" | "format" | "range" | "custom" "Rule type"
+  - parameters: object "Rule parameters"
+  - errorMessage: string "Error message template"
+
+# Internal/private DTOs with underscore naming
+_InternalConfigDTO % "Internal system configuration - private DTO naming"
+  - systemKey: string "Internal system key"
+  - debugMode: boolean "Debug mode enabled"
+  - internalEndpoints: string[] "Internal API endpoints"
+  - _secretData: object "Secret configuration data"
+
+# Configuration DTOs with descriptive naming
+SystemConfigDTO % "System configuration - descriptive DTO naming"
+  - appName: string "Application name"
+  - version: string "Application version"
+  - environment: "development" | "staging" | "production" "Environment"
+  - features: FeatureFlags_DTO "Feature flags configuration"
+
+FeatureFlags_DTO % "Feature flags configuration - underscore separator DTO"
+  - newUserInterface: boolean "New UI enabled"
+  - advancedSecurity: boolean "Advanced security features"
+  - experimentalFeatures: boolean "Experimental features enabled"
+
+ConnectionConfigDTO % "Database connection configuration - compound DTO naming"
+  - host: string "Database host"
+  - port: number "Database port"
+  - database: string "Database name"
+  - credentials: DbCredentialsDTO "Database credentials"
+  - poolSettings: ConnectionPoolDTO "Connection pool settings"
+
+DbCredentialsDTO % "Database credentials - abbreviated compound DTO"
+  - username: string "Database username"
+  - password: string "Database password"
+  - authMethod: "password" | "certificate" | "iam" "Authentication method"
+
+ConnectionPoolDTO % "Connection pool configuration - compound DTO naming"
+  - minConnections: number "Minimum pool size"
+  - maxConnections: number "Maximum pool size"
+  - idleTimeout: number "Idle connection timeout"
+  - connectionTimeout: number "Connection timeout"
+
+PoolConfigDTO % "Pool configuration - simplified compound DTO"
+  - initialSize: number "Initial pool size"
+  - maxSize: number "Maximum pool size"
+  - growthIncrement: number "Pool growth increment"
+
+MonitoringConfigDTO % "Monitoring configuration - gerund compound DTO"
+  - enabled: boolean "Monitoring enabled"
+  - interval: number "Monitoring interval seconds"
+  - alertThresholds: AlertThresholdsDTO "Alert threshold settings"
+
+AlertThresholdsDTO % "Alert threshold configuration - compound DTO"
+  - connectionCount: number "Connection count threshold"
+  - responseTime: number "Response time threshold ms"
+  - errorRate: number "Error rate percentage threshold"
+
+LogConfigDTO % "Logging configuration - abbreviated compound DTO"
+  - level: "debug" | "info" | "warn" | "error" "Log level"
+  - format: "json" | "text" "Log format"
+  - rotation: LogRotationDTO "Log rotation settings"
+
+LogRotationDTO % "Log rotation configuration - compound DTO"
+  - maxSize: string "Maximum log file size"
+  - maxFiles: number "Maximum number of files"
+  - compress: boolean "Compress rotated logs"
+
+CryptoConfigDTO % "Cryptographic configuration - domain-specific DTO"
+  - algorithm: string "Encryption algorithm"
+  - keySize: number "Key size in bits"
+  - ivSize: number "Initialization vector size"
+  - saltRounds: number "Password hash salt rounds"
+
+# UI Components with various naming patterns
+SystemDashboard &! "Main system dashboard - compound UI naming"
+  > [UserManagementPanel, SecurityPanel, MonitoringPanel]
+
+UserManagementPanel & "User management interface - descriptive compound naming"
+  < [SystemDashboard]
+  > [UserList_Component, UserProfile_Editor]
+
+SecurityPanel & "Security management panel - domain-specific naming"
+  < [SystemDashboard]
+  > [AuthSettings_UI, PermissionMatrix_Component]
+
+MonitoringPanel & "System monitoring panel - gerund compound naming"
+  < [SystemDashboard]
+  > [MetricsDisplay_Component, AlertsPanel_UI]
+
+# UI components with underscore naming patterns
+UserList_Component & "User list display component - underscore separator naming"
+  < [UserManagementPanel]
+
+UserProfile_Editor & "User profile editing component - underscore compound naming"
+  < [UserManagementPanel]
+
+AuthSettings_UI & "Authentication settings UI - underscore separator naming"
+  < [SecurityPanel]
+
+PermissionMatrix_Component & "Permission matrix component - underscore compound naming"
+  < [SecurityPanel]
+
+MetricsDisplay_Component & "Metrics display component - underscore compound naming"
+  < [MonitoringPanel]
+
+AlertsPanel_UI & "Alerts panel UI - underscore compound naming"
+  < [MonitoringPanel]
+
+# Runtime parameters with various naming conventions
+DB_CONNECTION_URL $env "Database connection URL - underscore separator naming" (required)
+SYSTEM_SECRET_KEY $env "System secret key - compound underscore naming" (required)
+DEBUG_MODE $env "Debug mode flag - underscore naming"
+  = "false"
+
+INTERNAL_API_KEY $env "Internal API key - compound underscore naming" (required)
+LOG_LEVEL $config "Logging level configuration - underscore naming"
+  = "info"
+
+MONITORING_ENABLED $config "Enable monitoring - gerund underscore naming"
+  = "true"
+
+CRYPTO_KEY_SIZE $config "Cryptographic key size - compound underscore naming"
+  = "256"
+
+MAX_CONNECTIONS $config "Maximum database connections - abbreviated underscore"
+  = "100"
+
+# Constants with descriptive naming
+SystemConstants ! src/constants/system.ts : SystemConfigDTO
+UserValidationRules ! src/constants/validation.ts : ValidationRuleDTO
+DatabaseSettings ! src/constants/database.ts : ConnectionConfigDTO
+
+# Constants with underscore naming
+Internal_Config ! src/constants/internal.ts : _InternalConfigDTO
+Logger_Config ! src/constants/logging.ts : LogConfigDTO
+Security_Settings ! src/constants/security.ts : CryptoConfigDTO
+
+# External dependencies with various naming patterns
+@types/node ^ "Node.js type definitions - scoped package naming" v18.0.0
+lodash ^ "Utility library - simple naming" v4.17.21
+jsonwebtoken ^ "JWT library - compound naming" v9.0.0
+bcrypt ^ "Password hashing - simple naming" v5.1.0
+pg ^ "PostgreSQL driver - abbreviated naming" v8.8.0
+redis ^ "Redis client - simple naming" v4.5.0
+
+# Scoped dependencies
+@sammons/crypto-utils ^ "Internal crypto utilities - scoped naming" v2.1.0
+@sammons/validation-engine ^ "Internal validation - scoped compound naming" v1.0.0

@@ -1,0 +1,214 @@
+# Complex DTO Example - Advanced Field Types and Structures
+# This example showcases complex DTO field types including unions, tuples, arrays, and references
+
+DataAnalyticsApp -> AnalyticsEntry "Advanced analytics platform" v2.0.0
+
+# Entry point
+AnalyticsEntry @ src/index.ts:
+  <- [AnalyticsService, ConfigLoader, DataProcessor]
+  -> [startAnalytics]
+
+# Main startup function
+startAnalytics :: () => Promise<void>
+  "Initializes the analytics platform with complex data structures"
+  <- [PlatformConfigDTO, AnalyticsService, MetricsUI, DATABASE_URL]
+
+# Core service using complex DTOs
+AnalyticsService #: src/services/analytics.ts
+  <- [MetricCollectionDTO, DatasetDTO, QueryResultDTO, Database, Logger]
+  => [collectMetrics, analyzeDataset, executeQuery, generateReport]
+  -> [metricsExporter]
+
+# Function demonstrating complex DTO input/output
+collectMetrics :: (collection: MetricCollectionDTO) => Promise<QueryResultDTO>
+  <- MetricCollectionDTO
+  -> QueryResultDTO
+  ~> [validateMetrics, Database.bulkInsert, Logger.info]
+
+# Complex DTO with comprehensive field types
+MetricCollectionDTO % "Advanced metrics collection with complex field types"
+  - collectionId: string "Unique collection identifier"
+  - timestamp: Date "Collection timestamp"
+  - source: "api" | "batch" | "stream" | "manual" "Data source type union"
+  - priority: 1 | 2 | 3 | 4 | 5 "Priority level literal union"
+  - coordinates?: [number, number] "Optional geographic coordinates tuple"
+  - tags: string[] "Array of classification tags"
+  - metadata: { version: string, environment: string, region: string } "Inline object"
+  - nestedArrays: number[][] "2D numeric array for matrix data"
+  - mixedTuple: [string, number, boolean] "Mixed type tuple"
+  - complexUnion: string | number | Date | null "Complex union type"
+  - optionalArray?: UserDTO[] "Optional array of DTO references"
+  - recordMap: Record<string, any> "Key-value record type"
+  - deeplyNested?: { user: { profile: { settings: string[] } } } "Deeply nested object"
+
+# Data structure DTO with self-references
+DatasetDTO % "Dataset with hierarchical structure and self-references"
+  - datasetId: string "Unique dataset identifier"
+  - name: string "Dataset display name"
+  - description?: string "Optional dataset description"
+  - schema: { columns: ColumnDefDTO[], indexes: string[] } "Dataset schema definition"
+  - parentDataset?: DatasetDTO "Optional parent dataset reference"
+  - childDatasets: DatasetDTO[] "Array of child datasets (self-referencing)"
+  - permissions: ("read" | "write" | "admin")[] "Array of permission union types"
+  - auditTrail: AuditRecordDTO[] "Array of audit records"
+
+# Column definition DTO
+ColumnDefDTO % "Column definition with advanced type constraints"
+  - columnName: string "Column identifier"
+  - dataType: "string" | "number" | "boolean" | "date" | "object" | "array" "Supported data types"
+  - nullable: boolean "Whether column allows null values"
+  - defaultValue?: string | number | boolean | null "Optional default value union"
+  - constraints?: { minLength?: number, maxLength?: number, pattern?: string } "Optional validation constraints"
+  - metadata: object "Additional column metadata"
+
+# Audit trail DTO
+AuditRecordDTO % "Audit record with union fields and optional data"
+  - recordId: string "Audit record identifier" 
+  - action: "create" | "update" | "delete" | "read" | "export" "Action type union"
+  - timestamp: Date "Action timestamp"
+  - userId: string "User who performed action"
+  - entityType: "dataset" | "query" | "report" | "user" "Entity type affected"
+  - entityId: string "ID of affected entity"
+  - changes?: { field: string, oldValue: any, newValue: any }[] "Optional change details"
+  - context: { ip: string, userAgent: string, sessionId: string } "Request context"
+
+# Query result with complex nested structures
+QueryResultDTO % "Query execution result with complex data structures"
+  - queryId: string "Unique query identifier"
+  - executionTime: number "Query execution time in milliseconds"
+  - status: "success" | "error" | "timeout" | "cancelled" "Execution status"
+  - resultCount: number "Number of result rows"
+  - columns: string[] "Result column names"
+  - data: any[][] "2D array of result data"
+  - aggregations?: { [key: string]: { sum?: number, avg?: number, count: number } } "Optional aggregation results"
+  - pagination?: { page: number, size: number, total: number } "Optional pagination info"
+  - errors?: { code: string, message: string, field?: string }[] "Optional error details"
+  - executionPlan?: { steps: ExecutionStepDTO[], totalCost: number } "Optional query plan"
+
+# Execution step for query planning
+ExecutionStepDTO % "Query execution step details"
+  - stepId: number "Step sequence number"
+  - operation: "scan" | "filter" | "join" | "sort" | "aggregate" | "project" "Operation type"
+  - estimatedCost: number "Estimated execution cost"
+  - actualCost?: number "Actual execution cost (if available)"
+  - description: string "Human-readable step description"
+  - inputRows?: number "Number of input rows processed"
+  - outputRows?: number "Number of output rows produced"
+
+# Platform configuration with advanced field structures
+PlatformConfigDTO % "Platform configuration with mixed complex types"
+  - appName: string "Application name"
+  - version: string "Application version"
+  - environment: "development" | "staging" | "production" "Environment type"
+  - features: { [featureName: string]: boolean } "Feature flags map"
+  - databases: { primary: DatabaseConfigDTO, replicas: DatabaseConfigDTO[] } "Database configurations"
+  - cache: { redis: RedisConfigDTO, memory: MemoryConfigDTO } "Cache configurations"
+  - monitoring: MonitoringConfigDTO "Monitoring settings"
+  - security?: SecurityConfigDTO "Optional security configuration"
+
+# Database configuration DTO
+DatabaseConfigDTO % "Database connection configuration"
+  - host: string "Database host"
+  - port: number "Database port"
+  - database: string "Database name"
+  - credentials: { username: string, password: string } "Connection credentials"
+  - poolSize: [number, number] "Pool size tuple [min, max]"
+  - options?: { ssl: boolean, timeout: number } "Optional connection options"
+
+# Redis configuration
+RedisConfigDTO % "Redis cache configuration"
+  - url: string "Redis connection URL"
+  - keyPrefix?: string "Optional key prefix"
+  - ttl: number | null "Time to live (null for no expiration)"
+  - cluster: boolean "Whether using Redis cluster"
+
+# Memory cache configuration
+MemoryConfigDTO % "In-memory cache configuration"
+  - maxSize: number "Maximum cache size in MB"
+  - evictionPolicy: "lru" | "lfu" | "fifo" "Cache eviction policy"
+  - checkInterval: number "Cleanup check interval in seconds"
+
+# Monitoring configuration
+MonitoringConfigDTO % "Application monitoring configuration"
+  - enabled: boolean "Whether monitoring is enabled"
+  - endpoints: string[] "Monitoring endpoint URLs"
+  - metrics: ("cpu" | "memory" | "disk" | "network" | "custom")[] "Enabled metrics"
+  - alerting?: { webhooks: string[], emails: string[] } "Optional alerting configuration"
+
+# Security configuration with complex nested types
+SecurityConfigDTO % "Security configuration with advanced field types"
+  - authentication: { providers: AuthProviderDTO[], defaultProvider: string } "Auth configuration"
+  - authorization: { rbac: boolean, permissions: PermissionDTO[] } "Authorization settings"
+  - encryption: { algorithm: string, keyRotation: number } "Encryption settings"
+  - rateLimiting?: { [endpoint: string]: { requests: number, window: number } } "Optional rate limits"
+
+# Authentication provider DTO
+AuthProviderDTO % "Authentication provider configuration"
+  - name: string "Provider name"
+  - type: "oauth" | "saml" | "ldap" | "local" "Provider type"
+  - config: object "Provider-specific configuration"
+  - enabled: boolean "Whether provider is enabled"
+
+# Permission DTO with complex field types
+PermissionDTO % "Permission definition with advanced field structures"
+  - permissionId: string "Unique permission identifier"
+  - resource: string "Protected resource"
+  - actions: ("create" | "read" | "update" | "delete" | "execute")[] "Allowed actions array"
+  - conditions?: { [key: string]: string | number | boolean } "Optional access conditions"
+  - metadata: { description: string, category: string } "Permission metadata"
+
+# User DTO referenced by other DTOs
+UserDTO % "User entity with comprehensive field types"
+  - userId: string "Unique user identifier"
+  - username: string "User login name"
+  - email: string "User email address"
+  - profile: { firstName: string, lastName: string, avatar?: string } "User profile"
+  - roles: string[] "Assigned user roles"
+  - preferences: { theme: "light" | "dark", language: string } "User preferences"
+  - lastLogin?: Date "Last login timestamp"
+  - isActive: boolean "Whether user account is active"
+
+# UI Component showcasing data visualization
+MetricsUI & "Complex data visualization dashboard"
+  > [ChartContainer, TableView, FilterPanel]
+
+ChartContainer & "Chart visualization container"
+  < [MetricsUI]
+
+TableView & "Tabular data display"
+  < [MetricsUI]
+
+FilterPanel & "Data filtering controls"
+  < [MetricsUI]
+
+# External dependencies
+react ^ "React framework for UI" v18.2.0
+chartjs ^ "Chart.js for data visualization" v4.0.0
+postgres ^ "PostgreSQL database driver" v3.3.0
+
+# Runtime parameters
+DATABASE_URL $env "PostgreSQL connection string" (required)
+REDIS_URL $env "Redis cache connection string" (required)
+API_KEY $env "External API authentication key"
+  = "dev-default-key"
+
+# Constants for configuration
+Database ! src/config/database.ts : DatabaseConfigDTO
+Logger ! src/utils/logger.ts
+
+# Data processing functions
+validateMetrics :: (data: MetricCollectionDTO) => boolean
+  <- MetricCollectionDTO
+  ~> [validateRequired, validateTypes, validateRanges]
+  "Validates metric collection data using complex field validation"
+
+DataProcessor #: src/processors/data.ts
+  <- [DatasetDTO, QueryResultDTO]
+  => [processDataset, transformResults, validateSchema]
+  -> [processUtils]
+
+# Configuration loader
+ConfigLoader #: src/config/loader.ts
+  <- [PlatformConfigDTO]
+  => [loadConfig, validateConfig, mergeDefaults]
+  -> [configUtils]

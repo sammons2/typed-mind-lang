@@ -1,0 +1,365 @@
+# Method Calls and Auto-Distribution Example
+# Demonstrates intelligent function dependency distribution and complex method call patterns
+
+OrderManagementSystem -> OrderEntry "E-commerce order management" v3.1.0
+
+# Entry point with auto-distribution
+OrderEntry @ src/index.ts:
+  <- [OrderService, PaymentProcessor, NotificationService]
+  -> [startOrderSystem]
+
+# Main function showcasing auto-distribution
+startOrderSystem :: () => Promise<void>
+  "Starts the order system with intelligent dependency distribution"
+  # Mixed dependencies automatically distributed by parser:
+  <- [SystemConfigDTO, initializeDatabase, OrderService, PaymentProcessor, OrderDashboard, DATABASE_URL, STRIPE_KEY, redis]
+  # Auto-distributed to:
+  # input: SystemConfigDTO
+  # calls: [initializeDatabase, OrderService, PaymentProcessor]  
+  # affects: [OrderDashboard]
+  # consumes: [DATABASE_URL, STRIPE_KEY, redis]
+
+# Complex function with mixed auto-distributed dependencies
+processOrderWorkflow :: (orderData: CreateOrderDTO) => Promise<OrderDTO>
+  "Complex order processing with auto-distributed dependencies"
+  <- [CreateOrderDTO, validateOrderData, InventoryService, PaymentProcessor, ShippingService, CustomerUI, OrderUI, PAYMENT_KEY, TAX_API, emailService]
+  # Parser automatically distributes:
+  # input: CreateOrderDTO
+  # calls: [validateOrderData, InventoryService, PaymentProcessor, ShippingService]
+  # affects: [CustomerUI, OrderUI]  
+  # consumes: [PAYMENT_KEY, TAX_API, emailService]
+  -> OrderDTO
+  "Orchestrates the complete order processing workflow"
+
+# Core order service with comprehensive method calls
+OrderService #: src/services/order.ts <: BaseService
+  <- [OrderDTO, CreateOrderDTO, UpdateOrderDTO, Database, Logger, AuditService]
+  => [createOrder, getOrder, updateOrderStatus, cancelOrder, searchOrders, calculateTotals]
+  -> [orderUtils, orderValidation]
+
+# Function with extensive method calls including class methods
+createOrder :: (orderData: CreateOrderDTO) => Promise<OrderDTO>
+  <- CreateOrderDTO
+  -> OrderDTO
+  # Comprehensive method calls including class methods and functions
+  ~> [validateOrderInput, InventoryService.reserveItems, PaymentProcessor.processPayment, 
+      TaxService.calculateTax, ShippingService.calculateShipping, Database.insert,
+      Logger.info, AuditService.logOrderCreation, generateOrderId, sendConfirmationEmail]
+  ~ [OrderUI, CustomerDashboard]
+  $< [TAX_API_KEY, SHIPPING_API_KEY]
+  "Creates new order with full validation and processing pipeline"
+
+# Function demonstrating recursive and self-referencing calls
+calculateOrderTotals :: (order: OrderDTO) => Promise<number>
+  <- OrderDTO
+  ~> [calculateItemTotals, calculateOrderTotals, TaxService.applyTax, applyDiscounts]
+  # Note: calculateOrderTotals references itself (recursive call allowed)
+  "Calculates order totals with recursive discount calculations"
+
+# Payment processing service with complex method interactions
+PaymentProcessor #: src/services/payment.ts <: BaseProcessor
+  <- [PaymentDTO, CreatePaymentDTO, RefundDTO, PaymentGateway, EncryptionService, Logger]
+  => [processPayment, validateCard, processRefund, handleWebhook, retryFailedPayment]
+
+# Function with mixed calls to multiple services
+processPayment :: (paymentData: CreatePaymentDTO) => Promise<PaymentDTO>
+  <- CreatePaymentDTO
+  -> PaymentDTO
+  # Complex method call chain across multiple services
+  ~> [validateCard, EncryptionService.encrypt, PaymentGateway.charge,
+      FraudDetectionService.screenTransaction, Database.savePayment,
+      NotificationService.sendReceipt, AuditService.logPayment]
+  ~ [PaymentUI, OrderStatusUI]
+  $< [STRIPE_SECRET_KEY, FRAUD_API_KEY]
+  "Processes payment with fraud detection and audit trail"
+
+# Inventory service with method calls and UI updates
+InventoryService #: src/services/inventory.ts
+  <- [InventoryItemDTO, ReservationDTO, Database, CacheService]
+  => [checkAvailability, reserveItems, releaseReservation, updateStock, getStockLevel]
+
+# Function showing method calls with error handling patterns
+reserveItems :: (items: ReservationDTO[]) => Promise<boolean>
+  <- [ReservationDTO]
+  # Method calls with error handling and rollback patterns
+  ~> [validateReservation, checkStockLevels, lockInventory, Database.beginTransaction,
+      updateReservedQuantity, CacheService.invalidate, Database.commitTransaction,
+      handleReservationError]
+  ~ [InventoryUI, StockAlerts]
+  "Reserves inventory items with transaction safety"
+
+# Shipping service with external API calls
+ShippingService #: src/services/shipping.ts
+  <- [ShippingRateDTO, TrackingDTO, AddressValidator, Logger]
+  => [calculateRates, createShipment, trackPackage, validateAddress]
+
+# Function with external service method calls
+calculateRates :: (shipmentData: ShippingRateDTO) => Promise<RateDTO[]>
+  <- ShippingRateDTO
+  -> [RateDTO]
+  # Calls to multiple shipping providers and internal services
+  ~> [validateShippingAddress, AddressValidator.normalize, UPSService.getRates,
+      FedExService.getRates, USPSService.getRates, compareRates, 
+      CacheService.store, Logger.debug]
+  $< [UPS_API_KEY, FEDEX_API_KEY, USPS_API_KEY]
+  "Calculates shipping rates from multiple carriers"
+
+# Notification service with template and delivery methods
+NotificationService #: src/services/notification.ts
+  <- [NotificationDTO, TemplateService, EmailService, SMSService, Logger]
+  => [sendEmail, sendSMS, sendPushNotification, renderTemplate, scheduleNotification]
+
+# Function with template processing and multi-channel delivery
+sendOrderConfirmation :: (orderData: OrderDTO) => Promise<void>
+  <- OrderDTO
+  # Method calls for multi-channel notification delivery
+  ~> [TemplateService.loadTemplate, TemplateService.render, validateEmailAddress,
+      EmailService.send, SMSService.send, PushService.send, 
+      Logger.info, trackDeliveryStatus]
+  ~ [NotificationUI]
+  $< [EMAIL_API_KEY, SMS_API_KEY, PUSH_API_KEY]
+  "Sends order confirmation via multiple channels"
+
+# Tax calculation service with complex business rules
+TaxService #: src/services/tax.ts
+  <- [TaxRateDTO, TaxCalculationDTO, AddressService, Logger]
+  => [calculateTax, getTaxRate, validateTaxExemption, applyTaxRules]
+
+# Function with business rule method calls
+calculateTax :: (orderData: OrderDTO) => Promise<TaxCalculationDTO>
+  <- OrderDTO
+  -> TaxCalculationDTO
+  # Complex tax calculation with multiple rule applications  
+  ~> [validateTaxableItems, AddressService.getTaxJurisdiction, lookupTaxRates,
+      applyStateTax, applyLocalTax, applyFederalTax, handleTaxExemptions,
+      TaxProviderAPI.validateCalculation, auditTaxCalculation]
+  $< [TAX_PROVIDER_API_KEY, TAX_JURISDICTION_DB]
+  "Calculates comprehensive tax with jurisdictional rules"
+
+# Audit service for comprehensive logging
+AuditService #: src/services/audit.ts
+  <- [AuditLogDTO, Database, EncryptionService]
+  => [logOrderCreation, logPaymentProcess, logInventoryChange, queryAuditTrail]
+
+# Function with security and compliance method calls
+logOrderCreation :: (orderData: OrderDTO) => Promise<void>
+  <- OrderDTO
+  # Comprehensive audit logging with security measures
+  ~> [sanitizeLogData, EncryptionService.encryptSensitiveData, generateAuditHash,
+      Database.insertAuditLog, validateLogIntegrity, checkComplianceRules]
+  $< [ENCRYPTION_KEY, AUDIT_RETENTION_POLICY]
+  "Logs order creation with security and compliance measures"
+
+# Base service class providing common functionality
+BaseService #: src/services/base.ts
+  <- [Logger, Database, CacheService]
+  => [handleError, validateInput, logOperation, getCachedResult]
+
+BaseProcessor #: src/processors/base.ts <: BaseService
+  => [processWithRetry, handleFailure, scheduleRetry]
+
+# Utility functions called by various services
+validateOrderInput :: (orderData: CreateOrderDTO) => boolean
+  <- CreateOrderDTO  
+  ~> [validateRequired, validateFormat, validateBusinessRules]
+  "Validates order input data comprehensively"
+
+generateOrderId :: () => string
+  ~> [generateUUID, addTimestamp, addChecksum]
+  "Generates unique order identifier with validation"
+
+handleReservationError :: (error: Error) => void
+  ~> [Logger.error, rollbackTransaction, releaseReservation, notifyAdministrator]
+  "Handles inventory reservation errors with cleanup"
+
+sendConfirmationEmail :: (orderData: OrderDTO) => Promise<void>
+  <- OrderDTO
+  ~> [NotificationService.sendOrderConfirmation]
+  ~ [EmailStatusUI]
+  "Sends order confirmation email to customer"
+
+# DTO definitions for the order system
+CreateOrderDTO % "Data for creating new orders"
+  - customerId: string "Customer identifier"
+  - items: OrderItemDTO[] "Array of order items"
+  - shippingAddress: AddressDTO "Shipping address"
+  - billingAddress?: AddressDTO "Optional billing address"
+  - paymentMethod: PaymentMethodDTO "Payment method details"
+  - couponCode?: string "Optional coupon code"
+  - notes?: string "Optional order notes"
+
+OrderItemDTO % "Individual order item"
+  - productId: string "Product identifier" 
+  - quantity: number "Quantity ordered"
+  - unitPrice: number "Price per unit"
+  - customizations?: object "Product customizations"
+
+OrderDTO % "Complete order information"
+  - orderId: string "Unique order identifier"
+  - customerId: string "Customer identifier"
+  - status: "pending" | "confirmed" | "processing" | "shipped" | "delivered" | "cancelled" "Order status"
+  - items: OrderItemDTO[] "Order items"
+  - totals: OrderTotalsDTO "Order totals breakdown"
+  - addresses: { shipping: AddressDTO, billing: AddressDTO } "Order addresses"
+  - createdAt: Date "Order creation timestamp"
+  - updatedAt: Date "Last update timestamp"
+
+OrderTotalsDTO % "Order totals breakdown"
+  - subtotal: number "Items subtotal"
+  - tax: number "Tax amount"
+  - shipping: number "Shipping cost"
+  - discount?: number "Discount amount"
+  - total: number "Final total"
+
+AddressDTO % "Address information"
+  - street: string "Street address"
+  - city: string "City name"
+  - state: string "State or province"
+  - postalCode: string "Postal code"
+  - country: string "Country code"
+
+PaymentMethodDTO % "Payment method details"
+  - type: "card" | "paypal" | "bank" "Payment type"
+  - details: object "Payment method specific details"
+
+CreatePaymentDTO % "Payment processing data"
+  - amount: number "Payment amount"
+  - currency: string "Payment currency"
+  - paymentMethod: PaymentMethodDTO "Payment method"
+  - orderId: string "Associated order ID"
+
+PaymentDTO % "Payment record"
+  - paymentId: string "Unique payment identifier"
+  - orderId: string "Associated order ID"
+  - amount: number "Payment amount"
+  - status: "pending" | "completed" | "failed" | "refunded" "Payment status"
+  - processedAt: Date "Payment processing timestamp"
+
+ReservationDTO % "Inventory reservation data"
+  - productId: string "Product identifier"
+  - quantity: number "Reserved quantity"
+  - expiresAt: Date "Reservation expiration"
+
+ShippingRateDTO % "Shipping rate calculation data"
+  - items: OrderItemDTO[] "Items to ship"
+  - destination: AddressDTO "Shipping destination"
+  - serviceLevel: "standard" | "expedited" | "overnight" "Service level"
+
+RateDTO % "Shipping rate response"
+  - carrier: string "Shipping carrier"
+  - service: string "Service type"
+  - cost: number "Shipping cost"
+  - estimatedDays: number "Delivery estimate"
+
+SystemConfigDTO % "System configuration"
+  - appName: string "Application name"
+  - environment: string "Deployment environment"
+  - features: object "Feature flags"
+
+# UI Components with bidirectional relationships
+OrderDashboard &! "Main order management dashboard"
+  > [OrderList, OrderDetails, PaymentStatus]
+
+OrderUI & "Order management interface" 
+  < [OrderDashboard]
+
+CustomerUI & "Customer-facing order interface"
+  < [OrderDashboard]
+
+PaymentUI & "Payment processing interface"
+  < [OrderDashboard]
+
+OrderStatusUI & "Order status display"
+  < [OrderDashboard]
+
+InventoryUI & "Inventory management interface"
+  < [OrderDashboard]
+
+CustomerDashboard & "Customer order dashboard"
+  > [OrderHistory, OrderTracking]
+
+NotificationUI & "Notification status display"
+
+EmailStatusUI & "Email delivery status"
+
+StockAlerts & "Inventory stock alerts"
+
+# External services and APIs
+UPSService #: src/external/ups.ts
+  => [getRates, createShipment, trackPackage]
+
+FedExService #: src/external/fedex.ts  
+  => [getRates, createShipment, trackPackage]
+
+USPSService #: src/external/usps.ts
+  => [getRates, createShipment, trackPackage]
+
+FraudDetectionService #: src/external/fraud.ts
+  => [screenTransaction, checkRiskScore]
+
+TaxProviderAPI #: src/external/tax.ts
+  => [validateCalculation, getJurisdictionRules]
+
+# Core infrastructure services
+Database #: src/infrastructure/database.ts
+  => [insert, update, delete, query, beginTransaction, commitTransaction, rollbackTransaction]
+
+CacheService #: src/infrastructure/cache.ts  
+  => [get, set, delete, invalidate, store]
+
+Logger #: src/infrastructure/logger.ts
+  => [info, debug, warn, error]
+
+EncryptionService #: src/infrastructure/encryption.ts
+  => [encrypt, decrypt, hash, encryptSensitiveData]
+
+# Gateway services
+PaymentGateway #: src/gateways/payment.ts
+  => [charge, refund, validateCard]
+
+EmailService #: src/gateways/email.ts
+  => [send, validateAddress]
+
+SMSService #: src/gateways/sms.ts
+  => [send, validatePhoneNumber]
+
+PushService #: src/gateways/push.ts
+  => [send, subscribe, unsubscribe]
+
+# Template and address services
+TemplateService #: src/services/template.ts
+  => [loadTemplate, render, validateTemplate]
+
+AddressService #: src/services/address.ts
+  => [getTaxJurisdiction, validateAddress, normalize]
+
+AddressValidator #: src/validators/address.ts
+  => [validate, normalize, standardize]
+
+# Runtime parameters with auto-consumption
+DATABASE_URL $env "PostgreSQL connection string" (required)
+REDIS_URL $env "Redis cache connection string" (required)
+STRIPE_SECRET_KEY $env "Stripe payment processing key" (required)
+TAX_PROVIDER_API_KEY $env "Tax calculation service key" (required)
+UPS_API_KEY $env "UPS shipping API key"
+FEDEX_API_KEY $env "FedEx shipping API key"
+USPS_API_KEY $env "USPS shipping API key"
+FRAUD_API_KEY $env "Fraud detection API key"
+EMAIL_API_KEY $env "Email service API key"
+SMS_API_KEY $env "SMS service API key"
+PUSH_API_KEY $env "Push notification API key"
+ENCRYPTION_KEY $env "Data encryption key" (required)
+PAYMENT_KEY $env "Payment processing key"
+TAX_API $env "Tax calculation API endpoint"
+SHIPPING_API_KEY $env "Shipping service API key"
+TAX_API_KEY $env "Tax API key"
+AUDIT_RETENTION_POLICY $config "Audit log retention policy"
+TAX_JURISDICTION_DB $config "Tax jurisdiction database connection"
+
+# External dependencies  
+stripe ^ "Stripe payment processing" v10.0.0
+redis ^ "Redis caching" v4.5.0
+postgres ^ "PostgreSQL database" v3.3.0
+express ^ "Web framework" v4.18.0
+nodemailer ^ "Email sending" v6.8.0
+emailService ^ "External email service" v2.1.0
