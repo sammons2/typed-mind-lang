@@ -1,0 +1,109 @@
+# Scenario 58: ClassFile vs Class+File confusion and mistakes
+
+ClassFileApp -> main v1.0.0
+
+main @ src/index.ts:
+  <- [UserService, AuthController, DataManager]
+  -> [startApp]
+
+startApp :: () => void
+
+# CORRECT: Using ClassFile fusion (#:) when class is primary export
+UserService #: src/services/user.ts
+  <- [UserRepository, Logger]
+  => [createUser, findUser, updateUser]
+  -> [userHelper]  # Can have additional exports
+
+userHelper :: (id: string) => string
+
+# MISTAKE 1: Having both Class and File with same name (should use ClassFile)
+AuthController <: BaseController
+  => [login, logout, verify]
+
+AuthController @ src/controllers/auth.ts:  # Name conflict!
+  <- [AuthService]
+  -> [AuthController]  # Exporting the class
+
+# MISTAKE 2: Trying to use Class features on File
+DataFile @ src/data.ts:
+  <- [Database]
+  => [processData]  # Files can't have methods! This is invalid
+  -> [DataClass]
+
+# MISTAKE 3: Trying to use File features on Class  
+DataClass <: BaseClass
+  @ src/wrongpath.ts:  # Classes can't have paths! This is invalid
+  => [getData]
+
+# CORRECT: Using separate Class and File when class is NOT primary export
+UtilityClass <: BaseUtility
+  => [util1, util2]
+
+UtilityFile @ src/utils.ts:
+  <- [UtilityClass, Constants]
+  -> [UtilityClass, helperFunc, CONSTANTS]  # Multiple exports
+
+helperFunc :: () => void
+CONSTANTS ! src/constants.ts
+
+# MISTAKE 4: ClassFile trying to extend from File (should extend Class/ClassFile)
+BadService #: src/services/bad.ts <: UtilityFile  # Can't extend File!
+  => [badMethod]
+
+# MISTAKE 5: Forgetting ClassFile auto-exports itself
+GoodService #: src/services/good.ts
+  <- [Database]
+  => [goodMethod]
+  -> [GoodService, helper]  # GoodService is auto-exported, this duplicates!
+
+helper :: () => void
+
+# EDGE CASE: ClassFile with no methods (valid but unusual)
+EmptyService #: src/services/empty.ts
+  <- [Logger]
+  # No methods defined
+
+# EDGE CASE: ClassFile extending another ClassFile (valid)
+ExtendedService #: src/services/extended.ts <: UserService
+  => [additionalMethod]
+
+# MISTAKE 6: Trying to import from Class (not ClassFile or File)
+ConsumerFile @ src/consumer.ts:
+  <- [UtilityClass]  # This works because UtilityFile exports it
+  <- [DataClass]     # This might fail if DataClass isn't exported properly
+
+# CORRECT: Method calls on ClassFile
+processUser :: (id: string) => void
+  ~> [UserService.createUser]  # This is wrong! Should be just createUser
+  # After importing UserService, its methods are available directly
+
+# CORRECT: The right way
+processUserCorrect :: (id: string) => void
+  ~> [createUser]  # Just reference the method name
+
+# MISTAKE 7: Circular dependency with ClassFile
+ServiceA #: src/services/a.ts
+  <- [ServiceB]
+  => [methodA]
+
+ServiceB #: src/services/b.ts
+  <- [ServiceA]  # Circular!
+  => [methodB]
+
+# COMPARISON: When to use what
+# Use ClassFile when:
+ModuleService #: src/services/module.ts  # Main export is the class
+  <- [Dependency]
+  => [method1, method2]
+
+# Use Class + File when:
+SharedClass <: Base  # Class is shared/extended
+  => [shared1]
+
+AnotherClass <: Base  # Another class
+  => [shared2]
+
+SharedFile @ src/shared.ts:  # File exports multiple classes
+  -> [SharedClass, AnotherClass, utilFunc]
+
+utilFunc :: () => void

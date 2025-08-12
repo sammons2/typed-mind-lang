@@ -1,0 +1,53 @@
+# Scenario 55: Common validation mistakes when writing TypedMind
+# This demonstrates mistakes I commonly make
+
+MyApp -> main v1.0.0
+
+# Mistake 1: Forgetting to define the entry file
+# main @ src/index.ts:  # <- This is missing!
+
+# Mistake 2: Function not exported by any file
+processData :: (data: string) => void
+  ~> [validateData, saveData]
+
+# Mistake 3: Trying to call a ClassFile directly (should call its methods)
+DataProcessor #: src/processor.ts
+  => [process, validate]
+
+runProcessor :: () => void
+  ~> [DataProcessor]  # Wrong! Should be DataProcessor.process or just process
+
+# Mistake 4: DTO with function-like field names (confusing but valid)
+ConfigDTO %
+  - handler: string "Name of handler function"  # This is OK - it's a string!
+  - process: boolean "Should process"  # Also OK - boolean not function
+
+# Mistake 5: Forgetting that Functions need to be exported
+helperFunction :: (x: number) => number
+  "Utility function"
+  # No file exports this!
+
+# Mistake 6: Class without File (not exported)
+MyService <: BaseService
+  => [doWork]
+  # Should use ClassFile (#:) or have a File export it
+
+# Mistake 7: Circular dependency attempt
+ModuleA @ src/a.ts:
+  <- [ModuleB]
+  -> [funcA]
+
+ModuleB @ src/b.ts:
+  <- [ModuleA]  # Circular!
+  -> [funcB]
+
+# Mistake 8: RunParameter without proper type
+API_KEY $secret "API key"  # Wrong type! Should be $env, $iam, $runtime, or $config
+
+# Mistake 9: Asset trying to export functions
+StyleSheet ~ "Main styles"
+  -> [applyStyles]  # Assets can't export functions!
+
+# Mistake 10: UIComponent with wrong reference
+Dashboard & "Dashboard"
+  > [NonExistentWidget]  # References undefined component

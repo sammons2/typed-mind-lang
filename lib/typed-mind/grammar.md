@@ -285,6 +285,100 @@ Establish project-specific conventions in purpose fields:
 - **BUILD**: Conditional compilation
 - **PIPELINE**: Middleware chains
 
+## Entity Capability Matrix
+
+| Entity | Can Import | Can Export | Has Methods | Can Extend | Has Path |
+|--------|------------|------------|-------------|------------|----------|
+| File | ✅ | ✅ | ❌ | ❌ | ✅ |
+| Class | ❌ | ❌ | ✅ | ✅ | ❌ |
+| ClassFile | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Function | ❌ | ❌ | ❌ | ❌ | ❌ |
+| DTO | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Constants | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Asset | ❌ | ❌ | ❌ | ❌ | ❌ |
+| UIComponent | ❌ | ❌ | ❌ | ❌ | ❌ |
+| RunParameter | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Dependency | ❌ | ❌ | ❌ | ❌ | ❌ |
+
+## Valid RunParameter Types
+
+RunParameters use `$type` syntax with these valid types:
+- **$env**: Environment variable
+- **$iam**: IAM role or permission
+- **$runtime**: Runtime configuration
+- **$config**: Configuration parameter
+
+Example: `DATABASE_URL $env "Connection string" (required)`
+
+## Export Rules
+
+### What Files and ClassFiles Can Export
+✅ **Can Export:**
+- Functions
+- Classes
+- Constants
+- DTOs
+
+❌ **Cannot Export:**
+- Assets (static files, not code)
+- UIComponents (UI structure, not modules)
+- RunParameters (runtime config, not code)
+- Dependencies (external packages)
+
+### ClassFile Auto-Export
+ClassFiles automatically export themselves. Manual export creates duplication:
+```tmd
+UserService #: src/user.ts
+  -> [helper]  # ✅ Exports helper
+  # -> [UserService]  # ❌ Redundant - auto-exported
+```
+
+## Common Pitfalls
+
+### ❌ Don't Import Class Methods Directly
+```tmd
+# Wrong
+File @ src/app.ts:
+  <- [UserService.createUser]  # Can't import methods
+
+# Right
+File @ src/app.ts:
+  <- [UserService]  # Import the ClassFile
+  # Now createUser method is available
+```
+
+### ❌ Don't Call ClassFiles Directly
+```tmd
+# Wrong
+processData :: () => void
+  ~> [DataProcessor]  # Can't call ClassFile
+
+# Right
+processData :: () => void
+  ~> [process]  # Call the method, not the ClassFile
+```
+
+### ❌ Don't Give Classes Import/Export
+```tmd
+# Wrong - Classes can't import
+MyClass <: Base
+  <- [Logger]  # Classes don't support imports!
+
+# Right - Use ClassFile for import capability
+MyClass #: src/my-class.ts <: Base
+  <- [Logger]  # ClassFiles can import
+```
+
+### ❌ Don't Confuse Entity Capabilities
+```tmd
+# Wrong - Mixed capabilities
+DataFile @ src/data.ts:
+  => [processData]  # Files can't have methods!
+
+DataClass <: Base
+  @ src/data.ts:  # Classes can't have paths!
+```
+
 ## Best Practices
 
 - **Use ClassFile (`#:`)** for services, controllers, repositories
@@ -294,3 +388,4 @@ Establish project-specific conventions in purpose fields:
 - **Leverage purpose fields**: Document async, generics, DI, events, etc.
 - **Establish conventions**: Create project-specific semantic patterns
 - **Bidirectional links**: Validator ensures consistency
+- **Check capability matrix**: Ensure entities have the right capabilities

@@ -340,6 +340,108 @@ export class GrammarDocGenerator {
     sections.push('- **PIPELINE**: Middleware chains');
     sections.push('');
 
+    // Entity Capability Matrix
+    sections.push('## Entity Capability Matrix');
+    sections.push('');
+    sections.push('| Entity | Can Import | Can Export | Has Methods | Can Extend | Has Path |');
+    sections.push('|--------|------------|------------|-------------|------------|----------|');
+    sections.push('| File | ✅ | ✅ | ❌ | ❌ | ✅ |');
+    sections.push('| Class | ❌ | ❌ | ✅ | ✅ | ❌ |');
+    sections.push('| ClassFile | ✅ | ✅ | ✅ | ✅ | ✅ |');
+    sections.push('| Function | ❌ | ❌ | ❌ | ❌ | ❌ |');
+    sections.push('| DTO | ❌ | ❌ | ❌ | ❌ | ❌ |');
+    sections.push('| Constants | ❌ | ❌ | ❌ | ❌ | ✅ |');
+    sections.push('| Asset | ❌ | ❌ | ❌ | ❌ | ❌ |');
+    sections.push('| UIComponent | ❌ | ❌ | ❌ | ❌ | ❌ |');
+    sections.push('| RunParameter | ❌ | ❌ | ❌ | ❌ | ❌ |');
+    sections.push('| Dependency | ❌ | ❌ | ❌ | ❌ | ❌ |');
+    sections.push('');
+    
+    // Valid RunParameter Types
+    sections.push('## Valid RunParameter Types');
+    sections.push('');
+    sections.push('RunParameters use `$type` syntax with these valid types:');
+    sections.push('- **$env**: Environment variable');
+    sections.push('- **$iam**: IAM role or permission');  
+    sections.push('- **$runtime**: Runtime configuration');
+    sections.push('- **$config**: Configuration parameter');
+    sections.push('');
+    sections.push('Example: `DATABASE_URL $env "Connection string" (required)`');
+    sections.push('');
+    
+    // What Can Be Exported
+    sections.push('## Export Rules');
+    sections.push('');
+    sections.push('### What Files and ClassFiles Can Export');
+    sections.push('✅ **Can Export:**');
+    sections.push('- Functions');
+    sections.push('- Classes');
+    sections.push('- Constants');
+    sections.push('- DTOs');
+    sections.push('');
+    sections.push('❌ **Cannot Export:**');
+    sections.push('- Assets (static files, not code)');
+    sections.push('- UIComponents (UI structure, not modules)');
+    sections.push('- RunParameters (runtime config, not code)');
+    sections.push('- Dependencies (external packages)');
+    sections.push('');
+    sections.push('### ClassFile Auto-Export');
+    sections.push('ClassFiles automatically export themselves. Manual export creates duplication:');
+    sections.push('```tmd');
+    sections.push('UserService #: src/user.ts');
+    sections.push('  -> [helper]  # ✅ Exports helper');
+    sections.push('  # -> [UserService]  # ❌ Redundant - auto-exported');
+    sections.push('```');
+    sections.push('');
+    
+    // Common Pitfalls
+    sections.push('## Common Pitfalls');
+    sections.push('');
+    sections.push('### ❌ Don\'t Import Class Methods Directly');
+    sections.push('```tmd');
+    sections.push('# Wrong');
+    sections.push('File @ src/app.ts:');
+    sections.push('  <- [UserService.createUser]  # Can\'t import methods');
+    sections.push('');
+    sections.push('# Right');
+    sections.push('File @ src/app.ts:');
+    sections.push('  <- [UserService]  # Import the ClassFile');
+    sections.push('  # Now createUser method is available');
+    sections.push('```');
+    sections.push('');
+    sections.push('### ❌ Don\'t Call ClassFiles Directly');
+    sections.push('```tmd');
+    sections.push('# Wrong');
+    sections.push('processData :: () => void');
+    sections.push('  ~> [DataProcessor]  # Can\'t call ClassFile');
+    sections.push('');
+    sections.push('# Right');
+    sections.push('processData :: () => void');
+    sections.push('  ~> [process]  # Call the method, not the ClassFile');
+    sections.push('```');
+    sections.push('');
+    sections.push('### ❌ Don\'t Give Classes Import/Export');
+    sections.push('```tmd');
+    sections.push('# Wrong - Classes can\'t import');
+    sections.push('MyClass <: Base');
+    sections.push('  <- [Logger]  # Classes don\'t support imports!');
+    sections.push('');
+    sections.push('# Right - Use ClassFile for import capability');
+    sections.push('MyClass #: src/my-class.ts <: Base');
+    sections.push('  <- [Logger]  # ClassFiles can import');
+    sections.push('```');
+    sections.push('');
+    sections.push('### ❌ Don\'t Confuse Entity Capabilities');
+    sections.push('```tmd');
+    sections.push('# Wrong - Mixed capabilities');
+    sections.push('DataFile @ src/data.ts:');
+    sections.push('  => [processData]  # Files can\'t have methods!');
+    sections.push('');
+    sections.push('DataClass <: Base');
+    sections.push('  @ src/data.ts:  # Classes can\'t have paths!');
+    sections.push('```');
+    sections.push('');
+    
     // Compact best practices
     sections.push('## Best Practices');
     sections.push('');
@@ -350,6 +452,7 @@ export class GrammarDocGenerator {
     sections.push('- **Leverage purpose fields**: Document async, generics, DI, events, etc.');
     sections.push('- **Establish conventions**: Create project-specific semantic patterns');
     sections.push('- **Bidirectional links**: Validator ensures consistency');
+    sections.push('- **Check capability matrix**: Ensure entities have the right capabilities');
 
     return sections.join('\n');
   }

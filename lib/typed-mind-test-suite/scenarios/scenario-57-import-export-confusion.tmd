@@ -1,0 +1,101 @@
+# Scenario 57: Import and export confusion - common mistakes
+
+ImportApp -> main v1.0.0
+
+main @ src/index.ts:
+  <- [UserService, DataProcessor]  # Import from other files
+  -> [startApp, initConfig]  # Export these
+
+# Mistake 1: File importing itself (even indirectly)
+UserService #: src/services/user.ts
+  <- [UserService]  # Can't import yourself!
+  => [createUser]
+
+# Mistake 2: Importing something that doesn't exist
+DataProcessor @ src/processor.ts:
+  <- [NonExistentModule]  # This doesn't exist
+  -> [process]
+
+process :: (data: any) => void
+
+# Mistake 3: Exporting something not defined in file
+ConfigFile @ src/config.ts:
+  -> [getConfig, setConfig, deleteConfig]  # deleteConfig not defined!
+
+getConfig :: () => Config
+setConfig :: (c: Config) => void
+# deleteConfig is missing!
+
+Config % "Configuration"
+  - port: number
+
+# Mistake 4: Class trying to import (only Files and ClassFiles can import)
+BaseClass <: SuperClass
+  <- [SomeUtility]  # Classes can't have imports! Use ClassFile instead
+  => [method1]
+
+# Mistake 5: Function trying to export (Functions return, not export)
+utilityFunc :: (x: number) => number
+  -> [something]  # Functions use -> for return type, not exports!
+
+# Mistake 6: Confusion about what can be exported
+UtilFile @ src/utils.ts:
+  -> [
+    helperFunc,      # OK - Function
+    UtilClass,       # OK - Class  
+    ConfigDTO,       # OK - DTO
+    APP_CONSTANTS,   # OK - Constants
+    Logo,           # Wrong! - Assets can't be exported by Files
+    Button          # Wrong! - UIComponents can't be exported by Files
+  ]
+
+helperFunc :: () => void
+UtilClass <: BaseClass
+  => [help]
+ConfigDTO %
+  - value: string
+APP_CONSTANTS ! src/constants.ts
+Logo ~ "Logo asset"
+Button & "Button component"
+
+# Mistake 7: Trying to import from a ClassFile's methods directly
+Consumer @ src/consumer.ts:
+  <- [UserService.createUser]  # Can't import methods directly!
+  -> [consume]
+
+consume :: () => void
+  ~> [createUser]  # Should reference the method after importing the ClassFile
+
+# Valid: Correct import/export pattern
+ProperModule @ src/proper.ts:
+  <- [Config, getConfig]  # Import DTO and function
+  -> [properFunc, ProperClass]  # Export function and class
+
+properFunc :: (c: Config) => void
+  ~> [getConfig]
+
+ProperClass <: BaseClass
+  => [doWork]
+
+# Edge case: File with no imports or exports (valid but unusual)
+IsolatedFile @ src/isolated.ts:
+  # No imports
+  # No exports
+  # This is valid but the file would be unreachable
+
+# Mistake 8: Circular import through multiple files
+A @ src/a.ts:
+  <- [B]
+  -> [funcA]
+
+B @ src/b.ts:
+  <- [C]
+  -> [funcB]
+
+C @ src/c.ts:
+  <- [A]  # Creates A -> B -> C -> A cycle!
+  -> [funcC]
+
+funcA :: () => void
+funcB :: () => void
+funcC :: () => void

@@ -1,0 +1,65 @@
+# Scenario 56: Function signature edge cases and common mistakes
+
+FuncApp -> main v1.0.0
+
+main @ src/index.ts:
+  -> [func1, func2, func3, func4, func5]
+
+# Valid: Complex generic signature
+func1 :: <T extends Base>(items: T[], predicate: (item: T) => boolean) => T[]
+  "Generic filter function"
+
+# Valid: Multiple type parameters  
+func2 :: <K, V>(map: Map<K, V>) => [K, V][]
+  "Convert map to entries"
+
+# Valid: Optional parameters and rest
+func3 :: (required: string, optional?: number, ...rest: any[]) => void
+  "Mixed parameter types"
+
+# Valid: Function returning function
+func4 :: (config: Config) => (data: string) => Promise<Result>
+  "Higher order function"
+
+# Valid but confusing: Using arrow in description
+func5 :: () => void "Logs -> to console"
+  # The -> in the description could be confusing!
+
+# Mistake: Trying to use auto-distribution with wrong entity types
+processRequest :: (req: Request) => Response
+  <- [Request, Logger, Database]  # Request is a DTO, Logger is a Class, Database is ClassFile
+  # This will try to set Request as input, but Logger/Database will fail if they're not Functions
+
+Request % "HTTP request"
+  - method: string
+  - url: string
+
+Response % "HTTP response"  
+  - status: number
+  - body: string
+
+# Valid: ClassFile that could be called as a function
+Logger #: src/logger.ts
+  => [log, error, warn]
+
+Database #: src/database.ts
+  => [query, insert, update]
+
+# Mistake: Function trying to extend (only Classes can extend)
+# enhancedFunc :: (x: number) => number <: baseFunc  # This would be invalid syntax
+
+# Edge case: Function with same name as Class method
+log :: (message: string) => void  # Same name as Logger.log method
+  "Standalone log function"
+
+# Edge case: Empty signature
+noOp :: () => void
+  "Does nothing"
+
+# Edge case: Very long signature that might be hard to parse
+complexFunc :: (
+  param1: { nested: { deep: string } },
+  param2: Array<Map<string, Set<number>>>,
+  param3: (cb: (err: Error | null, result?: any) => void) => Promise<void>
+) => Promise<{ success: boolean; data: any[] | null }>
+  "Complex nested types"
