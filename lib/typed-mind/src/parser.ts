@@ -110,6 +110,9 @@ export class DSLParser {
 
     // Post-process function dependencies
     this.distributeFunctionDependencies();
+    
+    // Post-process bidirectional relationships
+    this.establishBidirectionalRelationships();
 
     const result: ParseResult = {
       entities: this.entities,
@@ -652,6 +655,69 @@ export class DSLParser {
         return { ...baseEntity, type: 'Constants', path: '' } as ConstantsEntity;
       default:
         return null;
+    }
+  }
+
+  private establishBidirectionalRelationships(): void {
+    // Establish bidirectional relationships after all entities are parsed
+    for (const entity of this.entities.values()) {
+      if (entity.type === 'Function') {
+        const funcEntity = entity as FunctionEntity;
+        
+        // Update affectedBy for UIComponents
+        if (funcEntity.affects) {
+          for (const componentName of funcEntity.affects) {
+            const component = this.entities.get(componentName);
+            if (component && component.type === 'UIComponent') {
+              const uiComponent = component as UIComponentEntity;
+              if (!uiComponent.affectedBy) {
+                uiComponent.affectedBy = [];
+              }
+              if (!uiComponent.affectedBy.includes(funcEntity.name)) {
+                uiComponent.affectedBy.push(funcEntity.name);
+              }
+            }
+          }
+        }
+        
+        // Update consumedBy for RunParameters, Assets, and Constants
+        if (funcEntity.consumes) {
+          for (const resourceName of funcEntity.consumes) {
+            const resource = this.entities.get(resourceName);
+            if (resource) {
+              if (resource.type === 'RunParameter') {
+                const runParam = resource as RunParameterEntity;
+                if (!runParam.consumedBy) {
+                  runParam.consumedBy = [];
+                }
+                if (!runParam.consumedBy.includes(funcEntity.name)) {
+                  runParam.consumedBy.push(funcEntity.name);
+                }
+              }
+              // Can also handle Assets and Constants if they have consumedBy
+            }
+          }
+        }
+      }
+      
+      // Update containedBy for UIComponents
+      if (entity.type === 'UIComponent') {
+        const uiComponent = entity as UIComponentEntity;
+        if (uiComponent.contains) {
+          for (const childName of uiComponent.contains) {
+            const child = this.entities.get(childName);
+            if (child && child.type === 'UIComponent') {
+              const childComponent = child as UIComponentEntity;
+              if (!childComponent.containedBy) {
+                childComponent.containedBy = [];
+              }
+              if (!childComponent.containedBy.includes(uiComponent.name)) {
+                childComponent.containedBy.push(uiComponent.name);
+              }
+            }
+          }
+        }
+      }
     }
   }
 

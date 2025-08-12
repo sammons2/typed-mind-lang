@@ -1,0 +1,38 @@
+# Test bidirectional affectedBy relationship
+# When a Function affects a UIComponent, the UIComponent should automatically have affectedBy
+
+TodoApp -> main v1.0.0
+
+main @ src/index.ts:
+  -> [updateUserList, refreshDashboard, handleClick]
+
+# Functions that affect UI components
+updateUserList :: () => void
+  ~ [UserList]
+  "Updates the user list display"
+
+refreshDashboard :: () => void  
+  ~ [Dashboard, UserList]
+  "Refreshes dashboard and user list"
+
+handleClick :: (event: Event) => void
+  ~ [Button]
+  "Handles button click"
+
+# UI Components - should automatically have affectedBy populated
+UserList & "List of users"
+  # Should have affectedBy: [updateUserList, refreshDashboard]
+
+Dashboard &! "Main dashboard"
+  # Should have affectedBy: [refreshDashboard]
+
+Button & "Click button"
+  # Should have affectedBy: [handleClick]
+
+# Function without UI affects
+processData :: () => void
+  "Processes data without UI"
+
+# UIComponent without being affected
+Footer & "Footer component"
+  # Should have empty affectedBy
