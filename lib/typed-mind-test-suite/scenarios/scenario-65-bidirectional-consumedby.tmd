@@ -1,0 +1,47 @@
+# Test bidirectional consumedBy relationship
+# When a Function consumes a RunParameter, the RunParameter should automatically have consumedBy
+
+TodoApp -> main v1.0.0
+
+main @ src/index.ts:
+  -> [connectDB, processData, startServer]
+
+# Functions that consume RunParameters
+connectDB :: () => Promise<void>
+  $< [DATABASE_URL, DB_TIMEOUT]
+  "Connects to database"
+
+processData :: () => void
+  $< [API_KEY, MAX_RETRIES]
+  "Processes data with API"
+
+startServer :: () => void
+  $< [PORT, DATABASE_URL]
+  "Starts the server"
+
+# RunParameters - should automatically have consumedBy populated
+DATABASE_URL $env "PostgreSQL connection string" (required)
+  # Should have consumedBy: [connectDB, startServer]
+
+API_KEY $env "API authentication key"
+  # Should have consumedBy: [processData]
+
+PORT $config "Server port number"
+  = "3000"
+  # Should have consumedBy: [startServer]
+
+DB_TIMEOUT $runtime "Database timeout in ms"
+  = "5000"
+  # Should have consumedBy: [connectDB]
+
+MAX_RETRIES $config "Maximum retry attempts"
+  = "3"
+  # Should have consumedBy: [processData]
+
+# RunParameter not consumed by any function
+UNUSED_PARAM $env "Unused parameter"
+  # Should have empty consumedBy
+
+# Function without consuming parameters
+helperFunction :: () => void
+  "Helper without parameters"
