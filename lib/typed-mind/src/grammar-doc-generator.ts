@@ -291,6 +291,55 @@ export class GrammarDocGenerator {
     sections.push('```');
     sections.push('');
 
+    // Advanced Patterns via Purpose Fields
+    sections.push('## Advanced Patterns via Purpose Fields');
+    sections.push('');
+    sections.push('The purpose field can capture advanced programming patterns that TypedMind structure alone cannot represent:');
+    sections.push('');
+    sections.push('### Pattern Examples');
+    sections.push('```tmd');
+    sections.push('# Example patterns - showing syntax only (not complete programs)');
+    sections.push('# Async/Concurrent');
+    sections.push('processWorker :: (jobs: Channel<Job>) => void "ASYNC: Goroutine worker"');
+    sections.push('DataChannel % "CHANNEL: MPSC unbounded"');
+    sections.push('');
+    sections.push('# Generics/Templates');
+    sections.push('Container<T> <: Base "GENERIC<T: Display>: Type-parameterized"');
+    sections.push('');
+    sections.push('# Dependency Injection');
+    sections.push('UserService #: src/service.ts "@Injectable @Scope(singleton)"');
+    sections.push('');
+    sections.push('# Event-Driven');
+    sections.push('Button & "Component" "EVENTS: onClick, onHover, onFocus"');
+    sections.push('DataEmitter <: EventEmitter "EMITS: data, error, close"');
+    sections.push('');
+    sections.push('# Resource Management');
+    sections.push('FileReader :: (path: string) => string "RAII: auto-closes handle"');
+    sections.push('Connection % "Context manager: auto-commit on scope exit"');
+    sections.push('');
+    sections.push('# Build Configuration');
+    sections.push('DebugLogger ! src/debug.ts "BUILD: #ifdef DEBUG only"');
+    sections.push('');
+    sections.push('# Pattern Matching');
+    sections.push('handleOption :: (val: Option<T>) => string "MATCH: Some(x) | None"');
+    sections.push('');
+    sections.push('# Middleware/Pipeline');
+    sections.push('AuthMiddleware :: (req, res, next) => void "MIDDLEWARE: JWT validation"');
+    sections.push('Pipeline @ src/pipeline.ts: "PIPELINE: cors -> auth -> router"');
+    sections.push('```');
+    sections.push('');
+    sections.push('### Semantic Conventions');
+    sections.push('Establish project-specific conventions in purpose fields:');
+    sections.push('- **ASYNC/AWAIT**: Async functions and promises');
+    sections.push('- **GENERIC<T>**: Generic type parameters');
+    sections.push('- **@Decorator**: Decorators and annotations');
+    sections.push('- **EVENTS**: Event emitters and handlers');
+    sections.push('- **CHANNEL**: Concurrent communication');
+    sections.push('- **RAII/Context**: Resource management');
+    sections.push('- **BUILD**: Conditional compilation');
+    sections.push('- **PIPELINE**: Middleware chains');
+    sections.push('');
+
     // Compact best practices
     sections.push('## Best Practices');
     sections.push('');
@@ -298,6 +347,8 @@ export class GrammarDocGenerator {
     sections.push('- **Group by feature**: Keep related entities together');
     sections.push('- **Mix dependencies freely**: Parser auto-categorizes them');
     sections.push('- **DTOs for data, Classes for behavior**: Keep them separate');
+    sections.push('- **Leverage purpose fields**: Document async, generics, DI, events, etc.');
+    sections.push('- **Establish conventions**: Create project-specific semantic patterns');
     sections.push('- **Bidirectional links**: Validator ensures consistency');
 
     return sections.join('\n');

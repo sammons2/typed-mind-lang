@@ -238,10 +238,59 @@ UserService #: src/services/user.ts # Class: behavior
   => [createUser, findUser]         # Has methods
 ```
 
+## Advanced Patterns via Purpose Fields
+
+The purpose field can capture advanced programming patterns that TypedMind structure alone cannot represent:
+
+### Pattern Examples
+```tmd
+# Example patterns - showing syntax only (not complete programs)
+# Async/Concurrent
+processWorker :: (jobs: Channel<Job>) => void "ASYNC: Goroutine worker"
+DataChannel % "CHANNEL: MPSC unbounded"
+
+# Generics/Templates
+Container<T> <: Base "GENERIC<T: Display>: Type-parameterized"
+
+# Dependency Injection
+UserService #: src/service.ts "@Injectable @Scope(singleton)"
+
+# Event-Driven
+Button & "Component" "EVENTS: onClick, onHover, onFocus"
+DataEmitter <: EventEmitter "EMITS: data, error, close"
+
+# Resource Management
+FileReader :: (path: string) => string "RAII: auto-closes handle"
+Connection % "Context manager: auto-commit on scope exit"
+
+# Build Configuration
+DebugLogger ! src/debug.ts "BUILD: #ifdef DEBUG only"
+
+# Pattern Matching
+handleOption :: (val: Option<T>) => string "MATCH: Some(x) | None"
+
+# Middleware/Pipeline
+AuthMiddleware :: (req, res, next) => void "MIDDLEWARE: JWT validation"
+Pipeline @ src/pipeline.ts: "PIPELINE: cors -> auth -> router"
+```
+
+### Semantic Conventions
+Establish project-specific conventions in purpose fields:
+- **ASYNC/AWAIT**: Async functions and promises
+- **GENERIC<T>**: Generic type parameters
+- **@Decorator**: Decorators and annotations
+- **EVENTS**: Event emitters and handlers
+- **CHANNEL**: Concurrent communication
+- **RAII/Context**: Resource management
+- **BUILD**: Conditional compilation
+- **PIPELINE**: Middleware chains
+
 ## Best Practices
 
 - **Use ClassFile (`#:`)** for services, controllers, repositories
 - **Group by feature**: Keep related entities together
 - **Mix dependencies freely**: Parser auto-categorizes them
 - **DTOs for data, Classes for behavior**: Keep them separate
+- **Leverage purpose fields**: Document async, generics, DI, events, etc.
+- **Establish conventions**: Create project-specific semantic patterns
 - **Bidirectional links**: Validator ensures consistency
