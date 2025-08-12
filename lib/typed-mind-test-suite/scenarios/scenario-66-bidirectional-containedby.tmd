@@ -1,0 +1,61 @@
+# Test bidirectional containedBy relationship
+# When a UIComponent contains another, the child should automatically have containedBy
+
+TodoApp -> main v1.0.0
+
+main @ src/index.ts:
+  -> [render]
+
+render :: () => void
+  "Renders the UI"
+
+# UIComponents with containment relationships
+App &! "Root application"
+  > [Header, MainContent, Footer]
+  # Root component, no containedBy
+
+Header & "Application header"
+  > [Logo, NavBar]
+  # Should have containedBy: [App]
+
+Logo & "Company logo"
+  # Should have containedBy: [Header]
+
+NavBar & "Navigation bar"
+  > [NavItem1, NavItem2]
+  # Should have containedBy: [Header]
+
+NavItem1 & "First nav item"
+  # Should have containedBy: [NavBar]
+
+NavItem2 & "Second nav item"
+  # Should have containedBy: [NavBar]
+
+MainContent & "Main content area"
+  > [Sidebar, ContentArea]
+  # Should have containedBy: [App]
+
+Sidebar & "Side navigation"
+  # Should have containedBy: [MainContent]
+
+ContentArea & "Content display area"
+  > [Article]
+  # Should have containedBy: [MainContent]
+
+Article & "Article component"
+  # Should have containedBy: [ContentArea]
+
+Footer & "Application footer"
+  # Should have containedBy: [App]
+
+# Orphan component without parent
+OrphanComponent & "Component without parent"
+  # Should have empty containedBy
+
+# Component that contains but is not contained
+FloatingPanel & "Floating panel"
+  > [CloseButton]
+  # Should have empty containedBy
+
+CloseButton & "Close button"
+  # Should have containedBy: [FloatingPanel]
