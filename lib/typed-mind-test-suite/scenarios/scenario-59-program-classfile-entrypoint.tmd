@@ -1,0 +1,85 @@
+# Scenario 59: Program with ClassFile as entry point
+
+# Test: Can a Program use a ClassFile as its entry point?
+ServerApp -> ApplicationServer v1.0.0
+
+# ClassFile as the program entry point
+ApplicationServer #: src/server.ts
+  <- [Express, Config, Routes]
+  => [start, stop, restart]
+  -> [serverInstance]  # Additional export
+
+# Helper export from the ClassFile
+serverInstance :: () => Express.Application
+
+# Configuration
+Config ! src/config.ts : ConfigSchema
+ConfigSchema % "Server configuration"
+  - port: number "Server port"
+  - host: string "Server hostname"
+
+# Routes file
+Routes @ src/routes.ts:
+  <- [UserRouter, ApiRouter]
+  -> [router]
+
+# Routers
+UserRouter #: src/routes/user.ts
+  <- [UserController]
+  => [setup]
+
+ApiRouter #: src/routes/api.ts
+  <- [ApiController]
+  => [setup]
+
+# Controllers
+UserController #: src/controllers/user.ts
+  <- [UserService]
+  => [getUser, createUser, updateUser]
+
+ApiController #: src/controllers/api.ts
+  <- [MetricsService]
+  => [getStatus, getMetrics]
+
+# Services
+UserService #: src/services/user.ts
+  <- [Database]
+  => [findUser, saveUser]
+
+MetricsService #: src/services/metrics.ts
+  => [collectMetrics, getUptime]
+
+# Database
+Database #: src/database.ts
+  <- [Config]
+  => [connect, query, disconnect]
+
+# Dependencies
+Express ^ "Web framework" v4.18.0
+
+# Edge case: Another program trying to use regular File
+ClientApp -> ClientMain v1.0.0
+
+ClientMain @ src/client.ts:
+  <- [ClientService]
+  -> [initClient]
+
+initClient :: () => void
+
+ClientService #: src/services/client.ts
+  => [connect, send]
+
+# Edge case: Program referencing non-existent ClassFile
+BrokenApp -> NonExistentService v1.0.0
+
+# Edge case: Program referencing a Class (not ClassFile)
+InvalidApp -> RegularClass v1.0.0
+
+RegularClass <: BaseClass
+  => [method1]
+
+BaseClass <: AbstractBase
+  => [baseMethod]
+
+AbstractBase <: Object
+  => [abstractMethod]

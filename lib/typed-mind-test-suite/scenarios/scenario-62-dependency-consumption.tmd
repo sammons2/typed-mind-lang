@@ -1,0 +1,164 @@
+# Scenario 62: Dependency consumption patterns
+
+DependencyApp -> main v1.0.0
+
+main @ src/index.ts:
+  <- [AppInitializer]
+  -> [start]
+
+start :: () => void
+
+# External dependencies (npm packages)
+react ^ "UI framework" v18.2.0
+typescript ^ "TypeScript compiler" v5.0.0
+express ^ "Web framework" v4.18.2
+lodash ^ "Utility library" v4.17.21
+axios ^ "HTTP client" v1.4.0
+@aws-sdk/client-s3 ^ "AWS S3 client" v3.0.0
+@testing-library/react ^ "React testing" v14.0.0
+dotenv ^ "Environment variables" v16.0.3
+winston ^ "Logging library" v3.8.2
+joi ^ "Validation library" v17.9.2
+
+# Valid: Function consuming dependencies  
+httpClient :: (url: string) => Promise<any>
+  $< [axios]  # Consuming external dependency
+
+# Valid: Multiple dependencies consumed
+serverSetup :: () => void
+  $< [express, dotenv, winston]
+
+# Valid: Scoped package consumption
+s3Upload :: (file: Buffer) => Promise<void>
+  $< [@aws-sdk/client-s3]
+
+# Edge case: Dependency in regular dependencies list (auto-distribution)
+mixedConsumer :: () => void
+  <- [lodash, helperFunction, DataService]
+  # lodash should go to consumes
+  # helperFunction to calls
+  # DataService to calls
+
+helperFunction :: () => void
+
+DataService #: src/services/data.ts
+  => [getData]
+
+# Valid: ClassFile consuming dependencies
+AppInitializer #: src/initializer.ts
+  <- [react, typescript, ConfigLoader]
+  => [initialize, shutdown]
+
+ConfigLoader #: src/config-loader.ts
+  <- [dotenv, joi]
+  => [loadConfig, validateConfig]
+
+# Edge case: Circular consumption attempt
+ServiceA #: src/service-a.ts
+  <- [axios, ServiceB]
+  => [methodA]
+  
+ServiceB #: src/service-b.ts
+  <- [lodash, ServiceA]
+  => [methodB]
+
+# Test: UI components and dependencies
+AppUI &! "Root UI component"
+  > [Dashboard, Settings]
+
+Dashboard & "Dashboard component"
+  < [AppUI]
+
+Settings & "Settings component"  
+  < [AppUI]
+
+# Function affecting UI and consuming deps
+renderUI :: () => void
+  ~ [AppUI, Dashboard]
+  $< [react, @testing-library/react]
+
+# Test: Dependencies not consumed (orphaned)
+unused-package ^ "Unused package" v1.0.0
+
+# Test: Version formats
+semantic-version ^ "Semantic version" v1.2.3
+beta-version ^ "Beta version" v2.0.0-beta.1
+alpha-version ^ "Alpha version" v3.0.0-alpha
+latest-version ^ "Latest version" latest
+range-version ^ "Range version" ^4.0.0
+tilde-version ^ "Tilde version" ~5.0.0
+exact-version ^ "Exact version" 6.0.0
+
+# Function consuming various version formats
+versionConsumer :: () => void
+  $< [semantic-version, beta-version, alpha-version]
+
+# Test: Invalid consumption patterns
+# Can't consume non-existent dependency
+brokenConsumer :: () => void
+  $< [non-existent-package]
+
+# Can't consume other entity types via $<
+invalidConsumer :: () => void
+  $< [AppUI]  # UIComponent can't be consumed
+  $< [UserDTO]  # DTO can't be consumed via $<
+
+UserDTO % "User data"
+  - name: string "Name"
+
+# Test: RunParameters vs Dependencies
+DATABASE_URL $env "Database connection" (required)
+API_KEY $env "API key"
+MAX_WORKERS $runtime "Max worker threads"
+
+# Valid: Function consuming RunParameters
+configuredFunction :: () => void
+  $< [DATABASE_URL, API_KEY, MAX_WORKERS]
+
+# Mixed consumption
+hybridConsumer :: () => void
+  $< [axios, DATABASE_URL, winston, API_KEY]
+
+# Test: Asset consumption
+Logo ~ "Company logo"
+  >> ClientApp
+
+ClientApp -> ClientMain v1.0.0
+
+ClientMain @ src/client/index.ts:
+  -> [displayLogo]
+
+displayLogo :: () => void
+  $< [Logo]  # Consuming asset
+
+# Test: Constants consumption  
+AppConstants ! src/constants.ts : ConstantsSchema
+
+ConstantsSchema % "Constants schema"
+  - maxRetries: number "Max retries"
+  - timeout: number "Timeout"
+
+constantsUser :: () => void
+  $< [AppConstants]
+
+# Test: Complex consumption chain
+ComplexService #: src/services/complex.ts
+  <- [axios, lodash, winston, ConfigLoader]
+  => [complexMethod]
+
+complexMethod :: () => void
+  $< [DATABASE_URL, API_KEY, AppConstants]
+  ~> [helperFunction, getData]
+
+# Test: Dependency without version
+no-version-dep ^ "No version dependency"
+
+noVersionConsumer :: () => void
+  $< [no-version-dep]
+
+# Export consumers
+ConsumerFile @ src/consumers.ts:
+  <- [httpClient, serverSetup, mixedConsumer]
+  -> [httpClient, serverSetup, s3Upload, renderUI, 
+      versionConsumer, configuredFunction, hybridConsumer,
+      displayLogo, constantsUser, noVersionConsumer]

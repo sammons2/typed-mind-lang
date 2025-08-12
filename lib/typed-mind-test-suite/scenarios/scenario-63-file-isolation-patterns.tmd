@@ -1,0 +1,219 @@
+# Scenario 63: File isolation patterns
+
+IsolationApp -> main v1.0.0
+
+main @ src/index.ts:
+  <- [PublicAPI]
+  -> [startApp]
+
+startApp :: () => void
+
+# Test: Public API file exposing selected internals
+PublicAPI @ src/api/public.ts:
+  <- [InternalService, PrivateHelper, SharedUtils]
+  -> [publicMethod, utilityFunction]  # Selective export
+
+publicMethod :: () => void
+  ~> [processInternal]
+
+utilityFunction :: () => void
+
+# Internal modules not directly exported
+InternalService #: src/internal/service.ts
+  <- [PrivateHelper]
+  => [processInternal, privateProcess]
+
+PrivateHelper @ src/internal/helper.ts:
+  <- [SharedUtils]
+  -> [helperMethod, internalHelper]
+
+helperMethod :: () => void
+
+internalHelper :: () => void
+  ~> [sharedUtil]
+
+SharedUtils @ src/shared/utils.ts:
+  -> [sharedUtil, commonHelper]
+
+sharedUtil :: () => void
+
+commonHelper :: () => void
+
+# Test: Module boundaries - isolated subsystems
+AuthModule @ src/modules/auth/index.ts:
+  <- [AuthService, AuthValidator, AuthConfig]
+  -> [authenticate, authorize]  # Module public interface
+
+AuthService #: src/modules/auth/service.ts
+  <- [AuthValidator, AuthConfig]
+  => [validateUser, createSession]
+
+AuthValidator @ src/modules/auth/validator.ts:
+  <- [ValidationRules]
+  -> [validateCredentials, validateToken]
+
+validateCredentials :: (creds: Credentials) => boolean
+
+validateToken :: (token: string) => boolean
+
+AuthConfig ! src/modules/auth/config.ts : AuthConfigSchema
+
+AuthConfigSchema % "Auth configuration"
+  - secretKey: string "Secret key"
+  - tokenExpiry: number "Token expiry"
+
+ValidationRules ! src/modules/auth/rules.ts
+
+Credentials % "User credentials"
+  - username: string "Username"
+  - password: string "Password"
+
+authenticate :: (creds: Credentials) => string
+  ~> [validateCredentials, validateUser, createSession]
+
+authorize :: (token: string) => boolean
+  ~> [validateToken]
+
+# Test: Layered architecture isolation
+PresentationLayer @ src/layers/presentation/index.ts:
+  <- [BusinessLayer]
+  -> [handleRequest, renderResponse]
+
+handleRequest :: (req: Request) => void
+  ~> [processBusinessLogic]
+
+renderResponse :: (data: ResponseData) => void
+
+BusinessLayer @ src/layers/business/index.ts:
+  <- [DataLayer]
+  -> [processBusinessLogic, validateBusiness]
+
+processBusinessLogic :: () => void
+  ~> [queryData, updateData]
+
+validateBusiness :: () => boolean
+
+DataLayer @ src/layers/data/index.ts:
+  <- [Database]
+  -> [queryData, updateData, deleteData]
+
+queryData :: () => any
+
+updateData :: (data: any) => void
+
+deleteData :: (id: string) => void
+
+Database #: src/database/connection.ts
+  => [connect, query, close]
+
+Request % "Request object"
+  - path: string "Request path"
+  - method: string "HTTP method"
+
+ResponseData % "Response data"
+  - status: number "Status code"
+  - body: string "Response body"
+
+# Test: Circular dependency between isolated modules (should fail)
+ModuleA @ src/modules/a/index.ts:
+  <- [ModuleB]
+  -> [methodA]
+
+methodA :: () => void
+
+ModuleB @ src/modules/b/index.ts:
+  <- [ModuleA]  # Circular!
+  -> [methodB]
+
+methodB :: () => void
+
+# Test: Private implementation details (not exported from module)
+ImplementationDetail @ src/modules/detail/private.ts:
+  -> [privateImpl, secretAlgorithm]
+
+privateImpl :: () => void
+
+secretAlgorithm :: () => void
+
+# This function is orphaned (not exported from any file)
+orphanedFunction :: () => void
+  ~> [privateImpl]
+
+# Test: Re-export pattern
+CoreExports @ src/core/index.ts:
+  <- [CoreService, CoreUtils, CoreTypes]
+  -> [CoreService, coreUtil, CoreConfig]  # Re-exporting
+
+CoreService #: src/core/service.ts
+  => [coreMethod]
+
+CoreUtils @ src/core/utils.ts:
+  -> [coreUtil, coreHelper]
+
+coreUtil :: () => void
+
+coreHelper :: () => void
+
+CoreTypes @ src/core/types.ts:
+  -> [CoreConfig, CoreState]
+
+CoreConfig % "Core configuration"
+  - setting: string "Setting"
+
+CoreState % "Core state"
+  - active: boolean "Active"
+
+# Test: File with no exports (valid but unusual)
+NoExportFile @ src/side-effects.ts:
+  <- [Logger]
+  # No exports - just side effects
+
+Logger #: src/logger.ts
+  => [log, error]
+
+# Test: File with only imports (valid but unusual)
+ImportOnlyFile @ src/import-only.ts:
+  <- [CoreService, AuthService, Database]
+  -> []  # Explicitly empty exports
+
+# Test: Isolated test file
+TestFile @ src/__tests__/test.ts:
+  <- [PublicAPI, CoreExports]
+  -> [testSuite]
+
+testSuite :: () => void
+  ~> [publicMethod, coreUtil]
+
+# Test: Build-specific files
+DevFile @ src/dev/debug.ts:
+  <- [Logger]
+  -> [debugHelper]
+
+debugHelper :: () => void
+  ~> [log]
+
+ProdFile @ src/prod/optimize.ts:
+  <- [CoreService]
+  -> [optimize]
+
+optimize :: () => void
+  ~> [coreMethod]
+
+# Test: Entry points for different environments
+DevEntry @ src/entries/dev.ts:
+  <- [DevFile, Logger]
+  -> [startDev]
+
+startDev :: () => void
+  ~> [debugHelper, log]
+
+ProdEntry @ src/entries/prod.ts:
+  <- [ProdFile, CoreService]
+  -> [startProd]
+
+startProd :: () => void
+  ~> [optimize, coreMethod]
+
+# Alternative programs for different builds
+DevApp -> DevEntry v1.0.0-dev
+ProdApp -> ProdEntry v1.0.0

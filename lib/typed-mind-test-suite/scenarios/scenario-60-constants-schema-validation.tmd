@@ -1,0 +1,136 @@
+# Scenario 60: Constants schema validation
+
+ConfigApp -> main v1.0.0
+
+main @ src/index.ts:
+  <- [AppConfig, DatabaseConfig, ApiConfig]
+  -> [initialize]
+
+initialize :: () => void
+  ~> [loadConfig]
+  $< [AppConfig, DatabaseConfig, ApiConfig]
+
+loadConfig :: () => void
+  $< [AppConfig]
+
+# Valid: Constants with schema DTO
+AppConfig ! src/config/app.ts : AppConfigSchema
+
+AppConfigSchema % "Application configuration schema"
+  - port: number "Server port"
+  - host: string "Server hostname"
+  - debug: boolean "Debug mode"
+  - features: string[] "Enabled features"
+
+# Valid: Constants without schema
+DatabaseConfig ! src/config/database.ts
+
+# Valid: Constants with complex schema
+ApiConfig ! src/config/api.ts : ApiConfigSchema
+
+ApiConfigSchema % "API configuration"
+  - endpoints: EndpointMap "API endpoint mapping"
+  - rateLimit: RateLimitConfig "Rate limiting config"
+  - auth: AuthConfig "Authentication config"
+
+EndpointMap % "Endpoint mapping"
+  - users: string "Users endpoint"
+  - posts: string "Posts endpoint"
+  - comments: string "Comments endpoint"
+
+RateLimitConfig % "Rate limiting configuration"
+  - requestsPerMinute: number "Max requests per minute"
+  - burstSize: number "Burst size"
+  - enabled: boolean "Rate limiting enabled"
+
+AuthConfig % "Authentication configuration"
+  - provider: string "Auth provider"
+  - secret: string "Auth secret"
+  - expiry: number "Token expiry in seconds"
+
+# Edge case: Constants with non-existent schema
+BrokenConfig ! src/config/broken.ts : NonExistentSchema
+
+# Edge case: Schema that references undefined types
+InvalidSchema % "Invalid schema"
+  - data: UndefinedType "Data field"
+  - processor: UnknownProcessor "Processor"
+
+InvalidConfig ! src/config/invalid.ts : InvalidSchema
+
+# Edge case: Circular schema reference
+CircularSchemaA % "Circular A"
+  - b: CircularSchemaB "Reference to B"
+  - name: string "Name"
+
+CircularSchemaB % "Circular B"
+  - a: CircularSchemaA "Reference to A"
+  - value: number "Value"
+
+CircularConfig ! src/config/circular.ts : CircularSchemaA
+
+# Edge case: Schema with function field (invalid for DTO)
+BadSchema % "Schema with function"
+  - handler: Function "Event handler"
+  - callback: () => void "Callback function"
+
+BadConfig ! src/config/bad.ts : BadSchema
+
+# Valid: Nested schema structures
+NestedConfig ! src/config/nested.ts : NestedSchema
+
+NestedSchema % "Deeply nested configuration"
+  - level1: Level1Schema "First level"
+
+Level1Schema % "Level 1"
+  - level2: Level2Schema "Second level"
+  - items: string[] "Items"
+
+Level2Schema % "Level 2"
+  - level3: Level3Schema "Third level"
+  - count: number "Count"
+
+Level3Schema % "Level 3"
+  - deepValue: string "Deep value"
+  - flags: boolean[] "Feature flags"
+
+# Edge case: Constants trying to have methods (invalid)
+MethodConfig ! src/config/methods.ts : MethodSchema
+  => [getConfig, setConfig]  # Constants can't have methods!
+
+MethodSchema % "Schema for methods"
+  - value: string "Value"
+
+# Edge case: Multiple constants with same schema (valid)
+Config1 ! src/config/config1.ts : SharedSchema
+Config2 ! src/config/config2.ts : SharedSchema
+Config3 ! src/config/config3.ts : SharedSchema
+
+SharedSchema % "Shared configuration schema"
+  - setting: string "Setting value"
+  - enabled: boolean "Feature enabled"
+
+# Edge case: Constants without path (should this be valid?)
+# PathlessConstants ! : PathlessSchema
+
+# Edge case: Schema-only (no constants using it)
+OrphanedSchema % "Unused schema"
+  - orphanField: string "Orphaned field"
+
+# Valid: Constants consumed by functions
+SecretConfig ! src/config/secrets.ts : SecretSchema
+
+SecretSchema % "Secret configuration"
+  - apiKey: string "API key"
+  - dbPassword: string "Database password"
+
+useSecrets :: () => void
+  $< [SecretConfig]
+
+# Valid: Constants imported by files
+EnvironmentFile @ src/environment.ts:
+  <- [AppConfig, DatabaseConfig]
+  -> [getEnvironment]
+
+getEnvironment :: () => string
+  $< [AppConfig]

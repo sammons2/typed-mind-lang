@@ -53,6 +53,8 @@ TypedMind supports the following entity types:
 | **Run Parameter** | `Name $type Description [(required)]` | `DATABASE_URL $env "PostgreSQL connection" (required)` | `^(\w+)\s*\$(\w+)\s*"([^"]+)"(?:\s*\((\w+)\))?$` |
 | **Dependency** | `Name ^ Purpose [Version]` | `axios ^ "HTTP client library" v3.0.0` | `^([@\w\-/]+)\s*\^\s*"([^"]+)"(?:\s*v?([\d.\-\w]+))?$` |
 
+**Note:** Version format - The parser strips the 'v' prefix from versions. Both `v1.0.0` and `1.0.0` are stored as `1.0.0`.
+
 ## Continuation Patterns
 
 These patterns match continuation lines that add properties to entities:
@@ -162,12 +164,12 @@ processOrder :: (order: OrderDTO) => void
 
 ## Validation Rules
 
-### Bidirectional Consistency
-TypedMind enforces bidirectional relationships:
-- Function affects UIComponent → UIComponent.affectedBy includes Function
-- Function consumes RunParameter → RunParameter.consumedBy includes Function
-- UIComponent contains child → child.containedBy includes parent
-- Asset contains Program → Program must exist
+### Bidirectional Consistency (Planned Feature)
+TypedMind will enforce bidirectional relationships (currently must be manually maintained):
+- Function affects UIComponent → UIComponent.affectedBy includes Function (NOT YET IMPLEMENTED)
+- Function consumes RunParameter → RunParameter.consumedBy includes Function (NOT YET IMPLEMENTED)
+- UIComponent contains child → child.containedBy includes parent (NOT YET IMPLEMENTED)
+- Asset contains Program → Program must exist (IMPLEMENTED)
 
 ### Entity Naming Rules
 - Names must be unique across ALL entity types
@@ -196,7 +198,7 @@ The parser uses look-ahead to determine entity types:
 - Mixed shortform/longform syntax is supported in the same file
 
 ### Import Resolution
-- Circular imports are detected and prevented
+- Circular imports detection (NOT YET IMPLEMENTED)
 - Aliased imports prefix all imported entities: `@import "./auth.tmd" as Auth`
 - Nested imports are resolved recursively
 - Import paths can be relative or absolute
@@ -387,5 +389,5 @@ DataClass <: Base
 - **DTOs for data, Classes for behavior**: Keep them separate
 - **Leverage purpose fields**: Document async, generics, DI, events, etc.
 - **Establish conventions**: Create project-specific semantic patterns
-- **Bidirectional links**: Validator ensures consistency
+- **Bidirectional links**: Must be manually maintained (auto-validation planned)
 - **Check capability matrix**: Ensure entities have the right capabilities

@@ -1,0 +1,154 @@
+# File Manifest
+Generated: 2025-08-12T05:03:49.631Z
+Format: name:size (B=bytes, K=KB, M=MB)
+
+```
+scenarios/
+  imports/
+    circular/
+      module-a.tmd:190B
+      module-b.tmd:223B
+    shared/
+      auth-duplicate.tmd:217B
+      auth-module.tmd:243B
+      database.tmd:209B
+      service-layer.tmd:293B
+    ui/
+      components.tmd:250B
+  scenario-01-duplicate-export.tmd:387B
+  scenario-02-orphaned-entity.tmd:325B
+  scenario-03-circular-dependency.tmd:272B
+  scenario-04-undefined-imports.tmd:223B
+  scenario-05-undefined-exports.tmd:261B
+  scenario-06-invalid-method-calls.tmd:353B
+  scenario-07-duplicate-paths.tmd:253B
+  scenario-08-multiple-programs.tmd:158B
+  scenario-09-no-program.tmd:100B
+  scenario-10-dto-validation.tmd:496B
+  scenario-11-class-export-validation.tmd:401B
+  scenario-12-valid-complete.tmd:3K
+  scenario-13-asset-validation.tmd:318B
+  scenario-14-uicomponent-validation.tmd:717B
+  scenario-15-function-affects-ui.tmd:575B
+  scenario-16-complete-ui-example.tmd:3K
+  scenario-17-multiple-programs.tmd:725B
+  scenario-18-file-exports-ui-assets.tmd:696B
+  scenario-19-uicomponent-containment.tmd:840B
+  scenario-20-basic-import.tmd:211B
+  scenario-21-aliased-import.tmd:306B
+  scenario-22-nested-import.tmd:233B
+  scenario-23-circular-import.tmd:175B
+  scenario-24-import-not-found.tmd:155B
+  scenario-25-import-duplicate-names.tmd:277B
+  scenario-26-runparameter-basic.tmd:713B
+  scenario-27-runparameter-orphaned.tmd:469B
+  scenario-28-runparameter-invalid-consumes.tmd:505B
+  scenario-29-referencedby-tracking.tmd:2K
+  scenario-30-invalid-reference-types.tmd:455B
+  scenario-31-mixed-syntax.tmd:1K
+  scenario-32-spa-react-app.tmd:12K
+  scenario-33-electron-desktop-app.tmd:12K
+  scenario-34-cli-tool.tmd:14K
+  scenario-35-video-game.tmd:18K
+  scenario-36-static-website.tmd:15K
+  scenario-37-data-pipeline.tmd:18K
+  scenario-38-dependency-validation.tmd:1K
+  scenario-39-classfile-basic.tmd:753B
+  scenario-40-classfile-naming-conflict.tmd:689B
+  scenario-41-classfile-method-calls.tmd:727B
+  scenario-42-classfile-inheritance.tmd:1K
+  scenario-43-classfile-auto-export.tmd:829B
+  scenario-44-classfile-mixed-entities.tmd:1K
+  scenario-45-function-undefined-input.tmd:667B
+  scenario-46-function-undefined-calls.tmd:1K
+  scenario-47-function-mixed-dependencies.tmd:2K
+  scenario-48-constants-edge-cases.tmd:903B
+  scenario-49-dto-complex-structures.tmd:2K
+  scenario-50-circular-function-calls.tmd:1K
+  scenario-51-uicomponent-circular-containment.tmd:2K
+  scenario-52-empty-entities-validation.tmd:1K
+  scenario-53-classfile-inheritance-edge-cases.tmd:2K
+  scenario-54-entity-name-boundaries.tmd:2K
+  scenario-55-common-validation-mistakes.tmd:2K
+  scenario-56-function-signature-edge-cases.tmd:2K
+  scenario-57-import-export-confusion.tmd:3K
+  scenario-58-classfile-vs-class-file.tmd:3K
+  scenario-59-program-classfile-entrypoint.tmd:2K
+  scenario-60-constants-schema-validation.tmd:4K
+  scenario-61-multiple-dtos-function-deps.tmd:5K
+  scenario-62-dependency-consumption.tmd:4K
+  scenario-63-file-isolation-patterns.tmd:5K
+src/
+  scenarios.01-duplicate-export.test.ts:3K
+  scenarios.02-orphaned-entity.test.ts:4K
+  scenarios.03-circular-dependency.test.ts:1K
+  scenarios.04-undefined-imports.test.ts:2K
+  scenarios.05-undefined-exports.test.ts:2K
+  scenarios.06-invalid-method-calls.test.ts:2K
+  scenarios.07-duplicate-paths.test.ts:1K
+  scenarios.08-multiple-programs.test.ts:4K
+  scenarios.09-no-program.test.ts:2K
+  scenarios.10-dto-validation.test.ts:1K
+  scenarios.11-class-export-validation.test.ts:3K
+  scenarios.12-valid-complete.test.ts:2K
+  scenarios.13-asset-validation.test.ts:2K
+  scenarios.14-uicomponent-validation.test.ts:3K
+  scenarios.15-function-affects-ui.test.ts:5K
+  scenarios.16-complete-ui-example.test.ts:3K
+  scenarios.17-multiple-programs.test.ts:3K
+  scenarios.18-file-exports-ui-assets.test.ts:2K
+  scenarios.19-uicomponent-containment.test.ts:2K
+  scenarios.20-basic-import.test.ts:1K
+  scenarios.21-aliased-import.test.ts:3K
+  scenarios.22-nested-import.test.ts:2K
+  scenarios.23-circular-import.test.ts:2K
+  scenarios.24-import-not-found.test.ts:1K
+  scenarios.25-import-duplicate-names.test.ts:2K
+  scenarios.26-runparameter-basic.test.ts:2K
+  scenarios.27-runparameter-orphaned.test.ts:2K
+  scenarios.28-runparameter-invalid-consumes.test.ts:2K
+  scenarios.29-referencedby-tracking.test.ts:5K
+  scenarios.30-invalid-reference-types.test.ts:2K
+  scenarios.31-mixed-syntax.test.ts:9K
+  scenarios.32-spa-react-app.test.ts:4K
+  scenarios.33-electron-desktop-app.test.ts:5K
+  scenarios.34-cli-tool.test.ts:5K
+  scenarios.35-video-game.test.ts:6K
+  scenarios.36-static-website.test.ts:7K
+  scenarios.37-data-pipeline.test.ts:1K
+  scenarios.38-dependency-validation.test.ts:2K
+  scenarios.39-classfile-basic.test.ts:2K
+  scenarios.40-classfile-naming-conflict.test.ts:3K
+  scenarios.41-classfile-method-calls.test.ts:2K
+  scenarios.42-classfile-inheritance.test.ts:3K
+  scenarios.43-classfile-auto-export.test.ts:2K
+  scenarios.44-classfile-mixed-entities.test.ts:3K
+  scenarios.45-function-undefined-input.test.ts:3K
+  scenarios.46-function-undefined-calls.test.ts:3K
+  scenarios.47-function-mixed-dependencies.test.ts:3K
+  scenarios.48-constants-edge-cases.test.ts:2K
+  scenarios.49-dto-complex-structures.test.ts:2K
+  scenarios.50-circular-function-calls.test.ts:2K
+  scenarios.51-uicomponent-circular-containment.test.ts:2K
+  scenarios.52-empty-entities-validation.test.ts:2K
+  scenarios.53-classfile-inheritance-edge-cases.test.ts:2K
+  scenarios.54-entity-name-boundaries.test.ts:3K
+  scenarios.55-common-validation-mistakes.test.ts:2K
+  scenarios.56-function-signature-edge-cases.test.ts:3K
+  scenarios.57-import-export-confusion.test.ts:3K
+  scenarios.58-classfile-vs-class-file.test.ts:5K
+  scenarios.59-program-classfile-entrypoint.test.ts:5K
+  scenarios.60-constants-schema-validation.test.ts:8K
+  scenarios.61-multiple-dtos-function-deps.test.ts:8K
+  scenarios.62-dependency-consumption.test.ts:9K
+  scenarios.63-file-isolation-patterns.test.ts:10K
+check-function.cjs:802B
+package.json:406B
+program.tmd:139B
+test-auto-dist.cjs:1007B
+test-classfile-export.cjs:1K
+test-parser.cjs:805B
+test-versions.cjs:530B
+tsconfig.json:131B
+vitest.config.ts:139B
+```

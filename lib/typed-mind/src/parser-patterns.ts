@@ -77,8 +77,8 @@ export const CONTINUATION_PATTERNS = {
   // Asset contains program: >> ProgramName
   CONTAINS_PROGRAM: /^>>\s*(\w+)$/,
   
-  // DTO Fields: - fieldName: type "description" (optional)
-  DTO_FIELD: /^-\s*(\w+):\s*([^"]+?)(?:\s*"([^"]+)")?(?:\s*\(([^)]+)\))?$/,
+  // DTO Fields: - fieldName: type "description" (optional) or - fieldName?: type "description"
+  DTO_FIELD: /^-\s*(\w+)(\?)?\s*:\s*([^"]+?)(?:\s*"([^"]+)")?(?:\s*\(([^)]+)\))?$/,
   
   // Comment: # This is a comment about the entity
   COMMENT: /^#\s*(.+)$/,

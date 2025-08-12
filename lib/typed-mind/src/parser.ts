@@ -419,8 +419,11 @@ export class DSLParser {
   }
 
   private parseContinuation(entity: AnyEntity, line: string, _lineNum: number): void {
+    // Extract inline comment if present
+    const { cleanLine } = this.extractInlineComment(line);
+    const trimmedLine = cleanLine.trim();
     // Imports: <- [Database, UserModel]
-    const importMatch = line.match(/^<-\s*\[([^\]]+)\]/);
+    const importMatch = trimmedLine.match(/^<-\s*\[([^\]]+)\]/);
     if (importMatch) {
       // Special handling for Functions - distribute by entity type
       if (entity.type === 'Function') {
@@ -445,21 +448,21 @@ export class DSLParser {
     }
 
     // Exports: -> [createUser, getUser]
-    const exportMatch = line.match(/^->\s*\[([^\]]+)\]/);
+    const exportMatch = trimmedLine.match(/^->\s*\[([^\]]+)\]/);
     if (exportMatch && 'exports' in entity) {
       entity.exports = this.parseList(exportMatch[1] as string);
       return;
     }
 
     // Calls: ~> [validateInput, Database.insert]
-    const callsMatch = line.match(/^~>\s*\[([^\]]+)\]/);
+    const callsMatch = trimmedLine.match(/^~>\s*\[([^\]]+)\]/);
     if (callsMatch && 'calls' in entity) {
       entity.calls = this.parseList(callsMatch[1] as string);
       return;
     }
 
     // Function Input: <- UserCreateDTO
-    const inputMatch = line.match(/^<-\s*(\w+)$/);
+    const inputMatch = trimmedLine.match(/^<-\s*(\w+)$/);
     if (inputMatch && entity.type === 'Function') {
       const funcEntity = entity as FunctionEntity;
       funcEntity.input = inputMatch[1] as string;
@@ -467,7 +470,7 @@ export class DSLParser {
     }
 
     // Function Output: -> UserDTO
-    const outputMatch = line.match(/^->\s*(\w+)$/);
+    const outputMatch = trimmedLine.match(/^->\s*(\w+)$/);
     if (outputMatch && entity.type === 'Function') {
       const funcEntity = entity as FunctionEntity;
       funcEntity.output = outputMatch[1] as string;
@@ -475,14 +478,14 @@ export class DSLParser {
     }
 
     // Methods: => [handleCreate, handleGet]
-    const methodsMatch = line.match(/^=>\s*\[([^\]]+)\]/);
+    const methodsMatch = trimmedLine.match(/^=>\s*\[([^\]]+)\]/);
     if (methodsMatch && 'methods' in entity) {
       entity.methods = this.parseList(methodsMatch[1] as string);
       return;
     }
 
     // Function affects: ~> [ComponentA, ComponentB]
-    const affectsMatch = line.match(/^~\s*\[([^\]]+)\]/);
+    const affectsMatch = trimmedLine.match(/^~\s*\[([^\]]+)\]/);
     if (affectsMatch && entity.type === 'Function') {
       const funcEntity = entity as FunctionEntity;
       funcEntity.affects = this.parseList(affectsMatch[1] as string);
@@ -504,7 +507,7 @@ export class DSLParser {
     }
 
     // UIComponent contains: > [ChildComponent1, ChildComponent2]
-    const containsMatch = line.match(/^>\s*\[([^\]]+)\]/);
+    const containsMatch = trimmedLine.match(/^>\s*\[([^\]]+)\]/);
     if (containsMatch && entity.type === 'UIComponent') {
       const uiEntity = entity as UIComponentEntity;
       uiEntity.contains = this.parseList(containsMatch[1] as string);
@@ -512,7 +515,7 @@ export class DSLParser {
     }
 
     // UIComponent containedBy: < [ParentComponent]
-    const containedByMatch = line.match(/^<\s*\[([^\]]+)\]/);
+    const containedByMatch = trimmedLine.match(/^<\s*\[([^\]]+)\]/);
     if (containedByMatch && entity.type === 'UIComponent') {
       const uiEntity = entity as UIComponentEntity;
       uiEntity.containedBy = this.parseList(containedByMatch[1] as string);
@@ -520,36 +523,36 @@ export class DSLParser {
     }
 
     // Asset contains program: >> ProgramName
-    const containsProgramMatch = line.match(/^>>\s*(\w+)$/);
+    const containsProgramMatch = trimmedLine.match(/^>>\s*(\w+)$/);
     if (containsProgramMatch && entity.type === 'Asset') {
       const assetEntity = entity as AssetEntity;
       assetEntity.containsProgram = containsProgramMatch[1] as string;
       return;
     }
 
-    // DTO Fields: - fieldName: type "description" (optional)
-    const dtoFieldMatch = line.match(CONTINUATION_PATTERNS.DTO_FIELD);
+    // DTO Fields: - fieldName: type "description" (optional) or - fieldName?: type "description"
+    const dtoFieldMatch = trimmedLine.match(CONTINUATION_PATTERNS.DTO_FIELD);
     if (dtoFieldMatch && entity.type === 'DTO') {
       const dtoEntity = entity as DTOEntity;
       const field: DTOField = {
         name: dtoFieldMatch[1] as string,
-        type: dtoFieldMatch[2]?.trim() as string,
-        description: dtoFieldMatch[3],
-        optional: dtoFieldMatch[4]?.includes('optional') || false,
+        type: dtoFieldMatch[3]?.trim() as string,
+        description: dtoFieldMatch[4],
+        optional: (dtoFieldMatch[2] === '?') || (dtoFieldMatch[5]?.includes('optional') || false),
       };
       dtoEntity.fields.push(field);
       return;
     }
 
     // Comment: # This is a comment about the entity
-    const commentMatch = line.match(CONTINUATION_PATTERNS.COMMENT);
+    const commentMatch = trimmedLine.match(CONTINUATION_PATTERNS.COMMENT);
     if (commentMatch) {
       entity.comment = commentMatch[1] as string;
       return;
     }
 
     // Description/Purpose: "Creates a new user in the database"
-    const descMatch = line.match(CONTINUATION_PATTERNS.DESCRIPTION);
+    const descMatch = trimmedLine.match(CONTINUATION_PATTERNS.DESCRIPTION);
     if (descMatch) {
       const description = descMatch[1] as string;
       
@@ -573,7 +576,7 @@ export class DSLParser {
     }
 
     // RunParameter default value: = "default-value"
-    const defaultValueMatch = line.match(CONTINUATION_PATTERNS.DEFAULT_VALUE);
+    const defaultValueMatch = trimmedLine.match(CONTINUATION_PATTERNS.DEFAULT_VALUE);
     if (defaultValueMatch && entity.type === 'RunParameter') {
       const paramEntity = entity as RunParameterEntity;
       paramEntity.defaultValue = defaultValueMatch[1] as string;
@@ -581,7 +584,7 @@ export class DSLParser {
     }
 
     // Function consumes RunParameters: $< [DATABASE_URL, API_KEY]
-    const consumesMatch = line.match(CONTINUATION_PATTERNS.CONSUMES);
+    const consumesMatch = trimmedLine.match(CONTINUATION_PATTERNS.CONSUMES);
     if (consumesMatch && entity.type === 'Function') {
       const funcEntity = entity as FunctionEntity;
       funcEntity.consumes = this.parseList(consumesMatch[1] as string);
@@ -659,12 +662,17 @@ export class DSLParser {
         const funcEntity = entity as FunctionEntity & { _dependencies?: string[] };
         if (funcEntity._dependencies) {
           const unresolvedDeps: string[] = [];
+          const dtos: string[] = [];
           
-          // Distribute dependencies based on entity types
+          // First pass: collect DTOs and distribute other entity types
           for (const dep of funcEntity._dependencies) {
             const depEntity = this.entities.get(dep);
             if (depEntity) {
               switch (depEntity.type) {
+                case 'DTO':
+                  // Collect DTOs for special handling
+                  dtos.push(dep);
+                  break;
                 case 'Function':
                 case 'Class':
                 case 'ClassFile':
@@ -679,6 +687,15 @@ export class DSLParser {
                   if (!funcEntity.affects.includes(dep)) {
                     funcEntity.affects.push(dep);
                   }
+                  
+                  // Update bidirectional reference
+                  const uiComponent = depEntity as UIComponentEntity;
+                  if (!uiComponent.affectedBy) {
+                    uiComponent.affectedBy = [];
+                  }
+                  if (!uiComponent.affectedBy.includes(funcEntity.name)) {
+                    uiComponent.affectedBy.push(funcEntity.name);
+                  }
                   break;
                 case 'Dependency':
                 case 'Asset':
@@ -689,12 +706,42 @@ export class DSLParser {
                   if (!funcEntity.consumes.includes(dep)) {
                     funcEntity.consumes.push(dep);
                   }
+                  
+                  // Update bidirectional reference for RunParameters
+                  if (depEntity.type === 'RunParameter') {
+                    const runParam = depEntity as RunParameterEntity;
+                    if (!runParam.consumedBy) {
+                      runParam.consumedBy = [];
+                    }
+                    if (!runParam.consumedBy.includes(funcEntity.name)) {
+                      runParam.consumedBy.push(funcEntity.name);
+                    }
+                  }
                   break;
-                // DTOs, Files, and Programs are not typically in dependency lists
+                // Files and Programs are typically not in dependency lists
+                default:
+                  // Keep as unresolved for other entity types
+                  unresolvedDeps.push(dep);
               }
             } else {
               // Keep unresolved dependencies for validator to check
               unresolvedDeps.push(dep);
+            }
+          }
+          
+          // Second pass: handle DTO auto-distribution
+          if (dtos.length > 0) {
+            // If no explicit input is set, assign the first DTO as input
+            if (!funcEntity.input && dtos.length >= 1) {
+              funcEntity.input = dtos[0];
+            }
+            
+            // Additional DTOs beyond the first are not supported in dependency arrays
+            // They should use explicit syntax like <- InputDTO, -> OutputDTO
+            // For now, we just ignore extra DTOs (they'll be caught by validator if needed)
+            if (dtos.length > 1) {
+              // Could add a warning here in the future
+              // Extra DTOs are simply ignored since Functions should only have one input DTO
             }
           }
           

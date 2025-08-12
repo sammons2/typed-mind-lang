@@ -1,0 +1,190 @@
+# Scenario 61: Multiple DTOs in function dependencies
+
+DataApp -> main v1.0.0
+
+main @ src/index.ts:
+  <- [DataProcessor]
+  -> [start]
+
+start :: () => void
+
+# Test: Function with single DTO input (auto-assigned)
+simpleTransform :: (input: InputDTO) => OutputDTO
+  <- InputDTO  # Should auto-assign to input
+  -> OutputDTO  # Should auto-assign to output
+
+InputDTO % "Input data"
+  - value: string "Input value"
+
+OutputDTO % "Output data"
+  - result: string "Result value"
+
+# Test: Function with multiple DTOs in dependencies
+complexTransform :: (data: ComplexInput) => ComplexOutput
+  <- [ComplexInput, ValidationRules, TransformConfig]
+  # ComplexInput -> input
+  # ValidationRules, TransformConfig -> consumed/calls?
+
+ComplexInput % "Complex input"
+  - data: string[] "Data array"
+  - options: OptionsDTO "Options"
+
+OptionsDTO % "Options"
+  - flag: boolean "Flag"
+
+ComplexOutput % "Complex output"
+  - results: string[] "Results"
+  - metadata: MetadataDTO "Metadata"
+
+MetadataDTO % "Metadata"
+  - timestamp: number "Timestamp"
+  - status: string "Status"
+
+ValidationRules % "Validation rules"
+  - required: string[] "Required fields"
+  - patterns: PatternDTO[] "Patterns"
+
+PatternDTO % "Pattern"
+  - regex: string "Pattern regex"
+  - message: string "Error message"
+
+TransformConfig % "Transform configuration"
+  - mode: string "Transform mode"
+  - settings: SettingsDTO "Settings"
+
+SettingsDTO % "Settings"
+  - parallel: boolean "Parallel processing"
+  - timeout: number "Timeout"
+
+# Test: Explicit input/output with additional DTOs
+explicitFunction :: (request: RequestDTO) => ResponseDTO
+  <- RequestDTO  # Explicit input
+  -> ResponseDTO  # Explicit output
+  <- [ConfigDTO, StateDTO]  # Additional DTOs
+
+RequestDTO % "Request"
+  - id: string "Request ID"
+  - payload: PayloadDTO "Payload"
+
+PayloadDTO % "Payload"
+  - content: string "Content"
+
+ResponseDTO % "Response"
+  - id: string "Response ID"
+  - data: DataDTO "Data"
+
+DataDTO % "Data"
+  - values: number[] "Values"
+
+ConfigDTO % "Config"
+  - setting: string "Setting"
+
+StateDTO % "State"
+  - current: string "Current state"
+
+# Edge case: Multiple potential input DTOs
+ambiguousFunction :: (a: AmbiguousA, b: AmbiguousB) => AmbiguousC
+  <- [AmbiguousA, AmbiguousB, AmbiguousC]
+  # Which are inputs? Parser should handle multiple
+
+AmbiguousA % "A"
+  - fieldA: string "Field A"
+
+AmbiguousB % "B"
+  - fieldB: string "Field B"
+
+AmbiguousC % "C"
+  - fieldC: string "Field C"
+
+# Edge case: DTO used as both input and output
+selfTransform :: (data: SelfDTO) => SelfDTO
+  <- SelfDTO
+  -> SelfDTO
+
+SelfDTO % "Self"
+  - value: string "Value"
+
+# Test: Mixed dependencies (DTOs, Functions, Classes)
+mixedDependencies :: (input: MixedInput) => MixedOutput
+  <- [MixedInput, helperFunction, DataProcessor, DATABASE_URL]
+  # Should auto-distribute correctly
+
+MixedInput % "Mixed input"
+  - data: string "Data"
+
+MixedOutput % "Mixed output"
+  - result: string "Result"
+
+helperFunction :: () => void
+
+DataProcessor #: src/processor.ts
+  => [process, validate]
+
+DATABASE_URL $env "Database URL" (required)
+
+# Edge case: Function with only DTOs in deps (no other entity types)
+pureDataFunction :: (pure: PureInput) => PureOutput
+  <- [PureInput, PureConfig, PureState]
+  -> PureOutput
+
+PureInput % "Pure input"
+  - value: number "Value"
+
+PureConfig % "Pure config"
+  - mode: string "Mode"
+
+PureState % "Pure state"
+  - active: boolean "Active"
+
+PureOutput % "Pure output"
+  - result: number "Result"
+
+# Edge case: Nested DTO references
+nestedFunction :: (nested: NestedInput) => NestedOutput
+  <- NestedInput
+  -> NestedOutput
+
+NestedInput % "Nested input"
+  - outer: OuterDTO "Outer"
+
+OuterDTO % "Outer"
+  - middle: MiddleDTO "Middle"
+
+MiddleDTO % "Middle"
+  - inner: InnerDTO "Inner"
+
+InnerDTO % "Inner"
+  - value: string "Value"
+
+NestedOutput % "Nested output"
+  - processed: ProcessedDTO "Processed"
+
+ProcessedDTO % "Processed"
+  - result: string "Result"
+
+# Test: DTO arrays and optional fields
+arrayFunction :: (arr: ArrayInput) => ArrayOutput
+  <- ArrayInput
+  -> ArrayOutput
+
+ArrayInput % "Array input"
+  - items: ItemDTO[] "Items"
+  - optional?: OptionalDTO "Optional"
+
+ItemDTO % "Item"
+  - id: number "ID"
+  - name: string "Name"
+
+OptionalDTO % "Optional"
+  - flag: boolean "Flag"
+
+ArrayOutput % "Array output"
+  - results: ResultDTO[] "Results"
+
+ResultDTO % "Result"
+  - value: string "Value"
+
+# Export functions from file
+ProcessorFile @ src/functions.ts:
+  <- [simpleTransform, complexTransform, explicitFunction]
+  -> [simpleTransform, complexTransform, explicitFunction, ambiguousFunction, selfTransform, mixedDependencies, pureDataFunction, nestedFunction, arrayFunction, helperFunction]
