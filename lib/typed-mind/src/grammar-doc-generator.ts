@@ -210,12 +210,12 @@ export class GrammarDocGenerator {
     // Validation Rules Section
     sections.push('## Validation Rules');
     sections.push('');
-    sections.push('### Bidirectional Consistency (Planned Feature)');
-    sections.push('TypedMind will enforce bidirectional relationships (currently must be manually maintained):');
-    sections.push('- Function affects UIComponent → UIComponent.affectedBy includes Function (NOT YET IMPLEMENTED)');
-    sections.push('- Function consumes RunParameter → RunParameter.consumedBy includes Function (NOT YET IMPLEMENTED)');
-    sections.push('- UIComponent contains child → child.containedBy includes parent (NOT YET IMPLEMENTED)');
-    sections.push('- Asset contains Program → Program must exist (IMPLEMENTED)');
+    sections.push('### Bidirectional Consistency');
+    sections.push('TypedMind automatically maintains bidirectional relationships:');
+    sections.push('- Function affects UIComponent → UIComponent.affectedBy includes Function');
+    sections.push('- Function consumes RunParameter → RunParameter.consumedBy includes Function');
+    sections.push('- UIComponent contains child → child.containedBy includes parent');
+    sections.push('- Asset contains Program → Program must exist');
     sections.push('');
     sections.push('### Entity Naming Rules');
     sections.push('- Names must be unique across ALL entity types');
@@ -246,7 +246,7 @@ export class GrammarDocGenerator {
     sections.push('- Mixed shortform/longform syntax is supported in the same file');
     sections.push('');
     sections.push('### Import Resolution');
-    sections.push('- Circular imports detection (NOT YET IMPLEMENTED)');
+    sections.push('- Circular imports are detected and reported as errors');
     sections.push('- Aliased imports prefix all imported entities: `@import "./auth.tmd" as Auth`');
     sections.push('- Nested imports are resolved recursively');
     sections.push('- Import paths can be relative or absolute');
@@ -453,7 +453,7 @@ export class GrammarDocGenerator {
     sections.push('- **DTOs for data, Classes for behavior**: Keep them separate');
     sections.push('- **Leverage purpose fields**: Document async, generics, DI, events, etc.');
     sections.push('- **Establish conventions**: Create project-specific semantic patterns');
-    sections.push('- **Bidirectional links**: Must be manually maintained (auto-validation planned)');
+    sections.push('- **Bidirectional links**: Automatically maintained by the parser');
     sections.push('- **Check capability matrix**: Ensure entities have the right capabilities');
 
     return sections.join('\n');

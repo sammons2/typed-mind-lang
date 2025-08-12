@@ -164,12 +164,12 @@ processOrder :: (order: OrderDTO) => void
 
 ## Validation Rules
 
-### Bidirectional Consistency (Planned Feature)
-TypedMind will enforce bidirectional relationships (currently must be manually maintained):
-- Function affects UIComponent → UIComponent.affectedBy includes Function (NOT YET IMPLEMENTED)
-- Function consumes RunParameter → RunParameter.consumedBy includes Function (NOT YET IMPLEMENTED)
-- UIComponent contains child → child.containedBy includes parent (NOT YET IMPLEMENTED)
-- Asset contains Program → Program must exist (IMPLEMENTED)
+### Bidirectional Consistency
+TypedMind automatically maintains bidirectional relationships:
+- Function affects UIComponent → UIComponent.affectedBy includes Function
+- Function consumes RunParameter → RunParameter.consumedBy includes Function
+- UIComponent contains child → child.containedBy includes parent
+- Asset contains Program → Program must exist
 
 ### Entity Naming Rules
 - Names must be unique across ALL entity types
@@ -198,7 +198,7 @@ The parser uses look-ahead to determine entity types:
 - Mixed shortform/longform syntax is supported in the same file
 
 ### Import Resolution
-- Circular imports detection (NOT YET IMPLEMENTED)
+- Circular imports are detected and reported as errors
 - Aliased imports prefix all imported entities: `@import "./auth.tmd" as Auth`
 - Nested imports are resolved recursively
 - Import paths can be relative or absolute
@@ -389,5 +389,5 @@ DataClass <: Base
 - **DTOs for data, Classes for behavior**: Keep them separate
 - **Leverage purpose fields**: Document async, generics, DI, events, etc.
 - **Establish conventions**: Create project-specific semantic patterns
-- **Bidirectional links**: Must be manually maintained (auto-validation planned)
+- **Bidirectional links**: Automatically maintained by the parser
 - **Check capability matrix**: Ensure entities have the right capabilities
