@@ -1,0 +1,68 @@
+# File Manifest
+Generated: 2025-08-12T15:44:06.811Z
+Format: name:size (B=bytes, K=KB, M=MB)
+
+```
+dist/
+  .tsbuildinfo:37K
+  formatter.d.ts:255B
+  formatter.d.ts.map:317B
+  formatter.js:836B
+  generate-grammar-doc.d.ts:81B
+  generate-grammar-doc.d.ts.map:134B
+  generate-grammar-doc.js:1K
+  grammar-doc-generator.d.ts:243B
+  grammar-doc-generator.d.ts.map:272B
+  grammar-doc-generator.js:41K
+  grammar-validator.d.ts:1K
+  grammar-validator.d.ts.map:975B
+  grammar-validator.js:9K
+  import-resolver.d.ts:616B
+  import-resolver.d.ts.map:656B
+  import-resolver.js:4K
+  index.d.ts:901B
+  index.d.ts.map:857B
+  index.js:6K
+  longform-parser.d.ts:385B
+  longform-parser.d.ts.map:429B
+  longform-parser.js:10K
+  parser-patterns.d.ts:4K
+  parser-patterns.d.ts.map:437B
+  parser-patterns.js:6K
+  parser.d.ts:1K
+  parser.d.ts.map:1K
+  parser.js:32K
+  types.d.ts:3K
+  types.d.ts.map:4K
+  types.js:77B
+  validator.d.ts:1K
+  validator.d.ts.map:947B
+  validator.js:49K
+src/
+  formatter.ts:762B
+  generate-grammar-doc.ts:1K
+  grammar-doc-generator.test.ts:3K
+  grammar-doc-generator.ts:45K
+  grammar-validator.test.ts:6K
+  grammar-validator.ts:9K
+  import-resolver.ts:4K
+  index.ts:4K
+  longform-parser.test.ts:11K
+  longform-parser.ts:9K
+  parser-patterns.ts:6K
+  parser.test.ts:4K
+  parser.ts:28K
+  types.ts:4K
+  validate-docs.test.ts:3K
+  validator.ts:42K
+.npmignore:245B
+grammar.ebnf:3K
+grammar.json:4K
+grammar.md:25K
+LONGFORM_IMPLEMENTATION.md:5K
+package.json:1K
+program.tmd:6K
+README.md:3K
+tsconfig.json:296B
+tsup.config.ts:254B
+```
