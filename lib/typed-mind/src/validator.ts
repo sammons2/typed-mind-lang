@@ -317,16 +317,35 @@ export class DSLValidator {
   }
 
   private checkCircularDeps(entities: Map<string, AnyEntity>): void {
-    const graph = this.buildDependencyGraph(entities);
+    // Check for circular import dependencies specifically
+    const importGraph = new Map<string, string[]>();
+    
+    // Build import graph (only Files and ClassFiles can import)
+    for (const [name, entity] of entities) {
+      if ((entity.type === 'File' || entity.type === 'ClassFile') && 'imports' in entity) {
+        const fileImports = entity.imports.filter((imp) => {
+          // Only track imports to other Files/ClassFiles
+          const imported = entities.get(imp);
+          return imported && (imported.type === 'File' || imported.type === 'ClassFile');
+        });
+        importGraph.set(name, fileImports);
+      }
+    }
+    
     const visited = new Set<string>();
     const recursionStack = new Set<string>();
+    const reportedCycles = new Set<string>();
 
     const hasCycle = (node: string, path: string[] = []): string[] | null => {
+      if (!importGraph.has(node)) {
+        return null;
+      }
+      
       visited.add(node);
       recursionStack.add(node);
       path.push(node);
 
-      const deps = graph.get(node) || [];
+      const deps = importGraph.get(node) || [];
       for (const dep of deps) {
         if (!visited.has(dep)) {
           const cycle = hasCycle(dep, [...path]);
@@ -340,17 +359,24 @@ export class DSLValidator {
       return null;
     };
 
-    for (const name of entities.keys()) {
+    for (const name of importGraph.keys()) {
       if (!visited.has(name)) {
         const cycle = hasCycle(name);
         if (cycle) {
-          const entity = entities.get(name);
-          if (entity) {
-            this.addError({
-              position: entity.position,
-              message: `Circular dependency detected: ${cycle.join(' -> ')}`,
-              severity: 'error',
-            });
+          // Normalize cycle to avoid reporting same cycle multiple times
+          const cycleKey = [...cycle].sort().join('->');
+          if (!reportedCycles.has(cycleKey)) {
+            reportedCycles.add(cycleKey);
+            
+            const entity = entities.get(name);
+            if (entity) {
+              this.addError({
+                position: entity.position,
+                message: `Circular import detected: ${cycle.join(' -> ')}`,
+                severity: 'error',
+                suggestion: 'Break the circular dependency by refactoring shared code into a separate module',
+              });
+            }
           }
         }
       }
@@ -416,27 +442,6 @@ export class DSLValidator {
     }
   }
 
-  private buildDependencyGraph(entities: Map<string, AnyEntity>): Map<string, string[]> {
-    const graph = new Map<string, string[]>();
-
-    for (const [name, entity] of entities) {
-      const deps: string[] = [];
-
-      if ('imports' in entity) {
-        deps.push(...entity.imports.filter((imp) => !imp.includes('*')));
-      }
-      if ('calls' in entity) {
-        deps.push(...entity.calls);
-      }
-      if (entity.type === 'Program') {
-        deps.push(entity.entry);
-      }
-
-      graph.set(name, deps);
-    }
-
-    return graph;
-  }
 
   private findSimilar(target: string, entities: Map<string, AnyEntity>): string | null {
     let bestMatch = '';
@@ -1173,4 +1178,5 @@ export class DSLValidator {
       }
     }
   }
+
 }

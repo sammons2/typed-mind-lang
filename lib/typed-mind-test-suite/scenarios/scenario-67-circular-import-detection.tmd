@@ -1,0 +1,58 @@
+# Test circular import detection
+# Files should not be able to have circular import dependencies
+
+TodoApp -> main v1.0.0
+
+main @ src/index.ts:
+  <- [ModuleA]
+  -> [start]
+
+# Direct circular import: A imports B, B imports A
+ModuleA @ src/module-a.ts:
+  <- [ModuleB, HelperA]
+  -> [functionA]
+
+ModuleB @ src/module-b.ts:
+  <- [ModuleA, HelperB]  # Circular: B imports A while A imports B
+  -> [functionB]
+
+# Indirect circular import: A -> B -> C -> A
+ServiceA @ src/service-a.ts:
+  <- [ServiceB]
+  -> [serviceMethodA]
+
+ServiceB @ src/service-b.ts:
+  <- [ServiceC]
+  -> [serviceMethodB]
+
+ServiceC @ src/service-c.ts:
+  <- [ServiceA]  # Circular: C imports A, completing the cycle
+  -> [serviceMethodC]
+
+# Self import
+SelfImporter @ src/self.ts:
+  <- [SelfImporter]  # Circular: imports itself
+  -> [selfFunction]
+
+# Valid non-circular imports
+HelperA @ src/helper-a.ts:
+  -> [helperFunctionA]
+
+HelperB @ src/helper-b.ts:
+  -> [helperFunctionB]
+
+ValidModule @ src/valid.ts:
+  <- [HelperA, HelperB]
+  -> [validFunction]
+
+# Functions exported by the modules
+start :: () => void
+functionA :: () => void
+functionB :: () => void
+serviceMethodA :: () => void
+serviceMethodB :: () => void
+serviceMethodC :: () => void
+selfFunction :: () => void
+helperFunctionA :: () => void
+helperFunctionB :: () => void
+validFunction :: () => void
