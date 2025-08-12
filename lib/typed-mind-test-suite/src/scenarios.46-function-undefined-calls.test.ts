@@ -16,7 +16,7 @@ describe('Scenario 46: Function Undefined Method Calls', () => {
     const result = checker.check(content);
     
     expect(result.valid).toBe(false);
-    expect(result.errors).toMatchSnapshot();
+    expect(result.errors).toHaveLength(11); // Multiple validation errors including orphaned entities
     
     // Check specific errors
     const errors = result.errors;
@@ -25,25 +25,35 @@ describe('Scenario 46: Function Undefined Method Calls', () => {
     const undefinedServiceError = errors.find(e => e.message.includes("UndefinedService"));
     expect(undefinedServiceError).toBeDefined();
     expect(undefinedServiceError?.message).toContain("references unknown entity 'UndefinedService'");
+    expect(undefinedServiceError?.severity).toBe('error');
+    expect(undefinedServiceError?.position.line).toBe(8); // Line where processData function is defined
     
     // Should find undefined NonExistentClass
     const nonExistentClassError = errors.find(e => e.message.includes("NonExistentClass"));
     expect(nonExistentClassError).toBeDefined();
     expect(nonExistentClassError?.message).toContain("references unknown entity 'NonExistentClass'");
+    expect(nonExistentClassError?.severity).toBe('error');
+    expect(nonExistentClassError?.position.line).toBe(8); // Line where processData function is defined
     
     // Should find error for calling method on DTO
-    const requestDTOError = errors.find(e => e.message.includes("RequestDTO") && e.message.includes("Only Classes"));
+    const requestDTOError = errors.find(e => e.message.includes("RequestDTO") && e.message.includes("Cannot call method"));
     expect(requestDTOError).toBeDefined();
     expect(requestDTOError?.message).toContain("Cannot call method 'handle' on DTO 'RequestDTO'");
+    expect(requestDTOError?.severity).toBe('error');
+    expect(requestDTOError?.position.line).toBe(14); // Line where handleRequest function is defined
     
     // Should find error for undefined someConstant.execute 
-    const constantError = errors.find(e => e.message.includes("someConstant.execute"));
+    const constantError = errors.find(e => e.message.includes("someConstant"));
     expect(constantError).toBeDefined();
     expect(constantError?.message).toContain("references unknown entity 'someConstant'");
+    expect(constantError?.severity).toBe('error');
+    expect(constantError?.position.line).toBe(14); // Line where handleRequest function is defined
     
     // Should find undefined InvalidClass
     const invalidClassError = errors.find(e => e.message.includes("InvalidClass"));
     expect(invalidClassError).toBeDefined();
     expect(invalidClassError?.message).toContain("references unknown entity 'InvalidClass'");
+    expect(invalidClassError?.severity).toBe('error');
+    expect(invalidClassError?.position.line).toBe(20); // Line where validateInput function is defined
   });
 });

@@ -1,9 +1,0 @@
-// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
-
-exports[`scenario-32-spa-react-app > should validate SPA React application architecture 1`] = `
-{
-  "errors": [],
-  "file": "scenario-32-spa-react-app.tmd",
-  "valid": true,
-}
-`;

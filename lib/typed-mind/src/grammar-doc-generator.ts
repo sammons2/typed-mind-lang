@@ -76,21 +76,17 @@ export class GrammarDocGenerator {
     sections.push('### Shortform Syntax Patterns');
     sections.push('');
 
+    // Compact entity patterns table
+    sections.push('| Entity | Pattern | Example | Regex |');
+    sections.push('|--------|---------|---------|-------|');
     for (const [name, pattern] of Object.entries(ENTITY_PATTERNS)) {
       const desc = PATTERN_DESCRIPTIONS[name as keyof typeof PATTERN_DESCRIPTIONS];
       if (desc) {
-        sections.push(`#### ${this.formatPatternName(name)}`);
-        sections.push('');
-        sections.push(`**Pattern:** \`${desc.pattern}\``);
-        sections.push('');
-        sections.push(`**Example:** \`${desc.example}\``);
-        sections.push('');
-        sections.push(`**Description:** ${desc.description}`);
-        sections.push('');
-        sections.push(`**Regex:** \`${pattern.source}\``);
-        sections.push('');
+        const entityName = this.formatPatternName(name);
+        sections.push(`| **${entityName}** | \`${desc.pattern}\` | \`${desc.example}\` | \`${pattern.source}\` |`);
       }
     }
+    sections.push('');
 
     // Continuation Patterns
     sections.push('## Continuation Patterns');
@@ -152,131 +148,157 @@ export class GrammarDocGenerator {
       }
     }
 
-    // Examples
-    sections.push('## Examples');
-    sections.push('');
-    sections.push('### Complete Application Example');
+    // Compact example showing all entity types
+    sections.push('## Quick Reference Example');
     sections.push('');
     sections.push('```tmd');
-    sections.push('# Program definition');
-    sections.push('TodoApp -> main "Main todo application" v1.0.0');
-    sections.push('');
-    sections.push('# Entry file');
-    sections.push('main @ src/index.ts:');
-    sections.push('  <- [App]');
+    sections.push('TodoApp -> main v1.0.0                      # Program');
+    sections.push('main @ src/index.ts:                        # File');
+    sections.push('  <- [UserService]');
     sections.push('  -> [startApp]');
-    sections.push('  "Application entry point"');
     sections.push('');
-    sections.push('# Start function');
-    sections.push('startApp :: () => void');
-    sections.push('  "Starts the application"');
-    sections.push('  ~ [App]');
-    sections.push('  $< [DATABASE_URL, API_KEY]');
+    sections.push('UserService #: src/services/user.ts         # ClassFile (fusion)');
+    sections.push('  <- [UserDTO]');
+    sections.push('  => [createUser, findUser]');
     sections.push('');
-    sections.push('# UI Components');
-    sections.push('App &! "Root application component"');
-    sections.push('  > [TodoList, AddTodoForm]');
+    sections.push('startApp :: () => void                      # Function');
+    sections.push('  ~> [createUser]');
     sections.push('');
-    sections.push('TodoList & "Displays list of todos"');
-    sections.push('  < [App]');
+    sections.push('createUser :: (data: UserDTO) => UserDTO    # Function');
+    sections.push('  <- UserDTO                                # Input DTO');
+    sections.push('  -> UserDTO                                # Output DTO');
     sections.push('');
-    sections.push('AddTodoForm & "Form to add new todos"');
-    sections.push('  < [App]');
+    sections.push('UserDTO %                                    # DTO');
+    sections.push('  - name: string "User name"');
+    sections.push('  - email: string "Email"');
     sections.push('');
-    sections.push('# Class-file fusion example');
-    sections.push('UserController #: src/controllers/user.ts <: BaseController');
-    sections.push('  <- [UserService, ValidationService]');
-    sections.push('  => [createUser, getUser, updateUser, deleteUser]');
-    sections.push('');
-    sections.push('BaseController #: src/controllers/base.ts');
-    sections.push('  => [handleError, authenticate]');
-    sections.push('');
-    sections.push('# Runtime parameters');
-    sections.push('DATABASE_URL $env "PostgreSQL connection string" (required)');
-    sections.push('API_KEY $env "API authentication key"');
-    sections.push('  = "default-key"');
-    sections.push('');
-    sections.push('# Dependencies');
-    sections.push('react ^ "UI library" v18.0.0');
-    sections.push('typescript ^ "TypeScript compiler" v5.0.0');
+    sections.push('# Example showing other entity types:');
+    sections.push('App &! "Root component"                     # UIComponent (root)');
+    sections.push('DATABASE_URL $env "DB connection" (required) # RunParameter');
+    sections.push('Config ! src/config.ts                      # Constants');
+    sections.push('Logo ~ "Company logo"                       # Asset');
+    sections.push('react ^ "UI library" v18.0.0                # Dependency');
     sections.push('```');
     sections.push('');
 
-    // Add architectural best practices
+    // ClassFile Fusion Section (more concise)
+    sections.push('## Key Features');
+    sections.push('');
+    sections.push('### ClassFile Fusion (`#:`)');
+    sections.push('Combines Class and File into one entity - perfect for services/controllers:');
+    sections.push('```tmd');
+    sections.push('UserService #: src/services/user.ts <: BaseService');
+    sections.push('  <- [Database, Logger]       # File imports');
+    sections.push('  => [create, update, delete] # Class methods');
+    sections.push('  -> [userHelper]             # Additional exports');
+    sections.push('```');
+    sections.push('');
+
+    // Function Dependency Intelligence (more concise)
+    sections.push('### Function Auto-Distribution');
+    sections.push('The `<- [...]` syntax intelligently categorizes mixed dependencies:');
+    sections.push('```tmd');
+    sections.push('processOrder :: (order: OrderDTO) => void');
+    sections.push('  <- [OrderDTO, validateOrder, Database, OrderUI, API_KEY]');
+    sections.push('  # Auto-distributed: input (DTO), calls (Functions/Classes),');
+    sections.push('  # affects (UI), consumes (RunParams/Assets/Constants)');
+    sections.push('```');
+    sections.push('');
+
+    // Validation Rules Section
+    sections.push('## Validation Rules');
+    sections.push('');
+    sections.push('### Bidirectional Consistency');
+    sections.push('TypedMind enforces bidirectional relationships:');
+    sections.push('- Function affects UIComponent → UIComponent.affectedBy includes Function');
+    sections.push('- Function consumes RunParameter → RunParameter.consumedBy includes Function');
+    sections.push('- UIComponent contains child → child.containedBy includes parent');
+    sections.push('- Asset contains Program → Program must exist');
+    sections.push('');
+    sections.push('### Entity Naming Rules');
+    sections.push('- Names must be unique across ALL entity types');
+    sections.push('- Exception: ClassFile can replace separate Class + File with same name');
+    sections.push('- The validator will suggest using ClassFile fusion when detecting Class/File name conflicts');
+    sections.push('');
+    sections.push('### Reference Type Validation');
+    sections.push('Each reference type has specific allowed source and target entity types:');
+    sections.push('');
+    sections.push('| Reference | From Entities | To Entities |');
+    sections.push('|-----------|---------------|-------------|');
+    sections.push('| imports | File, Class, ClassFile | Function, Class, Constants, DTO, etc. |');
+    sections.push('| exports | File, ClassFile | Function, Class, Constants, DTO, etc. |');
+    sections.push('| calls | Function | Function, Class (for methods) |');
+    sections.push('| extends | Class, ClassFile | Class, ClassFile |');
+    sections.push('| affects | Function | UIComponent |');
+    sections.push('| consumes | Function | RunParameter, Asset, Constants |');
+    sections.push('');
+
+    // Parser Intelligence Section
+    sections.push('## Parser Intelligence');
+    sections.push('');
+    sections.push('### Context-Aware Parsing');
+    sections.push('The parser uses look-ahead to determine entity types:');
+    sections.push('- `Name @ path:` followed by `=> [methods]` → Class entity');
+    sections.push('- `Name @ path:` without methods → File entity');
+    sections.push('- Inline comments (`# comment`) are extracted and stored separately');
+    sections.push('- Mixed shortform/longform syntax is supported in the same file');
+    sections.push('');
+    sections.push('### Import Resolution');
+    sections.push('- Circular imports are detected and prevented');
+    sections.push('- Aliased imports prefix all imported entities: `@import "./auth.tmd" as Auth`');
+    sections.push('- Nested imports are resolved recursively');
+    sections.push('- Import paths can be relative or absolute');
+    sections.push('');
+
+    // Compact operator reference
+    sections.push('## Operator Quick Reference');
+    sections.push('');
+    sections.push('```');
+    sections.push('->  Entry point (Program) or Exports (File/Function)');
+    sections.push('<-  Imports or Dependencies');
+    sections.push('@   File path location');
+    sections.push('#:  ClassFile fusion (class + file)');
+    sections.push('::  Function signature');
+    sections.push('<:  Class inheritance');
+    sections.push('!   Constants marker');
+    sections.push('%   DTO marker');
+    sections.push('~   Asset description or Function affects UI');
+    sections.push('&   UIComponent (&! for root)');
+    sections.push('$   RunParameter ($env, $iam, etc.)');
+    sections.push('^   External dependency');
+    sections.push('~>  Function calls');
+    sections.push('=>  Class methods');
+    sections.push('>>  Asset contains program');
+    sections.push('>   UIComponent contains');
+    sections.push('<   UIComponent contained by');
+    sections.push('$<  Function consumes parameters');
+    sections.push(':   Constants schema');
+    sections.push('=   Parameter default value');
+    sections.push('```');
+    sections.push('');
+
+    // Concise DTOs vs Classes
+    sections.push('### DTOs vs Classes');
+    sections.push('**DTOs**: Pure data structures (NO functions allowed)');
+    sections.push('**Classes**: Behavior and business logic (have methods)');
+    sections.push('```tmd');
+    sections.push('UserDTO %                            # DTO: data only');
+    sections.push('  - name: string "User name"');
+    sections.push('  - email: string');
+    sections.push('');
+    sections.push('UserService #: src/services/user.ts # Class: behavior');
+    sections.push('  => [createUser, findUser]         # Has methods');
+    sections.push('```');
+    sections.push('');
+
+    // Compact best practices
     sections.push('## Best Practices');
     sections.push('');
-    sections.push('### Separate Data from Behavior: DTOs vs Classes');
-    sections.push('');
-    sections.push('**Key Principle**: DTOs are for data structures only, Classes are for behavior.');
-    sections.push('');
-    sections.push('#### What are DTOs?');
-    sections.push('DTOs (Data Transfer Objects) represent pure data structures with no behavior:');
-    sections.push('- Configuration objects');
-    sections.push('- API request/response payloads');
-    sections.push('- Database records');
-    sections.push('- Function parameters');
-    sections.push('- Any data that needs to be serialized/deserialized');
-    sections.push('');
-    sections.push('**Important**: DTOs cannot have fields of type `Function` or contain function names. The TypedMind validator will reject DTOs with function fields.');
-    sections.push('');
-    sections.push('#### Classes vs DTOs');
-    sections.push('- **DTOs**: Only data fields (string, number, boolean, arrays, objects, other DTOs)');
-    sections.push('- **Classes**: Contain behavior (methods) and can use DTOs for their data');
-    sections.push('');
-    sections.push('```tmd');
-    sections.push('# ✅ Good: DTOs contain only data');
-    sections.push('CreateUserDTO : "Data for creating a user"');
-    sections.push('  - name: string "User\'s full name"');
-    sections.push('  - email: string "User\'s email address"');
-    sections.push('  - password: string "Hashed password"');
-    sections.push('');
-    sections.push('ConfigDTO : "Application configuration"');
-    sections.push('  - databaseUrl: string "Database connection"');
-    sections.push('  - port: number "Server port"');
-    sections.push('  - logLevel: string "Logging level"');
-    sections.push('');
-    sections.push('# ✅ Good: Classes contain DTOs and behavior');
-    sections.push('UserService <: BaseService');
-    sections.push('  <- CreateUserDTO, UserResponseDTO  # Uses DTOs for data');
-    sections.push('  => [createUser, getUsers, updateUser]  # Contains behavior');
-    sections.push('');
-    sections.push('# ❌ Bad: DTOs with function references');
-    sections.push('UserServiceDTO : "Service with functions"');
-    sections.push('  - createFunction: string "Name of create function"  # NO! This is behavior, not data');
-    sections.push('```');
-    sections.push('');
-    sections.push('### Use ClassFile for Services and Controllers');
-    sections.push('');
-    sections.push('ClassFile entities (`#:`) are a powerful fusion that combines both class and file definitions in a single entity.');
-    sections.push('');
-    sections.push('#### When to use ClassFile');
-    sections.push('Use ClassFile when you have a class that is the primary export of a file:');
-    sections.push('- Service classes (UserService, AuthService)');
-    sections.push('- Controller classes (UserController, ProductController)');
-    sections.push('- Utility classes (Logger, Validator)');
-    sections.push('- Any class that "owns" its file');
-    sections.push('');
-    sections.push('#### Benefits of ClassFile');
-    sections.push('1. **Eliminates redundancy**: No need to declare both a Class and a File');
-    sections.push('2. **Clear ownership**: The class and file are explicitly linked');
-    sections.push('3. **Supports all features**: Can have imports, exports, methods, and inheritance');
-    sections.push('4. **Better for refactoring**: Moving the class automatically moves the file reference');
-    sections.push('');
-    sections.push('```tmd');
-    sections.push('# ✅ Good: ClassFile combines file and class');
-    sections.push('UserController #: src/controllers/user.controller.ts <: BaseController');
-    sections.push('  <- [UserService, ValidationMiddleware]  # File imports');
-    sections.push('  => [create, read, update, delete]  # Class methods');
-    sections.push('  -> [userRouter]  # File exports');
-    sections.push('');
-    sections.push('# ❌ Avoid: Separate class and file for the same entity');
-    sections.push('UserController <: BaseController');
-    sections.push('  => [create, read, update, delete]');
-    sections.push('');
-    sections.push('UserControllerFile @ src/controllers/user.controller.ts:');
-    sections.push('  <- [UserService, ValidationMiddleware]');
-    sections.push('  -> [UserController, userRouter]');
-    sections.push('```');
+    sections.push('- **Use ClassFile (`#:`)** for services, controllers, repositories');
+    sections.push('- **Group by feature**: Keep related entities together');
+    sections.push('- **Mix dependencies freely**: Parser auto-categorizes them');
+    sections.push('- **DTOs for data, Classes for behavior**: Keep them separate');
+    sections.push('- **Bidirectional links**: Validator ensures consistency');
 
     return sections.join('\n');
   }

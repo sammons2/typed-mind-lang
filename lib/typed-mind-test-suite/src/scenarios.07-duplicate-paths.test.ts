@@ -11,23 +11,22 @@ describe('scenario-07-duplicate-paths', () => {
   const checker = new DSLChecker();
   const scenarioFile = 'scenario-07-duplicate-paths.tmd';
 
-  it('should validate 07 duplicate paths', () => {
+  it('should detect duplicate file paths as validation errors', () => {
     const content = readFileSync(join(__dirname, '..', 'scenarios', scenarioFile), 'utf-8');
     const result = checker.check(content);
     
-    // Create a clean output for snapshots
-    const output = {
-      file: scenarioFile,
-      valid: result.valid,
-      errors: result.errors.map(err => ({
-        line: err.position.line,
-        column: err.position.column,
-        message: err.message,
-        severity: err.severity,
-        suggestion: err.suggestion
-      }))
-    };
+    // The DSL should be invalid due to duplicate paths
+    expect(result.valid).toBe(false);
     
-    expect(output).toMatchSnapshot();
+    // Should have exactly one error
+    expect(result.errors).toHaveLength(1);
+    
+    // Check the duplicate path error details
+    const duplicatePathError = result.errors[0];
+    expect(duplicatePathError.position.line).toBe(10);
+    expect(duplicatePathError.position.column).toBe(1);
+    expect(duplicatePathError.message).toBe("Duplicate path 'src/shared/utils.ts'");
+    expect(duplicatePathError.severity).toBe('error');
+    expect(duplicatePathError.suggestion).toBe("Already used by 'FileOne'");
   });
 });

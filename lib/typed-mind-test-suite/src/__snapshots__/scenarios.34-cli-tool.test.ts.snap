@@ -1,9 +1,0 @@
-// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
-
-exports[`scenario-34-cli-tool > should validate CLI tool architecture 1`] = `
-{
-  "errors": [],
-  "file": "scenario-34-cli-tool.tmd",
-  "valid": true,
-}
-`;

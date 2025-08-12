@@ -1,9 +1,0 @@
-// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
-
-exports[`scenario-36-static-website > should validate static website with build pipeline architecture 1`] = `
-{
-  "errors": [],
-  "file": "scenario-36-static-website.tmd",
-  "valid": true,
-}
-`;

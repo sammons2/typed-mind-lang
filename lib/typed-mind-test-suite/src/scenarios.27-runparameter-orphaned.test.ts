@@ -16,28 +16,43 @@ describe('scenario-27-runparameter-orphaned', () => {
     const content = readFileSync(filePath, 'utf-8');
     const result = checker.check(content, filePath);
     
-    // Create a clean output for snapshots
-    const output = {
-      file: scenarioFile,
-      valid: result.valid,
-      errors: result.errors.map(err => ({
-        line: err.position.line,
-        column: err.position.column,
-        message: err.message,
-        severity: err.severity,
-        suggestion: err.suggestion
-      }))
-    };
+    expect(result.valid).toBe(false);
+    expect(result.errors).toHaveLength(2);
     
-    expect(output.valid).toBe(false);
-    
-    // Should have 2 orphaned RunParameter errors
-    const orphanedErrors = output.errors.filter(e => 
-      e.message.includes('Orphaned entity') && 
-      (e.message.includes('UNUSED_PARAM') || e.message.includes('SECRET_KEY'))
+    // Should detect orphaned UNUSED_PARAM
+    const unusedParamError = result.errors.find(err => 
+      err.message === "Orphaned entity 'UNUSED_PARAM'"
     );
-    expect(orphanedErrors).toHaveLength(2);
+    expect(unusedParamError).toBeDefined();
+    expect(unusedParamError?.position.line).toBe(12);
+    expect(unusedParamError?.severity).toBe('error');
+    expect(unusedParamError?.suggestion).toBe('Remove or reference this entity');
     
-    expect(output).toMatchSnapshot();
+    // Should detect orphaned SECRET_KEY
+    const secretKeyError = result.errors.find(err => 
+      err.message === "Orphaned entity 'SECRET_KEY'"
+    );
+    expect(secretKeyError).toBeDefined();
+    expect(secretKeyError?.position.line).toBe(13);
+    expect(secretKeyError?.severity).toBe('error');
+    expect(secretKeyError?.suggestion).toBe('Remove or reference this entity');
+    
+    // Get parsed entities using parse method  
+    const parseResult = checker.parse(content, filePath);
+    const entities = parseResult.entities;
+    expect(entities.has('UNUSED_PARAM')).toBe(true);
+    expect(entities.has('SECRET_KEY')).toBe(true);
+    expect(entities.has('API_KEY')).toBe(true);
+    expect(entities.has('DATABASE_URL')).toBe(true);
+    
+    // Verify types
+    const unusedParam = entities.get('UNUSED_PARAM') as any;
+    expect(unusedParam?.type).toBe('RunParameter');
+    expect(unusedParam?.paramType).toBe('env');
+    
+    const secretKey = entities.get('SECRET_KEY') as any;
+    expect(secretKey?.type).toBe('RunParameter');
+    expect(secretKey?.paramType).toBe('config');
+    expect(secretKey?.defaultValue).toBe('secret123');
   });
 });

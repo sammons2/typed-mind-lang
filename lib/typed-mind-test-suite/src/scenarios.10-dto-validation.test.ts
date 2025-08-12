@@ -11,23 +11,22 @@ describe('scenario-10-dto-validation', () => {
   const checker = new DSLChecker();
   const scenarioFile = 'scenario-10-dto-validation.tmd';
 
-  it('should validate 10 dto validation', () => {
+  it('should validate DTO structure and detect validation errors', () => {
     const content = readFileSync(join(__dirname, '..', 'scenarios', scenarioFile), 'utf-8');
     const result = checker.check(content);
     
-    // Create a clean output for snapshots
-    const output = {
-      file: scenarioFile,
-      valid: result.valid,
-      errors: result.errors.map(err => ({
-        line: err.position.line,
-        column: err.position.column,
-        message: err.message,
-        severity: err.severity,
-        suggestion: err.suggestion
-      }))
-    };
+    // Should be invalid due to validation errors
+    expect(result.valid).toBe(false);
     
-    expect(output).toMatchSnapshot();
+    // Should have exactly 1 error
+    expect(result.errors).toHaveLength(1);
+    
+    // Check the specific error about orphaned UserFile entity
+    const orphanedError = result.errors[0];
+    expect(orphanedError.position.line).toBe(19);
+    expect(orphanedError.position.column).toBe(1);
+    expect(orphanedError.message).toBe("Orphaned entity 'UserFile'");
+    expect(orphanedError.severity).toBe('error');
+    expect(orphanedError.suggestion).toBe('Remove or reference this entity');
   });
 });

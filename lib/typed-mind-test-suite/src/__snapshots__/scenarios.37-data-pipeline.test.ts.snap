@@ -1,9 +1,0 @@
-// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
-
-exports[`scenario-37-data-pipeline > should validate data pipeline ETL architecture 1`] = `
-{
-  "errors": [],
-  "file": "scenario-37-data-pipeline.tmd",
-  "valid": true,
-}
-`;

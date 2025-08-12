@@ -1,9 +1,0 @@
-// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
-
-exports[`scenario-08-multiple-programs > should validate 08 multiple programs 1`] = `
-{
-  "errors": [],
-  "file": "scenario-08-multiple-programs.tmd",
-  "valid": true,
-}
-`;

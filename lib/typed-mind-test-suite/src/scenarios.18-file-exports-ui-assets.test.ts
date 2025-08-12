@@ -15,19 +15,40 @@ describe('scenario-18-file-exports-ui-assets', () => {
     const content = readFileSync(join(__dirname, '..', 'scenarios', scenarioFile), 'utf-8');
     const result = checker.check(content);
     
-    // Create a clean output for snapshots
-    const output = {
-      file: scenarioFile,
-      valid: result.valid,
-      errors: result.errors.map(err => ({
-        line: err.position.line,
-        column: err.position.column,
-        message: err.message,
-        severity: err.severity,
-        suggestion: err.suggestion
-      }))
-    };
+    // Should be invalid due to validation errors
+    expect(result.valid).toBe(false);
     
-    expect(output).toMatchSnapshot();
+    // Should have exactly 5 validation errors
+    expect(result.errors).toHaveLength(5);
+    
+    // Check for orphaned file entities
+    const orphanedFileErrors = result.errors.filter(err => 
+      err.message.includes('Orphaned entity') && 
+      (err.message.includes('ComponentsFile') || err.message.includes('AssetsFile'))
+    );
+    expect(orphanedFileErrors).toHaveLength(2);
+    
+    // Check for UIComponent containment errors
+    const uiContainmentErrors = result.errors.filter(err => 
+      err.message.includes('is not contained by any other UIComponent') &&
+      (err.message.includes('Button') || 
+       err.message.includes('Input') || 
+       err.message.includes('Modal'))
+    );
+    expect(uiContainmentErrors).toHaveLength(3);
+    
+    // Verify specific error messages exist
+    expect(result.errors.some(err => err.message.includes("Orphaned entity 'ComponentsFile'"))).toBe(true);
+    expect(result.errors.some(err => err.message.includes("Orphaned entity 'AssetsFile'"))).toBe(true);
+    expect(result.errors.some(err => err.message.includes("UIComponent 'Button' is not contained by any other UIComponent"))).toBe(true);
+    expect(result.errors.some(err => err.message.includes("UIComponent 'Input' is not contained by any other UIComponent"))).toBe(true);
+    expect(result.errors.some(err => err.message.includes("UIComponent 'Modal' is not contained by any other UIComponent"))).toBe(true);
+    
+    // Verify that files can export UI components and assets (this scenario tests that capability)
+    // The fact that we can parse the file without syntax errors demonstrates this works
+    expect(result.errors.every(err => 
+      !err.message.includes('cannot export') && 
+      !err.message.includes('invalid export')
+    )).toBe(true);
   });
 });

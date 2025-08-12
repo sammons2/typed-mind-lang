@@ -44,7 +44,7 @@ export class DSLValidator {
     },
     consumes: { 
       from: ['Function'], 
-      to: ['RunParameter'] 
+      to: ['RunParameter', 'Asset', 'Dependency', 'Constants'] 
     },
     consumedBy: { 
       from: ['RunParameter'], 
@@ -100,7 +100,7 @@ export class DSLValidator {
     this.checkFunctionUIComponentAffects(entities);
     this.checkAssetProgramRelationships(entities);
     this.checkUIComponentContainment(entities);
-    this.checkRunParameterConsumption(entities);
+    this.checkFunctionConsumption(entities);
 
     return {
       valid: this.errors.length === 0,
@@ -857,29 +857,31 @@ export class DSLValidator {
     }
   }
 
-  private checkRunParameterConsumption(entities: Map<string, AnyEntity>): void {
-    // Check that Functions' consumes references exist and are RunParameters
+  private checkFunctionConsumption(entities: Map<string, AnyEntity>): void {
+    // Check that Functions' consumes references exist and are valid types
+    const validConsumeTypes = ['RunParameter', 'Asset', 'Dependency', 'Constants'];
+    
     for (const entity of entities.values()) {
       if (entity.type === 'Function') {
         const funcEntity = entity as FunctionEntity;
         
         if (funcEntity.consumes) {
-          for (const paramName of funcEntity.consumes) {
-            const paramEntity = entities.get(paramName);
+          for (const consumeName of funcEntity.consumes) {
+            const consumeEntity = entities.get(consumeName);
             
-            if (!paramEntity) {
+            if (!consumeEntity) {
               this.addError({
                 position: entity.position,
-                message: `Function '${entity.name}' consumes unknown parameter '${paramName}'`,
+                message: `Function '${entity.name}' consumes unknown entity '${consumeName}'`,
                 severity: 'error',
-                suggestion: `Define '${paramName}' as a RunParameter`,
+                suggestion: `Define '${consumeName}' as one of: ${validConsumeTypes.join(', ')}`,
               });
-            } else if (paramEntity.type !== 'RunParameter') {
+            } else if (!validConsumeTypes.includes(consumeEntity.type)) {
               this.addError({
                 position: entity.position,
-                message: `Function '${entity.name}' cannot consume '${paramName}' (it's a ${paramEntity.type})`,
+                message: `Function '${entity.name}' cannot consume '${consumeName}' (it's a ${consumeEntity.type})`,
                 severity: 'error',
-                suggestion: `Functions can only consume RunParameters`,
+                suggestion: `Functions can only consume: ${validConsumeTypes.join(', ')}`,
               });
             }
           }
@@ -1042,7 +1044,7 @@ export class DSLValidator {
         }
       }
 
-      // Track consumes (RunParameters)
+      // Track consumes (RunParameters, Assets, Dependencies, Constants)
       if ('consumes' in referencer) {
         const func = referencer as FunctionEntity;
         if (func.consumes) {

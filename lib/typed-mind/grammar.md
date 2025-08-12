@@ -40,105 +40,18 @@ TypedMind supports the following entity types:
 
 ### Shortform Syntax Patterns
 
-#### Program
-
-**Pattern:** `Name -> EntryPoint [Purpose] [Version]`
-
-**Example:** `TodoApp -> AppEntry "Main application" v1.0.0`
-
-**Description:** Defines an application entry point
-
-**Regex:** `^(\w+)\s*->\s*(\w+)(?:\s+"([^"]+)")?(?:\s+v([\d.]+))?$`
-
-#### File
-
-**Pattern:** `Name @ path:`
-
-**Example:** `UserService @ src/services/user.ts:`
-
-**Description:** Defines a source code file
-
-**Regex:** `^(\w+)\s*@\s*([^:]+):`
-
-#### Function
-
-**Pattern:** `Name :: Signature`
-
-**Example:** `createUser :: (data: UserDTO) => Promise<User>`
-
-**Description:** Defines a function with its type signature
-
-**Regex:** `^(\w+)\s*::\s*(.+)$`
-
-#### Class
-
-**Pattern:** `Name <: BaseClass[, Interface1, Interface2]`
-
-**Example:** `UserController <: BaseController, IController`
-
-**Description:** Defines a class with inheritance
-
-**Regex:** `^(\w+)\s*<:\s*(.*)$`
-
-#### Class File
-
-**Pattern:** `Name #: path [<: BaseClass[, Interface1, Interface2]]`
-
-**Example:** `UserController #: src/controllers/user.ts <: BaseController`
-
-**Description:** Defines a class-file fusion entity (both class and file)
-
-**Regex:** `^([A-Za-z][A-Za-z0-9_]*)\s*#:\s*([^\s<]+)(?:\s*<:\s*(.+))?$`
-
-#### Constants
-
-**Pattern:** `Name ! path [: Schema]`
-
-**Example:** `Config ! src/config.ts : ConfigSchema`
-
-**Description:** Defines a constants/configuration file
-
-**Regex:** `^(\w+)\s*!\s*([^:]+)(?:\s*:\s*(\w+))?$`
-
-#### Asset
-
-**Pattern:** `Name ~ Description`
-
-**Example:** `Logo ~ "Company logo SVG"`
-
-**Description:** Defines a static asset
-
-**Regex:** `^(\w+)\s*~\s*"([^"]+)"$`
-
-#### Ui Component
-
-**Pattern:** `Name & Description | Name &! Description`
-
-**Example:** `App &! "Root application component"`
-
-**Description:** Defines a UI component (&! for root)
-
-**Regex:** `^(\w+)\s*(&!?)\s*"([^"]+)"$`
-
-#### Run Parameter
-
-**Pattern:** `Name $type Description [(required)]`
-
-**Example:** `DATABASE_URL $env "PostgreSQL connection" (required)`
-
-**Description:** Defines a runtime parameter
-
-**Regex:** `^(\w+)\s*\$(\w+)\s*"([^"]+)"(?:\s*\((\w+)\))?$`
-
-#### Dependency
-
-**Pattern:** `Name ^ Purpose [Version]`
-
-**Example:** `axios ^ "HTTP client library" v3.0.0`
-
-**Description:** Defines an external dependency
-
-**Regex:** `^([@\w\-/]+)\s*\^\s*"([^"]+)"(?:\s*v?([\d.\-\w]+))?$`
+| Entity | Pattern | Example | Regex |
+|--------|---------|---------|-------|
+| **Program** | `Name -> EntryPoint [Purpose] [Version]` | `TodoApp -> AppEntry "Main application" v1.0.0` | `^(\w+)\s*->\s*(\w+)(?:\s+"([^"]+)")?(?:\s+v([\d.]+))?$` |
+| **File** | `Name @ path:` | `UserService @ src/services/user.ts:` | `^(\w+)\s*@\s*([^:]+):` |
+| **Function** | `Name :: Signature` | `createUser :: (data: UserDTO) => Promise<User>` | `^(\w+)\s*::\s*(.+)$` |
+| **Class** | `Name <: BaseClass[, Interface1, Interface2]` | `UserController <: BaseController, IController` | `^(\w+)\s*<:\s*(.*)$` |
+| **Class File** | `Name #: path [<: BaseClass[, Interface1, Interface2]]` | `UserController #: src/controllers/user.ts <: BaseController` | `^([A-Za-z][A-Za-z0-9_]*)\s*#:\s*([^\s<]+)(?:\s*<:\s*(.+))?$` |
+| **Constants** | `Name ! path [: Schema]` | `Config ! src/config.ts : ConfigSchema` | `^(\w+)\s*!\s*([^:]+)(?:\s*:\s*(\w+))?$` |
+| **Asset** | `Name ~ Description` | `Logo ~ "Company logo SVG"` | `^(\w+)\s*~\s*"([^"]+)"$` |
+| **Ui Component** | `Name & Description | Name &! Description` | `App &! "Root application component"` | `^(\w+)\s*(&!?)\s*"([^"]+)"$` |
+| **Run Parameter** | `Name $type Description [(required)]` | `DATABASE_URL $env "PostgreSQL connection" (required)` | `^(\w+)\s*\$(\w+)\s*"([^"]+)"(?:\s*\((\w+)\))?$` |
+| **Dependency** | `Name ^ Purpose [Version]` | `axios ^ "HTTP client library" v3.0.0` | `^([@\w\-/]+)\s*\^\s*"([^"]+)"(?:\s*v?([\d.\-\w]+))?$` |
 
 ## Continuation Patterns
 
@@ -196,125 +109,139 @@ These patterns are used for general parsing tasks:
 
 **Regex:** `^(.+?)\s+#\s+(.+)$`
 
-## Examples
-
-### Complete Application Example
+## Quick Reference Example
 
 ```tmd
-# Program definition
-TodoApp -> main "Main todo application" v1.0.0
-
-# Entry file
-main @ src/index.ts:
-  <- [App]
+TodoApp -> main v1.0.0                      # Program
+main @ src/index.ts:                        # File
+  <- [UserService]
   -> [startApp]
-  "Application entry point"
 
-# Start function
-startApp :: () => void
-  "Starts the application"
-  ~ [App]
-  $< [DATABASE_URL, API_KEY]
+UserService #: src/services/user.ts         # ClassFile (fusion)
+  <- [UserDTO]
+  => [createUser, findUser]
 
-# UI Components
-App &! "Root application component"
-  > [TodoList, AddTodoForm]
+startApp :: () => void                      # Function
+  ~> [createUser]
 
-TodoList & "Displays list of todos"
-  < [App]
+createUser :: (data: UserDTO) => UserDTO    # Function
+  <- UserDTO                                # Input DTO
+  -> UserDTO                                # Output DTO
 
-AddTodoForm & "Form to add new todos"
-  < [App]
+UserDTO %                                    # DTO
+  - name: string "User name"
+  - email: string "Email"
 
-# Class-file fusion example
-UserController #: src/controllers/user.ts <: BaseController
-  <- [UserService, ValidationService]
-  => [createUser, getUser, updateUser, deleteUser]
+# Example showing other entity types:
+App &! "Root component"                     # UIComponent (root)
+DATABASE_URL $env "DB connection" (required) # RunParameter
+Config ! src/config.ts                      # Constants
+Logo ~ "Company logo"                       # Asset
+react ^ "UI library" v18.0.0                # Dependency
+```
 
-BaseController #: src/controllers/base.ts
-  => [handleError, authenticate]
+## Key Features
 
-# Runtime parameters
-DATABASE_URL $env "PostgreSQL connection string" (required)
-API_KEY $env "API authentication key"
-  = "default-key"
+### ClassFile Fusion (`#:`)
+Combines Class and File into one entity - perfect for services/controllers:
+```tmd
+UserService #: src/services/user.ts <: BaseService
+  <- [Database, Logger]       # File imports
+  => [create, update, delete] # Class methods
+  -> [userHelper]             # Additional exports
+```
 
-# Dependencies
-react ^ "UI library" v18.0.0
-typescript ^ "TypeScript compiler" v5.0.0
+### Function Auto-Distribution
+The `<- [...]` syntax intelligently categorizes mixed dependencies:
+```tmd
+processOrder :: (order: OrderDTO) => void
+  <- [OrderDTO, validateOrder, Database, OrderUI, API_KEY]
+  # Auto-distributed: input (DTO), calls (Functions/Classes),
+  # affects (UI), consumes (RunParams/Assets/Constants)
+```
+
+## Validation Rules
+
+### Bidirectional Consistency
+TypedMind enforces bidirectional relationships:
+- Function affects UIComponent → UIComponent.affectedBy includes Function
+- Function consumes RunParameter → RunParameter.consumedBy includes Function
+- UIComponent contains child → child.containedBy includes parent
+- Asset contains Program → Program must exist
+
+### Entity Naming Rules
+- Names must be unique across ALL entity types
+- Exception: ClassFile can replace separate Class + File with same name
+- The validator will suggest using ClassFile fusion when detecting Class/File name conflicts
+
+### Reference Type Validation
+Each reference type has specific allowed source and target entity types:
+
+| Reference | From Entities | To Entities |
+|-----------|---------------|-------------|
+| imports | File, Class, ClassFile | Function, Class, Constants, DTO, etc. |
+| exports | File, ClassFile | Function, Class, Constants, DTO, etc. |
+| calls | Function | Function, Class (for methods) |
+| extends | Class, ClassFile | Class, ClassFile |
+| affects | Function | UIComponent |
+| consumes | Function | RunParameter, Asset, Constants |
+
+## Parser Intelligence
+
+### Context-Aware Parsing
+The parser uses look-ahead to determine entity types:
+- `Name @ path:` followed by `=> [methods]` → Class entity
+- `Name @ path:` without methods → File entity
+- Inline comments (`# comment`) are extracted and stored separately
+- Mixed shortform/longform syntax is supported in the same file
+
+### Import Resolution
+- Circular imports are detected and prevented
+- Aliased imports prefix all imported entities: `@import "./auth.tmd" as Auth`
+- Nested imports are resolved recursively
+- Import paths can be relative or absolute
+
+## Operator Quick Reference
+
+```
+->  Entry point (Program) or Exports (File/Function)
+<-  Imports or Dependencies
+@   File path location
+#:  ClassFile fusion (class + file)
+::  Function signature
+<:  Class inheritance
+!   Constants marker
+%   DTO marker
+~   Asset description or Function affects UI
+&   UIComponent (&! for root)
+$   RunParameter ($env, $iam, etc.)
+^   External dependency
+~>  Function calls
+=>  Class methods
+>>  Asset contains program
+>   UIComponent contains
+<   UIComponent contained by
+$<  Function consumes parameters
+:   Constants schema
+=   Parameter default value
+```
+
+### DTOs vs Classes
+**DTOs**: Pure data structures (NO functions allowed)
+**Classes**: Behavior and business logic (have methods)
+```tmd
+UserDTO %                            # DTO: data only
+  - name: string "User name"
+  - email: string
+
+UserService #: src/services/user.ts # Class: behavior
+  => [createUser, findUser]         # Has methods
 ```
 
 ## Best Practices
 
-### Separate Data from Behavior: DTOs vs Classes
-
-**Key Principle**: DTOs are for data structures only, Classes are for behavior.
-
-#### What are DTOs?
-DTOs (Data Transfer Objects) represent pure data structures with no behavior:
-- Configuration objects
-- API request/response payloads
-- Database records
-- Function parameters
-- Any data that needs to be serialized/deserialized
-
-**Important**: DTOs cannot have fields of type `Function` or contain function names. The TypedMind validator will reject DTOs with function fields.
-
-#### Classes vs DTOs
-- **DTOs**: Only data fields (string, number, boolean, arrays, objects, other DTOs)
-- **Classes**: Contain behavior (methods) and can use DTOs for their data
-
-```tmd
-# ✅ Good: DTOs contain only data
-CreateUserDTO : "Data for creating a user"
-  - name: string "User's full name"
-  - email: string "User's email address"
-  - password: string "Hashed password"
-
-ConfigDTO : "Application configuration"
-  - databaseUrl: string "Database connection"
-  - port: number "Server port"
-  - logLevel: string "Logging level"
-
-# ✅ Good: Classes contain DTOs and behavior
-UserService <: BaseService
-  <- CreateUserDTO, UserResponseDTO  # Uses DTOs for data
-  => [createUser, getUsers, updateUser]  # Contains behavior
-
-# ❌ Bad: DTOs with function references
-UserServiceDTO : "Service with functions"
-  - createFunction: string "Name of create function"  # NO! This is behavior, not data
-```
-
-### Use ClassFile for Services and Controllers
-
-ClassFile entities (`#:`) are a powerful fusion that combines both class and file definitions in a single entity.
-
-#### When to use ClassFile
-Use ClassFile when you have a class that is the primary export of a file:
-- Service classes (UserService, AuthService)
-- Controller classes (UserController, ProductController)
-- Utility classes (Logger, Validator)
-- Any class that "owns" its file
-
-#### Benefits of ClassFile
-1. **Eliminates redundancy**: No need to declare both a Class and a File
-2. **Clear ownership**: The class and file are explicitly linked
-3. **Supports all features**: Can have imports, exports, methods, and inheritance
-4. **Better for refactoring**: Moving the class automatically moves the file reference
-
-```tmd
-# ✅ Good: ClassFile combines file and class
-UserController #: src/controllers/user.controller.ts <: BaseController
-  <- [UserService, ValidationMiddleware]  # File imports
-  => [create, read, update, delete]  # Class methods
-  -> [userRouter]  # File exports
-
-# ❌ Avoid: Separate class and file for the same entity
-UserController <: BaseController
-  => [create, read, update, delete]
-
-UserControllerFile @ src/controllers/user.controller.ts:
-  <- [UserService, ValidationMiddleware]
-  -> [UserController, userRouter]
-```
+- **Use ClassFile (`#:`)** for services, controllers, repositories
+- **Group by feature**: Keep related entities together
+- **Mix dependencies freely**: Parser auto-categorizes them
+- **DTOs for data, Classes for behavior**: Keep them separate
+- **Bidirectional links**: Validator ensures consistency

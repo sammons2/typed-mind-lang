@@ -1,0 +1,61 @@
+# Test DTO complex structures and edge cases
+DTOTestApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  <- [DTOFile]
+  -> [processData]
+
+DTOFile @ src/types.ts:
+  -> [EmptyDTO, NestedDTO, ArrayFieldDTO, SelfReferencingDTO, ComplexDTO]
+
+# Empty DTO - should be valid
+EmptyDTO % "Empty data structure"
+
+# DTO with nested DTO fields
+NestedDTO % "DTO with nested structures"
+  - user: UserDTO "User information"
+  - profile: ProfileDTO "User profile"
+  - settings: SettingsDTO "User settings"
+
+# DTO with array field types
+ArrayFieldDTO % "DTO with array fields"
+  - tags: string[] "List of tags"
+  - scores: number[] "List of scores"
+  - users: UserDTO[] "List of users"
+  - matrix: number[][] "2D array of numbers"
+
+# Self-referencing DTO - should be valid
+SelfReferencingDTO % "Self-referencing structure"
+  - parent: SelfReferencingDTO "Parent reference"
+  - children: SelfReferencingDTO[] "Child references"
+  - name: string "Node name"
+
+# Complex nested structure
+ComplexDTO % "Complex nested DTO"
+  - id: string "Unique identifier"
+  - metadata: object "Generic metadata object"
+  - config: { apiUrl: string, timeout: number } "Inline object type"
+  - optional?: string "Optional field"
+  - union: string | number "Union type field"
+  - tuple: [string, number, boolean] "Tuple type"
+
+# Supporting DTOs
+UserDTO % "User data"
+  - id: string "User ID"
+  - name: string "User name"
+  - email: string "Email address"
+
+ProfileDTO % "User profile"
+  - bio: string "Biography"
+  - avatar: string "Avatar URL"
+  - preferences: object "User preferences"
+
+SettingsDTO % "User settings"
+  - theme: string "UI theme"
+  - notifications: boolean "Enable notifications"
+  - language: string "Preferred language"
+
+# Function to test DTO usage
+processData :: (input: ComplexDTO) => NestedDTO
+  <- ComplexDTO
+  -> NestedDTO

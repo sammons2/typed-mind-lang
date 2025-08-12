@@ -11,23 +11,25 @@ describe('scenario-03-circular-dependency', () => {
   const checker = new DSLChecker();
   const scenarioFile = 'scenario-03-circular-dependency.tmd';
 
-  it('should validate 03 circular dependency', () => {
+  it('should detect circular dependency between functions', () => {
     const content = readFileSync(join(__dirname, '..', 'scenarios', scenarioFile), 'utf-8');
     const result = checker.check(content);
     
-    // Create a clean output for snapshots
-    const output = {
-      file: scenarioFile,
-      valid: result.valid,
-      errors: result.errors.map(err => ({
-        line: err.position.line,
-        column: err.position.column,
-        message: err.message,
-        severity: err.severity,
-        suggestion: err.suggestion
-      }))
-    };
+    // The result should be invalid due to circular dependency
+    expect(result.valid).toBe(false);
     
-    expect(output).toMatchSnapshot();
+    // Should have exactly 1 error
+    expect(result.errors).toHaveLength(1);
+    
+    const error = result.errors[0];
+    
+    // Check error properties
+    expect(error.position.line).toBe(1);
+    expect(error.position.column).toBe(1);
+    expect(error.severity).toBe('error');
+    expect(error.suggestion).toBeUndefined();
+    
+    // Check that the error message describes the circular dependency
+    expect(error.message).toBe('Circular dependency detected: TestApp -> ServiceA -> ServiceB -> ServiceC -> ServiceA');
   });
 });

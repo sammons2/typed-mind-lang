@@ -1,0 +1,50 @@
+# Test empty entities validation - empty arrays, empty methods, etc.
+EmptyEntitiesApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  <- []  # Empty imports - should be valid
+  -> []  # Empty exports - might be questionable but allowed
+
+# File with empty imports/exports
+EmptyFile @ src/empty.ts:
+  <- []
+  -> []
+
+# Class with empty methods list
+EmptyClass <:
+  => []  # No methods - should be valid
+
+# ClassFile with empty lists
+EmptyClassFile #: src/empty-class.ts
+  <- []
+  => []
+  <: BaseClass  # But has inheritance
+
+BaseClass <:
+  => [baseMethod]
+
+baseMethod :: () => void
+
+# Function with empty calls
+EmptyCallsFunc :: () => void
+  ~> []  # No method calls - should be valid
+
+# UIComponent with empty contains/contained lists
+EmptyUIComponent & "Component with empty lists"
+  > []  # Contains nothing - should be valid
+  < [ParentComponent]  # But has a parent
+
+ParentComponent &! "Parent component"
+  > [EmptyUIComponent]
+
+# Asset without description
+NoDescAsset ~ ""  # Empty description - might want to warn
+
+# Constants without description
+NoDescConstants ! src/constants.ts
+  ""  # Empty description
+
+# File that exports the empty entities
+ExportFile @ src/exports.ts:
+  <- [EmptyFile]
+  -> [EmptyClass, EmptyCallsFunc, NoDescAsset, NoDescConstants, EmptyClassFile]

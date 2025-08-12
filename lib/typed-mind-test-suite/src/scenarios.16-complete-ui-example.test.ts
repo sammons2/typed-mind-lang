@@ -15,19 +15,42 @@ describe('scenario-16-complete-ui-example', () => {
     const content = readFileSync(join(__dirname, '..', 'scenarios', scenarioFile), 'utf-8');
     const result = checker.check(content);
     
-    // Create a clean output for snapshots
-    const output = {
-      file: scenarioFile,
-      valid: result.valid,
-      errors: result.errors.map(err => ({
-        line: err.position.line,
-        column: err.position.column,
-        message: err.message,
-        severity: err.severity,
-        suggestion: err.suggestion
-      }))
-    };
+    // Should be invalid due to validation errors
+    expect(result.valid).toBe(false);
     
-    expect(output).toMatchSnapshot();
+    // Should have exactly 7 validation errors
+    expect(result.errors).toHaveLength(7);
+    
+    // Check for orphaned file entities
+    const orphanedFileErrors = result.errors.filter(err => 
+      err.message.includes('Orphaned entity') && 
+      (err.message.includes('ComponentsFile') || 
+       err.message.includes('AssetsFile') || 
+       err.message.includes('ControllersFile') || 
+       err.message.includes('ModelsFile'))
+    );
+    expect(orphanedFileErrors).toHaveLength(4);
+    
+    // Check for method not found error on UserModel
+    const methodNotFoundErrors = result.errors.filter(err => 
+      err.message.includes("Method 'find' not found on class 'UserModel'")
+    );
+    expect(methodNotFoundErrors).toHaveLength(1);
+    
+    // Check for UIComponent containment errors
+    const uiContainmentErrors = result.errors.filter(err => 
+      err.message.includes('is not contained by any other UIComponent') &&
+      (err.message.includes('App') || err.message.includes('LoginFormView'))
+    );
+    expect(uiContainmentErrors).toHaveLength(2);
+    
+    // Verify specific error messages exist
+    expect(result.errors.some(err => err.message.includes("Orphaned entity 'ComponentsFile'"))).toBe(true);
+    expect(result.errors.some(err => err.message.includes("Orphaned entity 'AssetsFile'"))).toBe(true);
+    expect(result.errors.some(err => err.message.includes("Orphaned entity 'ControllersFile'"))).toBe(true);
+    expect(result.errors.some(err => err.message.includes("Orphaned entity 'ModelsFile'"))).toBe(true);
+    expect(result.errors.some(err => err.message.includes("Method 'find' not found on class 'UserModel'"))).toBe(true);
+    expect(result.errors.some(err => err.message.includes("UIComponent 'App' is not contained by any other UIComponent"))).toBe(true);
+    expect(result.errors.some(err => err.message.includes("UIComponent 'LoginFormView' is not contained by any other UIComponent"))).toBe(true);
   });
 });

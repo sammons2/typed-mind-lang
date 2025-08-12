@@ -16,19 +16,38 @@ describe('scenario-25-import-duplicate-names', () => {
     const content = readFileSync(filePath, 'utf-8');
     const result = checker.check(content, filePath);
     
-    // Create a clean output for snapshots
-    const output = {
-      file: scenarioFile,
-      valid: result.valid,
-      errors: result.errors.map(err => ({
-        line: err.position.line,
-        column: err.position.column,
-        message: err.message,
-        severity: err.severity,
-        suggestion: err.suggestion
-      }))
-    };
+    expect(result.valid).toBe(false);
+    expect(result.errors).toHaveLength(4);
     
-    expect(output).toMatchSnapshot();
+    // Should detect orphaned AuthFile
+    const authFileOrphanError = result.errors.find(err => 
+      err.message === "Orphaned entity 'AuthFile'"
+    );
+    expect(authFileOrphanError).toBeDefined();
+    expect(authFileOrphanError?.position.line).toBe(2);
+    expect(authFileOrphanError?.severity).toBe('error');
+    
+    // Should detect orphaned AuthDuplicateFile
+    const authDuplicateOrphanError = result.errors.find(err => 
+      err.message === "Orphaned entity 'AuthDuplicateFile'"
+    );
+    expect(authDuplicateOrphanError).toBeDefined();
+    expect(authDuplicateOrphanError?.position.line).toBe(2);
+    
+    // Should detect AuthService exported by multiple files
+    const multipleExportsError = result.errors.find(err => 
+      err.message === "Entity 'AuthService' is exported by multiple files: AuthFile, AuthDuplicateFile"
+    );
+    expect(multipleExportsError).toBeDefined();
+    expect(multipleExportsError?.severity).toBe('error');
+    expect(multipleExportsError?.suggestion).toBe('Each entity should be exported by exactly one file. Remove the duplicate exports.');
+    
+    // Should detect duplicate entity name from import
+    const duplicateNameError = result.errors.find(err => 
+      err.message === "Duplicate entity name 'AuthService' from import"
+    );
+    expect(duplicateNameError).toBeDefined();
+    expect(duplicateNameError?.position.line).toBe(3);
+    expect(duplicateNameError?.suggestion).toBe('Use an alias to avoid naming conflicts');
   });
 });

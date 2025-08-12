@@ -1,0 +1,70 @@
+# Test ClassFile inheritance edge cases and circular inheritance
+InheritanceApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  <- [ClassesFile]
+  -> [createInstance]
+
+ClassesFile @ src/classes.ts:
+  -> [ValidChild, CircularA, CircularB, OrphanClass, DeepChild, 
+      MultipleInheritance, SelfInheriting]
+
+# Valid inheritance
+BaseClass #: src/base.ts
+  => [baseMethod]
+
+ValidChild #: src/valid-child.ts <: BaseClass
+  => [childMethod]
+
+# Circular inheritance - A extends B, B extends A
+CircularA #: src/circular-a.ts <: CircularB
+  => [methodA]
+
+CircularB #: src/circular-b.ts <: CircularA
+  => [methodB]
+
+# ClassFile inheriting from non-existent class
+OrphanClass #: src/orphan.ts <: NonExistentBase
+  => [orphanMethod]
+
+# Deep inheritance chain
+RootClass #: src/root.ts
+  => [rootMethod]
+
+MiddleClass #: src/middle.ts <: RootClass
+  => [middleMethod]
+
+DeepChild #: src/deep.ts <: MiddleClass
+  => [deepMethod]
+
+# Multiple inheritance attempt (TypedMind only supports single inheritance)
+InterfaceA <:
+  => [methodA]
+
+InterfaceB <:
+  => [methodB]
+
+# This might be trying to inherit from multiple classes
+MultipleInheritance #: src/multiple.ts <: InterfaceA
+  => [ownMethod]
+  # Can't specify second parent in shorthand
+
+# Self-inheriting class
+SelfInheriting #: src/self.ts <: SelfInheriting
+  => [recursiveMethod]
+
+# Methods for the classes
+baseMethod :: () => void
+childMethod :: () => void
+methodA :: () => void
+methodB :: () => void
+orphanMethod :: () => void
+rootMethod :: () => void
+middleMethod :: () => void
+deepMethod :: () => void
+ownMethod :: () => void
+recursiveMethod :: () => void
+
+# Function to use the classes
+createInstance :: () => void
+  ~> [ValidChild.childMethod, DeepChild.deepMethod]

@@ -15,19 +15,17 @@ describe('scenario-37-data-pipeline', () => {
     const content = readFileSync(join(__dirname, '..', 'scenarios', scenarioFile), 'utf-8');
     const result = checker.check(content);
     
-    // Create a clean output for snapshots
-    const output = {
-      file: scenarioFile,
-      valid: result.valid,
-      errors: result.errors.map(err => ({
-        line: err.position.line,
-        column: err.position.column,
-        message: err.message,
-        severity: err.severity,
-        suggestion: err.suggestion
-      }))
-    };
+    // The data pipeline should be valid with no errors
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
     
-    expect(output).toMatchSnapshot();
+    // DSLChecker doesn't expose entities directly, but we can verify it processed the file successfully
+    // by ensuring it contains the expected content structure
+    expect(content).toContain('AnalyticsPipeline');
+    expect(content).toContain('OrchestratorFile');
+    expect(content).toContain('runPipeline');
+    expect(content).toContain('KAFKA_BROKERS');
+    expect(content).toContain('PipelineConfig');
+    expect(content).toContain('SparkProcessor');
   });
 });

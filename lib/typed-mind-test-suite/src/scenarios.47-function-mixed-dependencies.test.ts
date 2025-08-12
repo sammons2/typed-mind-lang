@@ -50,7 +50,7 @@ testFunction :: () => void
     const result = checker.check(content);
     
     expect(result.valid).toBe(false);
-    expect(result.errors.length).toBeGreaterThan(0);
+    expect(result.errors).toHaveLength(6); // One error for each undefined entity
     
     // Should have errors for all undefined entities
     const errorMessages = result.errors.map(e => e.message);
@@ -61,5 +61,12 @@ testFunction :: () => void
     expect(errorMessages.some(m => m.includes("'unknownFunction' not found"))).toBe(true);
     expect(errorMessages.some(m => m.includes("'missingDep' not found"))).toBe(true);
     expect(errorMessages.some(m => m.includes("'NoSuchConfig' not found"))).toBe(true);
+    
+    // Verify all errors have proper severity and line numbers
+    const errors = result.errors;
+    for (const error of errors) {
+      expect(error.severity).toBe('error');
+      expect(error.position.line).toBe(8); // Line where testFunction is defined in the inline content (relative to content start)
+    }
   });
 });

@@ -16,34 +16,32 @@ describe('scenario-28-runparameter-invalid-consumes', () => {
     const content = readFileSync(filePath, 'utf-8');
     const result = checker.check(content, filePath);
     
-    // Create a clean output for snapshots
-    const output = {
-      file: scenarioFile,
-      valid: result.valid,
-      errors: result.errors.map(err => ({
-        line: err.position.line,
-        column: err.position.column,
-        message: err.message,
-        severity: err.severity,
-        suggestion: err.suggestion
-      }))
-    };
+    expect(result.valid).toBe(false);
+    expect(result.errors).toHaveLength(1);
     
-    expect(output.valid).toBe(false);
-    
-    // Should have error for consuming non-existent parameter
-    const nonExistentErrors = output.errors.filter(e => 
-      e.message.includes("consumes unknown parameter 'NON_EXISTENT_PARAM'")
+    // Should detect consuming unknown parameter
+    const unknownParamError = result.errors.find(err => 
+      err.message === "Function 'badFunction' consumes unknown entity 'NON_EXISTENT_PARAM'"
     );
-    expect(nonExistentErrors).toHaveLength(1);
+    expect(unknownParamError).toBeDefined();
+    expect(unknownParamError?.position.line).toBe(12);
+    expect(unknownParamError?.severity).toBe('error');
+    expect(unknownParamError?.suggestion).toBe("Define 'NON_EXISTENT_PARAM' as one of: RunParameter, Asset, Dependency, Constants");
     
-    // Should have error for consuming non-RunParameter entity
-    const wrongTypeErrors = output.errors.filter(e => 
-      e.message.includes("cannot consume 'APP_CONFIG'") &&
-      e.message.includes("it's a Constants")
-    );
-    expect(wrongTypeErrors).toHaveLength(1);
+    // Get parsed entities using parse method
+    const parseResult = checker.parse(content, filePath);
+    const entities = parseResult.entities;
+    expect(entities.has('DATABASE_URL')).toBe(true);
+    expect(entities.has('APP_CONFIG')).toBe(true);
+    expect(entities.has('badFunction')).toBe(true);
+    expect(entities.has('anotherBadFunction')).toBe(true);
     
-    expect(output).toMatchSnapshot();
+    // Verify types
+    const databaseUrl = entities.get('DATABASE_URL') as any;
+    expect(databaseUrl?.type).toBe('RunParameter');
+    expect(databaseUrl?.paramType).toBe('env');
+    
+    const appConfig = entities.get('APP_CONFIG');
+    expect(appConfig?.type).toBe('Constants');
   });
 });

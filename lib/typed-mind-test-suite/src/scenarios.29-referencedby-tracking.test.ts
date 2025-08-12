@@ -85,28 +85,28 @@ describe('scenario-29-referencedby-tracking', () => {
     expect(clientProgram).toBeDefined();
     expect(clientProgram?.referencedBy?.some(ref => ref.from === 'HTMLAsset' && ref.type === 'containsProgram')).toBe(true);
     
-    // Create snapshot for validation
-    const output = {
-      file: scenarioFile,
-      valid: validationResult.valid,
-      errors: validationResult.errors.map(err => ({
-        line: err.position.line,
-        column: err.position.column,
-        message: err.message,
-        severity: err.severity,
-        suggestion: err.suggestion
-      })),
-      // Include some key referencedBy relationships in snapshot
-      referencedByExamples: {
-        UserService: userService?.referencedBy,
-        UserDTO: userDTO?.referencedBy,
-        Database: database?.referencedBy,
-        UserList: userList?.referencedBy,
-        DATABASE_URL: databaseUrl?.referencedBy,
-        ClientProgram: clientProgram?.referencedBy
-      }
-    };
+    // Additional verification of referencedBy tracking
+    expect(validationResult.errors).toHaveLength(0);
     
-    expect(output).toMatchSnapshot();
+    // Verify all expected entities exist
+    expect(parseResult.entities.has('UserService')).toBe(true);
+    expect(parseResult.entities.has('createUser')).toBe(true);
+    expect(parseResult.entities.has('UserDTO')).toBe(true);
+    expect(parseResult.entities.has('User')).toBe(true);
+    expect(parseResult.entities.has('Database')).toBe(true);
+    expect(parseResult.entities.has('DatabaseConfig')).toBe(true);
+    expect(parseResult.entities.has('MainFile')).toBe(true);
+    expect(parseResult.entities.has('UserList')).toBe(true);
+    expect(parseResult.entities.has('AppUI')).toBe(true);
+    expect(parseResult.entities.has('DATABASE_URL')).toBe(true);
+    expect(parseResult.entities.has('ClientProgram')).toBe(true);
+    
+    // Verify reference counts for key entities
+    expect(userService?.referencedBy?.length).toBe(1);
+    expect(userDTO?.referencedBy?.length).toBe(2);
+    expect(database?.referencedBy?.length).toBe(4);
+    expect(userList?.referencedBy?.length).toBe(1);
+    expect(databaseUrl?.referencedBy?.length).toBe(1);
+    expect(clientProgram?.referencedBy?.length).toBe(1);
   });
 });

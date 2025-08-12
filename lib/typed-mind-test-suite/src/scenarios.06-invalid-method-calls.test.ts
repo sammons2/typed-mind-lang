@@ -11,23 +11,44 @@ describe('scenario-06-invalid-method-calls', () => {
   const checker = new DSLChecker();
   const scenarioFile = 'scenario-06-invalid-method-calls.tmd';
 
-  it('should validate 06 invalid method calls', () => {
+  it('should detect invalid method calls and unknown entity references', () => {
     const content = readFileSync(join(__dirname, '..', 'scenarios', scenarioFile), 'utf-8');
     const result = checker.check(content);
     
-    // Create a clean output for snapshots
-    const output = {
-      file: scenarioFile,
-      valid: result.valid,
-      errors: result.errors.map(err => ({
-        line: err.position.line,
-        column: err.position.column,
-        message: err.message,
-        severity: err.severity,
-        suggestion: err.suggestion
-      }))
-    };
+    // Should be invalid due to method call errors
+    expect(result.valid).toBe(false);
     
-    expect(output).toMatchSnapshot();
+    // Should have exactly 3 errors
+    expect(result.errors).toHaveLength(3);
+    
+    // Check first error: UserService.update method not found
+    const updateError = result.errors.find(err => 
+      err.message.includes("Method 'update' not found on class 'UserService'")
+    );
+    expect(updateError).toBeDefined();
+    expect(updateError?.severity).toBe('error');
+    expect(updateError?.position.line).toBe(9);
+    expect(updateError?.position.column).toBe(1);
+    expect(updateError?.suggestion).toBe('Available methods: create, read');
+    
+    // Check second error: UserService.delete method not found
+    const deleteError = result.errors.find(err => 
+      err.message.includes("Method 'delete' not found on class 'UserService'")
+    );
+    expect(deleteError).toBeDefined();
+    expect(deleteError?.severity).toBe('error');
+    expect(deleteError?.position.line).toBe(9);
+    expect(deleteError?.position.column).toBe(1);
+    expect(deleteError?.suggestion).toBe('Available methods: create, read');
+    
+    // Check third error: Unknown entity NotAClass
+    const unknownEntityError = result.errors.find(err => 
+      err.message.includes("Call to 'NotAClass.method' references unknown entity 'NotAClass'")
+    );
+    expect(unknownEntityError).toBeDefined();
+    expect(unknownEntityError?.severity).toBe('error');
+    expect(unknownEntityError?.position.line).toBe(9);
+    expect(unknownEntityError?.position.column).toBe(1);
+    expect(unknownEntityError?.suggestion).toBeUndefined();
   });
 });

@@ -15,19 +15,34 @@ describe('scenario-43-classfile-auto-export', () => {
     const content = readFileSync(join(__dirname, '..', 'scenarios', scenarioFile), 'utf-8');
     const result = checker.check(content);
     
-    // Create a clean output for snapshots
-    const output = {
-      file: scenarioFile,
-      valid: result.valid,
-      errors: result.errors.map(err => ({
-        line: err.position.line,
-        column: err.position.column,
-        message: err.message,
-        severity: err.severity,
-        suggestion: err.suggestion
-      }))
-    };
+    // The scenario should be invalid due to the regular class without export
+    expect(result.valid).toBe(false);
+    expect(result.errors).toHaveLength(2); // Orphaned entity + not exported errors
     
-    expect(output).toMatchSnapshot();
+    // Should find error for RegularClass being orphaned
+    const orphanedError = result.errors.find(err => 
+      err.message.includes('RegularClass') && 
+      err.message.includes('Orphaned entity')
+    );
+    expect(orphanedError).toBeDefined();
+    expect(orphanedError?.severity).toBe('error');
+    expect(orphanedError?.position.line).toBe(31); // Line where RegularClass is defined
+    
+    // Should find error for RegularClass not being exported
+    const notExportedError = result.errors.find(err => 
+      err.message.includes('RegularClass') && 
+      err.message.includes('is not exported by any file')
+    );
+    expect(notExportedError).toBeDefined();
+    expect(notExportedError?.severity).toBe('error');
+    expect(notExportedError?.position.line).toBe(31); // Line where RegularClass is defined
+    
+    // Should not have errors for ClassFile entities (they auto-export)
+    const classFileErrors = result.errors.filter(err => 
+      err.message.includes('UserController') ||
+      err.message.includes('ProductController') ||
+      err.message.includes('BaseController')
+    );
+    expect(classFileErrors).toHaveLength(0);
   });
 });

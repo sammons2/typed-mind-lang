@@ -11,24 +11,24 @@ describe('scenario-24-import-not-found', () => {
   const checker = new DSLChecker();
   const scenarioFile = 'scenario-24-import-not-found.tmd';
 
-  it('should validate import not found', () => {
+  it('should detect import file not found errors', () => {
     const filePath = join(__dirname, '..', 'scenarios', scenarioFile);
     const content = readFileSync(filePath, 'utf-8');
     const result = checker.check(content, filePath);
     
-    // Create a clean output for snapshots
-    const output = {
-      file: scenarioFile,
-      valid: result.valid,
-      errors: result.errors.map(err => ({
-        line: err.position.line,
-        column: err.position.column,
-        message: err.message,
-        severity: err.severity,
-        suggestion: err.suggestion
-      }))
-    };
+    // Should be invalid due to import file not found
+    expect(result.valid).toBe(false);
     
-    expect(output).toMatchSnapshot();
+    // Should have exactly 1 error for the failed import
+    expect(result.errors).toHaveLength(1);
+    
+    // Check for import file not found error
+    const importError = result.errors[0];
+    expect(importError.message).toMatch(/Failed to import '\.\/non-existent-file\.tmd'/);
+    expect(importError.message).toMatch(/ENOENT: no such file or directory/);
+    expect(importError.position.line).toBe(2);
+    expect(importError.position.column).toBe(1);
+    expect(importError.severity).toBe('error');
+    expect(importError.suggestion).toBeUndefined();
   });
 });

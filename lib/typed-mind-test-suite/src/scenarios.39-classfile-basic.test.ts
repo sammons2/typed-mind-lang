@@ -15,19 +15,23 @@ describe('scenario-39-classfile-basic', () => {
     const content = readFileSync(join(__dirname, '..', 'scenarios', scenarioFile), 'utf-8');
     const result = checker.check(content);
     
-    // Create a clean output for snapshots
-    const output = {
-      file: scenarioFile,
-      valid: result.valid,
-      errors: result.errors.map(err => ({
-        line: err.position.line,
-        column: err.position.column,
-        message: err.message,
-        severity: err.severity,
-        suggestion: err.suggestion
-      }))
-    };
+    // Should be invalid due to issues with ClassFile parsing (based on actual error output)
+    expect(result.valid).toBe(false);
+    expect(result.errors).toHaveLength(1);
     
-    expect(output).toMatchSnapshot();
+    const errorMessages = result.errors.map(err => err.message);
+    
+    // Should detect that calls cannot reference ClassFile entities
+    expect(errorMessages).toContain("Cannot use 'calls' to reference ClassFile 'TodoController'");
+    
+    // Verify specific error positions
+    const callError = result.errors.find(err => err.message.includes("Cannot use 'calls' to reference ClassFile 'TodoController'"));
+    expect(callError?.position.line).toBe(10);
+    expect(callError?.position.column).toBe(1);
+    expect(callError?.suggestion).toBe("'calls' can only reference: Function, Class");
+    
+    // Verify the file contains expected ClassFile syntax
+    expect(content).toContain('TodoController #: src/controllers/todo.ts <: BaseController');
+    expect(content).toContain('BaseController #: src/controllers/base.ts');
   });
 });

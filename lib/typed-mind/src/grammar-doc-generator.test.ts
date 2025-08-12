@@ -15,7 +15,7 @@ describe('GrammarDocGenerator', () => {
       expect(markdown).toContain('## Entity Patterns');
       expect(markdown).toContain('## Continuation Patterns');
       expect(markdown).toContain('## General Patterns');
-      expect(markdown).toContain('## Examples');
+      expect(markdown).toContain('## Quick Reference Example');
       
       // Check for entity types
       expect(markdown).toContain('| Program |');
@@ -24,15 +24,12 @@ describe('GrammarDocGenerator', () => {
       expect(markdown).toContain('| Class |');
       expect(markdown).toContain('| DTO |');
       
-      // Check for pattern documentation
-      expect(markdown).toContain('**Pattern:**');
-      expect(markdown).toContain('**Example:**');
-      expect(markdown).toContain('**Description:**');
-      expect(markdown).toContain('**Regex:**');
+      // Check for pattern documentation in table format
+      expect(markdown).toContain('| Entity | Pattern | Example | Regex |');
       
       // Check for example code
-      expect(markdown).toContain('TodoApp -> AppEntry');
-      expect(markdown).toContain('UserService @ src/services/user.ts:');
+      expect(markdown).toContain('TodoApp -> main');
+      expect(markdown).toContain('UserService #: src/services/user.ts');
     });
   });
 

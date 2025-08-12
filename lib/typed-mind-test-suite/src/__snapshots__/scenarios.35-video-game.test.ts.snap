@@ -1,9 +1,0 @@
-// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
-
-exports[`scenario-35-video-game > should validate video game architecture 1`] = `
-{
-  "errors": [],
-  "file": "scenario-35-video-game.tmd",
-  "valid": true,
-}
-`;

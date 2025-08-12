@@ -15,19 +15,48 @@ describe('scenario-40-classfile-naming-conflict', () => {
     const content = readFileSync(join(__dirname, '..', 'scenarios', scenarioFile), 'utf-8');
     const result = checker.check(content);
     
-    // Create a clean output for snapshots
-    const output = {
-      file: scenarioFile,
-      valid: result.valid,
-      errors: result.errors.map(err => ({
-        line: err.position.line,
-        column: err.position.column,
-        message: err.message,
-        severity: err.severity,
-        suggestion: err.suggestion
-      }))
-    };
+    // Should be invalid due to naming conflicts and other validation errors
+    expect(result.valid).toBe(false);
+    expect(result.errors).toHaveLength(8);
     
-    expect(output).toMatchSnapshot();
+    const errorMessages = result.errors.map(err => err.message);
+    
+    // Should detect naming conflicts between File and Class entities
+    const namingConflictErrors = result.errors.filter(err => 
+      err.message.includes("Entity name 'UserController' is used by both a File and a Class")
+    );
+    expect(namingConflictErrors).toHaveLength(2);
+    
+    // Should suggest using ClassFile syntax
+    const conflictError = namingConflictErrors[0];
+    expect(conflictError.suggestion).toContain("Replace with: UserController #:");
+    expect(conflictError.suggestion).toContain("src/controllers/user.ts <: BaseClass");
+    
+    // Should detect orphaned entities
+    expect(errorMessages).toContain("Orphaned entity 'someFunction'");
+    expect(errorMessages).toContain("Orphaned entity 'BaseController'");
+    
+    // Should detect classes not exported by files
+    expect(errorMessages).toContain("Class 'UserController' is not exported by any file");
+    expect(errorMessages).toContain("Class 'BaseController' is not exported by any file");
+    
+    // Should detect function not exported by any file
+    expect(errorMessages).toContain("Function 'someFunction' is not exported by any file and is not a class method");
+    
+    // Should detect method not found on class
+    expect(errorMessages).toContain("Method 'someMethod' not found on class 'UserController'");
+    
+    // Verify specific error positions for naming conflicts
+    const firstConflictError = result.errors.find(err => 
+      err.message.includes("Entity name 'UserController' is used by both a File and a Class") && 
+      err.position.line === 13
+    );
+    expect(firstConflictError).toBeDefined();
+    
+    const secondConflictError = result.errors.find(err => 
+      err.message.includes("Entity name 'UserController' is used by both a File and a Class") && 
+      err.position.line === 18
+    );
+    expect(secondConflictError).toBeDefined();
   });
 });

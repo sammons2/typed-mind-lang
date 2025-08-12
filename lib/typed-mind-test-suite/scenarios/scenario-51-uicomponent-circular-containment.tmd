@@ -1,0 +1,67 @@
+# Test UIComponent circular containment and edge cases
+UICircularApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  <- [ComponentFile]
+  -> [renderUI]
+
+ComponentFile @ src/components.ts:
+  -> [ValidRoot, InvalidRoot, CircularA, CircularB, SelfContainer, 
+      ThreeWayA, ThreeWayB, ThreeWayC, ComplexCircle1, ComplexCircle2]
+
+# Valid root component
+ValidRoot &! "Valid root component"
+  > [ValidChild1, ValidChild2]
+
+ValidChild1 & "First child"
+  < [ValidRoot]
+
+ValidChild2 & "Second child"
+  < [ValidRoot]
+
+# Invalid: Root component trying to have a parent
+InvalidRoot &! "Root with parent attempt"
+  < [SomeParent]  # ERROR: Root components cannot have parents
+  > [ValidChild1]
+
+SomeParent & "Attempted parent of root"
+
+# Direct circular containment - A contains B, B contains A
+CircularA & "Component A in circle"
+  > [CircularB]
+  < [CircularB]  # ERROR: Circular containment
+
+CircularB & "Component B in circle"
+  > [CircularA]
+  < [CircularA]  # ERROR: Circular containment
+
+# Self-containing component
+SelfContainer & "Self-containing component"
+  > [SelfContainer]  # ERROR: Component cannot contain itself
+  < [SelfContainer]  # ERROR: Component cannot be its own parent
+
+# Three-way circular containment
+ThreeWayA & "Three-way circle A"
+  > [ThreeWayB]
+  < [ThreeWayC]  # ERROR: Creates circle
+
+ThreeWayB & "Three-way circle B"
+  > [ThreeWayC]
+  < [ThreeWayA]
+
+ThreeWayC & "Three-way circle C"
+  > [ThreeWayA]  # ERROR: Completes circle
+  < [ThreeWayB]
+
+# Complex circular pattern with multiple paths
+ComplexCircle1 & "Complex circular 1"
+  > [ComplexCircle2, ValidChild1]
+  < [ComplexCircle2]  # ERROR: Mutual containment
+
+ComplexCircle2 & "Complex circular 2"
+  > [ComplexCircle1, ValidChild2]  # ERROR: Already contained by ComplexCircle1
+  < [ComplexCircle1]
+
+# Function to render UI
+renderUI :: () => void
+  <- [ValidRoot]

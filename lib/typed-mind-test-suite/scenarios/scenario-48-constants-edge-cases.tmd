@@ -1,0 +1,31 @@
+# Test Constants edge cases - with and without schema
+ConstantsApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  <- [ConfigFile]
+  -> [processConfig]
+
+ConfigFile @ src/config.ts:
+  -> [ValidConfig, NoSchemaConfig, InvalidSchemaConfig]
+
+# Valid Constants with schema
+ValidConfig ! src/config/valid.ts : ConfigSchema
+  "Valid configuration with schema"
+
+# Constants without schema - should be valid
+NoSchemaConfig ! src/config/no-schema.ts
+  "Configuration without schema"
+
+# Constants with non-existent schema - should error
+InvalidSchemaConfig ! src/config/invalid.ts : NonExistentSchema
+  "Configuration with invalid schema reference"
+
+# Valid schema
+ConfigSchema % "Configuration schema"
+  - apiUrl: string "API endpoint"
+  - timeout: number "Request timeout in ms"
+  - debug: boolean "Debug mode flag"
+
+# Function that uses the constants
+processConfig :: () => void
+  <- [ValidConfig, NoSchemaConfig]

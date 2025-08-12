@@ -325,7 +325,10 @@ export class TypedMindLanguageServer {
       contents.push(`**Description**: ${entity.description}`);
     }
 
-    if ('purpose' in entity && entity.purpose) {
+    // Handle purpose for non-DTO and non-UIComponent entities
+    // (DTOs and UIComponents handle purpose in their specific sections)
+    if ('purpose' in entity && entity.purpose && 
+        entity.type !== 'DTO' && entity.type !== 'UIComponent') {
       contents.push(`**Purpose**: ${entity.purpose}`);
     }
 

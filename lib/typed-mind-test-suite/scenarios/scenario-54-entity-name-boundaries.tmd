@@ -1,0 +1,95 @@
+# Test entity name boundaries - special characters, length, case sensitivity
+NameBoundariesApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  <- [NamesFile]
+  -> [testNames]
+
+NamesFile @ src/names.ts:
+  -> [ValidName, snake_case_name, kebab-case-name, camelCaseName, PascalCaseName,
+      VeryLongEntityNameThatExceedsReasonableLimitsButShouldStillBeValid123456789,
+      Name123, _underscore, $dollar]
+
+# Valid standard names
+ValidName @ src/valid.ts:
+  -> [validFunc]
+
+# Different naming conventions
+snake_case_name @ src/snake.ts:
+  -> [snake_func]
+
+# Kebab case might be invalid
+kebab-case-name @ src/kebab.ts:
+  -> [kebabFunc]
+
+camelCaseName @ src/camel.ts:
+  -> [camelFunc]
+
+PascalCaseName @ src/pascal.ts:
+  -> [pascalFunc]
+
+# Very long name
+VeryLongEntityNameThatExceedsReasonableLimitsButShouldStillBeValid123456789 @ src/long.ts:
+  -> [longFunc]
+
+# Names with numbers
+Name123 @ src/numbers.ts:
+  -> [numFunc]
+
+# Starting with number - should be invalid
+123Name @ src/invalid-number.ts:
+  -> [invalidFunc]
+
+# Special character names
+_underscore @ src/underscore.ts:
+  -> [underscoreFunc]
+
+$dollar @ src/dollar.ts:
+  -> [dollarFunc]
+
+# Names with spaces - should be invalid
+"Name With Spaces" @ src/spaces.ts:
+  -> [spaceFunc]
+
+# Case sensitivity test - these should be different entities
+TestCase @ src/test1.ts:
+  -> [test1Func]
+
+testcase @ src/test2.ts:
+  -> [test2Func]
+
+TESTCASE @ src/test3.ts:
+  -> [test3Func]
+
+# Unicode names
+名前 @ src/unicode.ts:
+  -> [unicodeFunc]
+
+# Reserved keywords as names (might be problematic)
+class @ src/class.ts:
+  -> [classFunc]
+
+function @ src/function.ts:
+  -> [functionFunc]
+
+# Functions for each file
+validFunc :: () => void
+snake_func :: () => void
+kebabFunc :: () => void
+camelFunc :: () => void
+pascalFunc :: () => void
+longFunc :: () => void
+numFunc :: () => void
+invalidFunc :: () => void
+underscoreFunc :: () => void
+dollarFunc :: () => void
+spaceFunc :: () => void
+test1Func :: () => void
+test2Func :: () => void
+test3Func :: () => void
+unicodeFunc :: () => void
+classFunc :: () => void
+functionFunc :: () => void
+
+# Main test function
+testNames :: () => void

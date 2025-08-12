@@ -15,19 +15,45 @@ describe('scenario-44-classfile-mixed-entities', () => {
     const content = readFileSync(join(__dirname, '..', 'scenarios', scenarioFile), 'utf-8');
     const result = checker.check(content);
     
-    // Create a clean output for snapshots
-    const output = {
-      file: scenarioFile,
-      valid: result.valid,
-      errors: result.errors.map(err => ({
-        line: err.position.line,
-        column: err.position.column,
-        message: err.message,
-        severity: err.severity,
-        suggestion: err.suggestion
-      }))
-    };
+    // The scenario should be invalid due to multiple validation errors
+    expect(result.valid).toBe(false);
+    expect(result.errors).toHaveLength(7); // Multiple validation errors in this scenario
     
-    expect(output).toMatchSnapshot();
+    // Should find error for BaseController being orphaned
+    const baseControllerOrphanedError = result.errors.find(err => 
+      err.message.includes('BaseController') && 
+      err.message.includes('Orphaned entity')
+    );
+    expect(baseControllerOrphanedError).toBeDefined();
+    expect(baseControllerOrphanedError?.severity).toBe('error');
+    
+    // Should find error for BaseController not being exported from a File
+    const baseControllerNotExportedError = result.errors.find(err => 
+      err.message.includes('BaseController') && 
+      err.message.includes('is not exported by any file')
+    );
+    expect(baseControllerNotExportedError).toBeDefined();
+    expect(baseControllerNotExportedError?.severity).toBe('error');
+    
+    // Should find errors for invalid calls to ClassFile methods
+    const userControllerCallError = result.errors.find(err => 
+      err.message.includes('Cannot use \'calls\' to reference ClassFile \'UserController\'')
+    );
+    expect(userControllerCallError).toBeDefined();
+    expect(userControllerCallError?.severity).toBe('error');
+    
+    const userRepositoryCallError = result.errors.find(err => 
+      err.message.includes('Cannot use \'calls\' to reference ClassFile \'UserRepository\'')
+    );
+    expect(userRepositoryCallError).toBeDefined();
+    expect(userRepositoryCallError?.severity).toBe('error');
+    
+    // Should find error for DataProcessor not being exported
+    const dataProcessorError = result.errors.find(err => 
+      err.message.includes('DataProcessor') && 
+      err.message.includes('is not exported by any file')
+    );
+    expect(dataProcessorError).toBeDefined();
+    expect(dataProcessorError?.severity).toBe('error');
   });
 });

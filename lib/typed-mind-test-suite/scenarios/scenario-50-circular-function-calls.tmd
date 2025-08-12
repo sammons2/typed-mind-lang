@@ -1,0 +1,69 @@
+# Test circular function calls and deep call chains
+CircularApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  -> [funcA, funcB, funcC, chainStart, chainMiddle1, chainMiddle2, chainEnd]
+
+# Direct circular dependency - A calls B, B calls A
+funcA :: () => void
+  ~> [funcB]
+  "Function A in circular dependency"
+
+funcB :: () => void
+  ~> [funcA]
+  "Function B in circular dependency"
+
+# Three-way circular dependency
+funcC :: () => void
+  ~> [funcD]
+  "Start of three-way circle"
+
+funcD :: () => void
+  ~> [funcE]
+  "Middle of three-way circle"
+
+funcE :: () => void
+  ~> [funcC]
+  "End of three-way circle"
+
+# Deep call chain (not circular)
+chainStart :: () => void
+  ~> [chainMiddle1]
+  "Start of deep chain"
+
+chainMiddle1 :: () => void
+  ~> [chainMiddle2]
+  "First middle of chain"
+
+chainMiddle2 :: () => void
+  ~> [chainEnd]
+  "Second middle of chain"
+
+chainEnd :: () => void
+  "End of chain - no further calls"
+
+# Self-calling function (direct recursion)
+recursiveFunc :: () => void
+  ~> [recursiveFunc]
+  "Self-calling recursive function"
+
+# Complex circular pattern with multiple paths
+complexA :: () => void
+  ~> [complexB, complexC]
+  "Multiple call paths"
+
+complexB :: () => void
+  ~> [complexC, complexD]
+  "Branches to multiple functions"
+
+complexC :: () => void
+  ~> [complexD]
+  "Single path forward"
+
+complexD :: () => void
+  ~> [complexA]
+  "Completes the circle"
+
+# Add these to exports
+SecondaryFile @ src/circular.ts:
+  -> [funcD, funcE, recursiveFunc, complexA, complexB, complexC, complexD]

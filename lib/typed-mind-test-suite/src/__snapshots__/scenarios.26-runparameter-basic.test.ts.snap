@@ -1,9 +1,0 @@
-// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
-
-exports[`scenario-26-runparameter-basic > should validate basic RunParameter functionality 1`] = `
-{
-  "errors": [],
-  "file": "scenario-26-runparameter-basic.tmd",
-  "valid": true,
-}
-`;
