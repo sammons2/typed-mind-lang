@@ -1,0 +1,17 @@
+# Test VSCode Extension with external types
+
+VSCodeExtension -> ExtensionFile v1.0.0
+
+ExtensionFile @ src/extension.ts:
+  <- [vscode]
+  -> [activate, deactivate]
+
+vscode ^ "VS Code API" v1.0.0
+  -> [ExtensionContext, TextDocument, Position]
+
+activate :: (context: ExtensionContext) => void
+  "Activates the extension"
+  <- ExtensionContext
+
+deactivate :: () => void
+  "Deactivates the extension"

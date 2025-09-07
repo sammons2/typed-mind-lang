@@ -147,6 +147,7 @@ export interface DependencyEntity extends Entity {
   purpose: string;
   version?: string;
   importedBy?: string[]; // Files and Functions that import this dependency
+  exports?: string[]; // Types/DTOs exported by this dependency (e.g., ExtensionContext from vscode)
 }
 
 export type AnyEntity =

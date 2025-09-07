@@ -32,6 +32,7 @@ export class TypeScriptToTypedMindConverter {
   private readonly entities: AnyEntity[] = [];
   private readonly entityNames = new Set<string>();
   private readonly dependencies = new Map<string, DependencyEntity>();
+  private readonly externalTypeToPackage = new Map<string, string>(); // Maps external types to their package
   private entryPoints = new Set<string>();
 
   constructor(options: Partial<ConversionOptions> = {}) {
@@ -92,6 +93,7 @@ export class TypeScriptToTypedMindConverter {
     this.entities.length = 0;
     this.entityNames.clear();
     this.dependencies.clear();
+    this.externalTypeToPackage.clear();
     this.entryPoints.clear();
   }
 
@@ -150,6 +152,16 @@ export class TypeScriptToTypedMindConverter {
       // Only create dependency entities for external packages (not internal imports)
       if (this.isExternalPackage(imp.specifier)) {
         this.createDependencyEntity(imp.specifier);
+        
+        // Track which types come from this external package
+        if (imp.namedImports) {
+          for (const namedImport of imp.namedImports) {
+            this.externalTypeToPackage.set(namedImport, imp.specifier);
+          }
+        }
+        if (imp.defaultImport) {
+          this.externalTypeToPackage.set(imp.defaultImport, imp.specifier);
+        }
       }
     }
   }
@@ -857,6 +869,8 @@ export class TypeScriptToTypedMindConverter {
     if (func.parameters.length === 1) {
       const param = func.parameters[0];
       if (param && this.isDTOLikeType(param.type)) {
+        // If this is an external type, add it to the dependency's exports
+        this.addExternalTypeToDepExports(param.type);
         return param.type;
       }
     }
@@ -865,7 +879,12 @@ export class TypeScriptToTypedMindConverter {
 
   private extractOutputDTO(func: ParsedFunction): string | undefined {
     const returnType = func.returnType.replace(/^Promise<(.+)>$/, '$1');
-    return this.isDTOLikeType(returnType) ? returnType : undefined;
+    if (this.isDTOLikeType(returnType)) {
+      // If this is an external type, add it to the dependency's exports
+      this.addExternalTypeToDepExports(returnType);
+      return returnType;
+    }
+    return undefined;
   }
 
   private isObjectLikeType(type: string): boolean {
@@ -877,6 +896,27 @@ export class TypeScriptToTypedMindConverter {
     const primitives = ['string', 'number', 'boolean', 'void', 'any', 'unknown', 'null', 'undefined'];
     const cleaned = type.replace(/\[\]$/, ''); // Remove array suffix
     return !primitives.includes(cleaned.toLowerCase()) && cleaned.charAt(0).toUpperCase() === cleaned.charAt(0);
+  }
+
+  private addExternalTypeToDepExports(typeName: string): void {
+    // Clean the type name (remove array suffixes, Promise wrapper, etc.)
+    const cleanedType = typeName.replace(/\[\]$/, '').replace(/^Promise<(.+)>$/, '$1');
+    
+    // Check if this type is from an external package
+    const packageName = this.externalTypeToPackage.get(cleanedType);
+    if (packageName) {
+      // Find the dependency entity
+      const depEntity = this.dependencies.get(packageName);
+      if (depEntity) {
+        // Add the type to the dependency's exports if not already there
+        if (!depEntity.exports) {
+          depEntity.exports = [];
+        }
+        if (!depEntity.exports.includes(cleanedType)) {
+          depEntity.exports.push(cleanedType);
+        }
+      }
+    }
   }
 
   private parseTypeToFields(type: string): DTOField[] {
@@ -1147,6 +1187,9 @@ export class TypeScriptToTypedMindConverter {
       case 'Dependency': {
         const dep = entity as DependencyEntity;
         lines.push(`${dep.name} ^ "${dep.purpose}"${dep.version ? ` v${dep.version}` : ''}`);
+        if (dep.exports && dep.exports.length > 0) {
+          lines.push(`  -> [${dep.exports.join(', ')}]`);
+        }
         break;
       }
     }

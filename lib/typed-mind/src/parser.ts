@@ -452,9 +452,16 @@ export class DSLParser {
 
     // Exports: -> [createUser, getUser]
     const exportMatch = trimmedLine.match(/^->\s*\[([^\]]+)\]/);
-    if (exportMatch && 'exports' in entity) {
-      entity.exports = this.parseList(exportMatch[1] as string);
-      return;
+    if (exportMatch) {
+      if ('exports' in entity) {
+        entity.exports = this.parseList(exportMatch[1] as string);
+        return;
+      } else if (entity.type === 'Dependency') {
+        // Dependencies can also export types/DTOs
+        const depEntity = entity as DependencyEntity;
+        depEntity.exports = this.parseList(exportMatch[1] as string);
+        return;
+      }
     }
 
     // Calls: ~> [validateInput, Database.insert]

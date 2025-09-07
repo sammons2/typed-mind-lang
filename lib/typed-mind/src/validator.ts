@@ -529,6 +529,19 @@ export class DSLValidator {
     return 1 - distance / Math.max(a.length, b.length);
   }
 
+  private isDTOExportedByDependency(dtoName: string, entities: Map<string, AnyEntity>): boolean {
+    // Check if any dependency exports this DTO
+    for (const entity of entities.values()) {
+      if (entity.type === 'Dependency') {
+        const depEntity = entity as DependencyEntity;
+        if (depEntity.exports && depEntity.exports.includes(dtoName)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   private addError(error: ValidationError): void {
     this.errors.push(error);
   }
@@ -655,7 +668,8 @@ export class DSLValidator {
   private checkUndefinedExports(entities: Map<string, AnyEntity>): void {
     // Check that all exported names have corresponding entity definitions
     for (const entity of entities.values()) {
-      if ('exports' in entity && entity.exports) {
+      // Skip export validation for Dependencies (they export external types)
+      if (entity.type !== 'Dependency' && 'exports' in entity && entity.exports) {
         for (const exportName of entity.exports) {
           if (!entities.has(exportName)) {
             this.addError({
@@ -679,12 +693,16 @@ export class DSLValidator {
         if (funcEntity.input) {
           const inputEntity = entities.get(funcEntity.input);
           if (!inputEntity) {
-            this.addError({
-              position: entity.position,
-              message: `Function input DTO '${funcEntity.input}' not found`,
-              severity: 'error',
-              suggestion: `Define '${funcEntity.input}' as a DTO entity`,
-            });
+            // Check if the DTO is exported by a dependency
+            const isExportedByDependency = this.isDTOExportedByDependency(funcEntity.input, entities);
+            if (!isExportedByDependency) {
+              this.addError({
+                position: entity.position,
+                message: `Function input DTO '${funcEntity.input}' not found`,
+                severity: 'error',
+                suggestion: `Define '${funcEntity.input}' as a DTO entity or import it from a dependency`,
+              });
+            }
           } else if (inputEntity.type !== 'DTO') {
             this.addError({
               position: entity.position,
@@ -698,12 +716,16 @@ export class DSLValidator {
         if (funcEntity.output) {
           const outputEntity = entities.get(funcEntity.output);
           if (!outputEntity) {
-            this.addError({
-              position: entity.position,
-              message: `Function output DTO '${funcEntity.output}' not found`,
-              severity: 'error',
-              suggestion: `Define '${funcEntity.output}' as a DTO entity`,
-            });
+            // Check if the DTO is exported by a dependency
+            const isExportedByDependency = this.isDTOExportedByDependency(funcEntity.output, entities);
+            if (!isExportedByDependency) {
+              this.addError({
+                position: entity.position,
+                message: `Function output DTO '${funcEntity.output}' not found`,
+                severity: 'error',
+                suggestion: `Define '${funcEntity.output}' as a DTO entity or import it from a dependency`,
+              });
+            }
           } else if (outputEntity.type !== 'DTO') {
             this.addError({
               position: entity.position,
