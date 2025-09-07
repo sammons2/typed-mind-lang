@@ -40,6 +40,10 @@ jobs:
         working-directory: ./lib/typed-mind
         run: pnpm run build
         
+      - name: Build typed-mind CLI
+        working-directory: ./lib/typed-mind-cli
+        run: pnpm run build
+        
       - name: Build static website
         working-directory: ./lib/typed-mind-static-website
         run: pnpm run build
