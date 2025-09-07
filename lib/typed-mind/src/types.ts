@@ -1,30 +1,41 @@
-export type EntityType = 'Program' | 'File' | 'Function' | 'Class' | 'ClassFile' | 'Constants' | 'DTO' | 'Asset' | 'UIComponent' | 'RunParameter' | 'Dependency';
+export type EntityType =
+  | 'Program'
+  | 'File'
+  | 'Function'
+  | 'Class'
+  | 'ClassFile'
+  | 'Constants'
+  | 'DTO'
+  | 'Asset'
+  | 'UIComponent'
+  | 'RunParameter'
+  | 'Dependency';
 
 export interface Position {
   line: number;
   column: number;
 }
 
-export type ReferenceType = 
-  | 'imports'        // File imports entity
-  | 'exports'        // File exports entity
-  | 'calls'          // Function calls Function/Method
-  | 'extends'        // Class extends Class
-  | 'implements'     // Class implements Class (interface)
-  | 'contains'       // UIComponent contains UIComponent
-  | 'containedBy'    // UIComponent is contained by UIComponent
-  | 'affects'        // Function affects UIComponent
-  | 'affectedBy'     // UIComponent is affected by Function
-  | 'consumes'       // Function consumes RunParameter
-  | 'consumedBy'     // RunParameter is consumed by Function
-  | 'input'          // Function takes DTO as input
-  | 'output'         // Function returns DTO as output
-  | 'entry'          // Program has File as entry point
-  | 'containsProgram'// Asset contains Program
-  | 'schema';        // Constants has schema
+export type ReferenceType =
+  | 'imports' // File imports entity
+  | 'exports' // File exports entity
+  | 'calls' // Function calls Function/Method
+  | 'extends' // Class extends Class
+  | 'implements' // Class implements Class (interface)
+  | 'contains' // UIComponent contains UIComponent
+  | 'containedBy' // UIComponent is contained by UIComponent
+  | 'affects' // Function affects UIComponent
+  | 'affectedBy' // UIComponent is affected by Function
+  | 'consumes' // Function consumes RunParameter
+  | 'consumedBy' // RunParameter is consumed by Function
+  | 'input' // Function takes DTO as input
+  | 'output' // Function returns DTO as output
+  | 'entry' // Program has File as entry point
+  | 'containsProgram' // Asset contains Program
+  | 'schema'; // Constants has schema
 
 export interface Reference {
-  from: string;      // Name of referencing entity
+  from: string; // Name of referencing entity
   type: ReferenceType;
   fromType?: EntityType; // Type of referencing entity
 }
@@ -138,7 +149,18 @@ export interface DependencyEntity extends Entity {
   importedBy?: string[]; // Files and Functions that import this dependency
 }
 
-export type AnyEntity = ProgramEntity | FileEntity | FunctionEntity | ClassEntity | ClassFileEntity | ConstantsEntity | DTOEntity | AssetEntity | UIComponentEntity | RunParameterEntity | DependencyEntity;
+export type AnyEntity =
+  | ProgramEntity
+  | FileEntity
+  | FunctionEntity
+  | ClassEntity
+  | ClassFileEntity
+  | ConstantsEntity
+  | DTOEntity
+  | AssetEntity
+  | UIComponentEntity
+  | RunParameterEntity
+  | DependencyEntity;
 
 export interface ValidationError {
   position: Position;

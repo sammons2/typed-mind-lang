@@ -1,75 +1,90 @@
-import type { AnyEntity, ClassEntity, FunctionEntity, UIComponentEntity, AssetEntity, RunParameterEntity, ConstantsEntity, DependencyEntity, DTOEntity, ProgramEntity, ValidationError, ValidationResult, EntityType, ReferenceType } from './types';
+import type {
+  AnyEntity,
+  ClassEntity,
+  FunctionEntity,
+  UIComponentEntity,
+  AssetEntity,
+  RunParameterEntity,
+  ConstantsEntity,
+  DependencyEntity,
+  DTOEntity,
+  ProgramEntity,
+  ValidationError,
+  ValidationResult,
+  EntityType,
+  ReferenceType,
+} from './types';
 import type { ParseResult } from './parser';
 
 export class DSLValidator {
   private errors: ValidationError[] = [];
 
   // Define which entity types can be referenced by which reference types
-  private static readonly VALID_REFERENCES: Record<ReferenceType, { from: EntityType[], to: EntityType[] }> = {
-    imports: { 
-      from: ['File', 'Class', 'ClassFile'], 
-      to: ['Function', 'Class', 'ClassFile', 'Constants', 'DTO', 'Asset', 'UIComponent', 'RunParameter', 'File', 'Dependency'] 
+  private static readonly VALID_REFERENCES: Record<ReferenceType, { from: EntityType[]; to: EntityType[] }> = {
+    imports: {
+      from: ['File', 'Class', 'ClassFile'],
+      to: ['Function', 'Class', 'ClassFile', 'Constants', 'DTO', 'Asset', 'UIComponent', 'RunParameter', 'File', 'Dependency'],
     },
-    exports: { 
-      from: ['File', 'ClassFile'], 
-      to: ['Function', 'Class', 'ClassFile', 'Constants', 'DTO', 'Asset', 'UIComponent', 'File'] 
+    exports: {
+      from: ['File', 'ClassFile'],
+      to: ['Function', 'Class', 'ClassFile', 'Constants', 'DTO', 'Asset', 'UIComponent', 'File'],
     },
-    calls: { 
-      from: ['Function'], 
-      to: ['Function', 'Class'] // Class is allowed because of method calls
+    calls: {
+      from: ['Function'],
+      to: ['Function', 'Class'], // Class is allowed because of method calls
     },
-    extends: { 
-      from: ['Class', 'ClassFile'], 
-      to: ['Class', 'ClassFile'] 
+    extends: {
+      from: ['Class', 'ClassFile'],
+      to: ['Class', 'ClassFile'],
     },
-    implements: { 
-      from: ['Class', 'ClassFile'], 
-      to: ['Class', 'ClassFile'] // In TypedMind, interfaces are represented as Classes
+    implements: {
+      from: ['Class', 'ClassFile'],
+      to: ['Class', 'ClassFile'], // In TypedMind, interfaces are represented as Classes
     },
-    contains: { 
-      from: ['UIComponent'], 
-      to: ['UIComponent'] 
+    contains: {
+      from: ['UIComponent'],
+      to: ['UIComponent'],
     },
-    containedBy: { 
-      from: ['UIComponent'], 
-      to: ['UIComponent'] 
+    containedBy: {
+      from: ['UIComponent'],
+      to: ['UIComponent'],
     },
-    affects: { 
-      from: ['Function'], 
-      to: ['UIComponent'] 
+    affects: {
+      from: ['Function'],
+      to: ['UIComponent'],
     },
-    affectedBy: { 
-      from: ['UIComponent'], 
-      to: ['Function'] 
+    affectedBy: {
+      from: ['UIComponent'],
+      to: ['Function'],
     },
-    consumes: { 
-      from: ['Function'], 
-      to: ['RunParameter', 'Asset', 'Dependency', 'Constants'] 
+    consumes: {
+      from: ['Function'],
+      to: ['RunParameter', 'Asset', 'Dependency', 'Constants'],
     },
-    consumedBy: { 
-      from: ['RunParameter'], 
-      to: ['Function'] 
+    consumedBy: {
+      from: ['RunParameter'],
+      to: ['Function'],
     },
-    input: { 
-      from: ['Function'], 
-      to: ['DTO'] 
+    input: {
+      from: ['Function'],
+      to: ['DTO'],
     },
-    output: { 
-      from: ['Function'], 
-      to: ['DTO'] 
+    output: {
+      from: ['Function'],
+      to: ['DTO'],
     },
-    entry: { 
-      from: ['Program'], 
-      to: ['File'] 
+    entry: {
+      from: ['Program'],
+      to: ['File'],
     },
-    containsProgram: { 
-      from: ['Asset'], 
-      to: ['Program'] 
+    containsProgram: {
+      from: ['Asset'],
+      to: ['Program'],
     },
-    schema: { 
-      from: ['Constants'], 
-      to: ['Class', 'DTO'] // Schema can reference a type definition
-    }
+    schema: {
+      from: ['Constants'],
+      to: ['Class', 'DTO'], // Schema can reference a type definition
+    },
   };
 
   validate(entities: Map<string, AnyEntity>, parseResult?: ParseResult): ValidationResult {
@@ -82,7 +97,7 @@ export class DSLValidator {
     if (parseResult?.namingConflicts) {
       this.processNamingConflicts(parseResult.namingConflicts);
     }
-    
+
     this.checkNamingConflicts(entities);
     this.checkOrphans(entities);
     this.checkImports(entities);
@@ -108,17 +123,18 @@ export class DSLValidator {
     };
   }
 
-  private processNamingConflicts(namingConflicts: Array<{name: string; existingEntity: AnyEntity; newEntity: AnyEntity}>): void {
+  private processNamingConflicts(namingConflicts: Array<{ name: string; existingEntity: AnyEntity; newEntity: AnyEntity }>): void {
     for (const conflict of namingConflicts) {
       const { name, existingEntity, newEntity } = conflict;
-      
+
       // Check if this is a Class-File conflict specifically
-      if ((existingEntity.type === 'Class' && newEntity.type === 'File') ||
-          (existingEntity.type === 'File' && newEntity.type === 'Class')) {
-        
+      if (
+        (existingEntity.type === 'Class' && newEntity.type === 'File') ||
+        (existingEntity.type === 'File' && newEntity.type === 'Class')
+      ) {
         const fileEntity = existingEntity.type === 'File' ? existingEntity : newEntity;
         const classEntity = existingEntity.type === 'Class' ? existingEntity : newEntity;
-        
+
         // Add error for both entities
         this.addError({
           position: classEntity.position,
@@ -126,7 +142,7 @@ export class DSLValidator {
           severity: 'error',
           suggestion: `Replace with: ${name} #: ${fileEntity.path} <: BaseClass`,
         });
-        
+
         this.addError({
           position: fileEntity.position,
           message: `Entity name '${name}' is used by both a File and a Class. Consider using the #: operator for class-file fusion.`,
@@ -148,7 +164,7 @@ export class DSLValidator {
   private checkNamingConflicts(entities: Map<string, AnyEntity>): void {
     // Group entities by name to detect naming conflicts
     const nameGroups = new Map<string, AnyEntity[]>();
-    
+
     for (const entity of entities.values()) {
       const name = entity.name;
       if (!nameGroups.has(name)) {
@@ -156,18 +172,18 @@ export class DSLValidator {
       }
       nameGroups.get(name)!.push(entity);
     }
-    
+
     // Check for Class-File naming conflicts
     for (const [name, entitiesWithSameName] of nameGroups) {
       if (entitiesWithSameName.length > 1) {
-        const hasClass = entitiesWithSameName.some(e => e.type === 'Class');
-        const hasFile = entitiesWithSameName.some(e => e.type === 'File');
-        
+        const hasClass = entitiesWithSameName.some((e) => e.type === 'Class');
+        const hasFile = entitiesWithSameName.some((e) => e.type === 'File');
+
         if (hasClass && hasFile) {
           // Find the class and file entities
-          const classEntity = entitiesWithSameName.find(e => e.type === 'Class');
-          const fileEntity = entitiesWithSameName.find(e => e.type === 'File');
-          
+          const classEntity = entitiesWithSameName.find((e) => e.type === 'Class');
+          const fileEntity = entitiesWithSameName.find((e) => e.type === 'File');
+
           if (classEntity && fileEntity) {
             this.addError({
               position: classEntity.position,
@@ -175,7 +191,7 @@ export class DSLValidator {
               severity: 'error',
               suggestion: `Replace with: ${name} #: ${fileEntity.path} <: BaseClass`,
             });
-            
+
             this.addError({
               position: fileEntity.position,
               message: `Entity name '${name}' is used by both a File and a Class. Consider using the #: operator for class-file fusion.`,
@@ -189,7 +205,7 @@ export class DSLValidator {
           if (first) {
             this.addError({
               position: first.position,
-              message: `Duplicate entity name '${name}' found in multiple ${entitiesWithSameName.map(e => e.type).join(', ')} entities`,
+              message: `Duplicate entity name '${name}' found in multiple ${entitiesWithSameName.map((e) => e.type).join(', ')} entities`,
               severity: 'error',
               suggestion: 'Entity names must be unique across the entire codebase',
             });
@@ -294,10 +310,8 @@ export class DSLValidator {
           }
         } else if (!entities.has(imp)) {
           // Check if it's a Dependency entity
-          const isDependency = Array.from(entities.values()).some(
-            e => e.type === 'Dependency' && e.name === imp
-          );
-          
+          const isDependency = Array.from(entities.values()).some((e) => e.type === 'Dependency' && e.name === imp);
+
           if (!isDependency) {
             // Fuzzy match for suggestions
             const suggestion = this.findSimilar(imp, entities);
@@ -319,7 +333,7 @@ export class DSLValidator {
   private checkCircularDeps(entities: Map<string, AnyEntity>): void {
     // Check for circular import dependencies specifically
     const importGraph = new Map<string, string[]>();
-    
+
     // Build import graph (only Files and ClassFiles can import)
     for (const [name, entity] of entities) {
       if ((entity.type === 'File' || entity.type === 'ClassFile') && 'imports' in entity) {
@@ -331,7 +345,7 @@ export class DSLValidator {
         importGraph.set(name, fileImports);
       }
     }
-    
+
     const visited = new Set<string>();
     const recursionStack = new Set<string>();
     const reportedCycles = new Set<string>();
@@ -340,7 +354,7 @@ export class DSLValidator {
       if (!importGraph.has(node)) {
         return null;
       }
-      
+
       visited.add(node);
       recursionStack.add(node);
       path.push(node);
@@ -367,7 +381,7 @@ export class DSLValidator {
           const cycleKey = [...cycle].sort().join('->');
           if (!reportedCycles.has(cycleKey)) {
             reportedCycles.add(cycleKey);
-            
+
             const entity = entities.get(name);
             if (entity) {
               this.addError({
@@ -422,30 +436,30 @@ export class DSLValidator {
     for (const entity of entities.values()) {
       if ('path' in entity && entity.path) {
         const path = entity.path;
-        
+
         // Skip virtual paths with # fragments - they're allowed to be duplicated
         if (path.includes('#')) {
           continue;
         }
-        
+
         if (!entityNamesByPath.has(path)) {
           entityNamesByPath.set(path, []);
         }
-        
+
         const entitiesAtPath = entityNamesByPath.get(path)!;
-        
+
         // Multiple entities can share the same file path (like multiple constants from same file)
         // Only error if the same ENTITY TYPE has restrictions:
         // - Only one File entity per path
         // - Only one ClassFile entity per path
         // - Constants/DTOs/etc can share paths freely
-        
+
         if (entity.type === 'File' || entity.type === 'ClassFile') {
-          const existingFileType = entitiesAtPath.find(name => {
+          const existingFileType = entitiesAtPath.find((name) => {
             const existing = entities.get(name);
             return existing && (existing.type === 'File' || existing.type === 'ClassFile');
           });
-          
+
           if (existingFileType) {
             const existing = entities.get(existingFileType)!;
             this.addError({
@@ -456,12 +470,11 @@ export class DSLValidator {
             });
           }
         }
-        
+
         entitiesAtPath.push(entity.name);
       }
     }
   }
-
 
   private findSimilar(target: string, entities: Map<string, AnyEntity>): string | null {
     let bestMatch = '';
@@ -506,7 +519,7 @@ export class DSLValidator {
           matrix[i][j] = Math.min(
             matrix[i - 1][j - 1] + 1, // substitution
             matrix[i][j - 1] + 1, // insertion
-            matrix[i - 1][j] + 1 // deletion
+            matrix[i - 1][j] + 1, // deletion
           );
         }
       }
@@ -523,10 +536,10 @@ export class DSLValidator {
   private checkClassAndFunctionExports(entities: Map<string, AnyEntity>): void {
     // Build a set of all exported entities
     const exportedEntities = new Set<string>();
-    
+
     // Build a set of all class methods
     const classMethods = new Set<string>();
-    
+
     for (const entity of entities.values()) {
       if ('exports' in entity && entity.exports) {
         for (const exp of entity.exports) {
@@ -565,7 +578,7 @@ export class DSLValidator {
 
   private checkDuplicateExports(entities: Map<string, AnyEntity>): void {
     const exportMap = new Map<string, AnyEntity[]>();
-    
+
     // Build map of which files export each entity
     for (const entity of entities.values()) {
       if ('exports' in entity && entity.exports) {
@@ -577,19 +590,19 @@ export class DSLValidator {
         }
       }
     }
-    
+
     // Check if any entity is exported by multiple files
     for (const [exportName, exporters] of exportMap) {
       if (exporters.length > 1) {
         // Check if this exported name is an entity (exists in entities map)
         const isEntity = entities.has(exportName);
-        
+
         // Only report error once for the first duplicate we find
         const [first] = exporters;
         if (isEntity && first) {
           this.addError({
             position: first.position,
-            message: `Entity '${exportName}' is exported by multiple files: ${exporters.map(e => e.name).join(', ')}`,
+            message: `Entity '${exportName}' is exported by multiple files: ${exporters.map((e) => e.name).join(', ')}`,
             severity: 'error',
             suggestion: 'Each entity should be exported by exactly one file. Remove the duplicate exports.',
           });
@@ -607,7 +620,7 @@ export class DSLValidator {
           if (call.includes('.')) {
             const [objectName, methodName] = call.split('.', 2);
             const targetEntity = entities.get(objectName as string);
-            
+
             if (!targetEntity) {
               this.addError({
                 position: entity.position,
@@ -662,7 +675,7 @@ export class DSLValidator {
     for (const entity of entities.values()) {
       if (entity.type === 'Function') {
         const funcEntity = entity as FunctionEntity;
-        
+
         if (funcEntity.input) {
           const inputEntity = entities.get(funcEntity.input);
           if (!inputEntity) {
@@ -704,12 +717,11 @@ export class DSLValidator {
     }
   }
 
-
   private checkUIComponentRelationships(entities: Map<string, AnyEntity>): void {
     for (const entity of entities.values()) {
       if (entity.type === 'UIComponent') {
         const uiEntity = entity as UIComponentEntity;
-        
+
         // Check contains references
         if (uiEntity.contains) {
           for (const childName of uiEntity.contains) {
@@ -731,7 +743,7 @@ export class DSLValidator {
             }
           }
         }
-        
+
         // Check containedBy references
         if (uiEntity.containedBy) {
           for (const parentName of uiEntity.containedBy) {
@@ -760,7 +772,7 @@ export class DSLValidator {
   private checkFunctionUIComponentAffects(entities: Map<string, AnyEntity>): void {
     // Build bi-directional validation
     const componentAffectedBy = new Map<string, string[]>();
-    
+
     for (const entity of entities.values()) {
       if (entity.type === 'Function') {
         const funcEntity = entity as FunctionEntity;
@@ -792,13 +804,13 @@ export class DSLValidator {
         }
       }
     }
-    
+
     // Check that UIComponent.affectedBy matches Function.affects
     for (const entity of entities.values()) {
       if (entity.type === 'UIComponent') {
         const uiEntity = entity as UIComponentEntity;
         const functionsAffecting = componentAffectedBy.get(entity.name) || [];
-        
+
         if (uiEntity.affectedBy && uiEntity.affectedBy.length > 0) {
           // Component claims to be affected by functions - verify they match
           for (const funcName of uiEntity.affectedBy) {
@@ -820,10 +832,10 @@ export class DSLValidator {
     for (const entity of entities.values()) {
       if (entity.type === 'Asset') {
         const assetEntity = entity as AssetEntity;
-        
+
         if (assetEntity.containsProgram) {
           const programEntity = entities.get(assetEntity.containsProgram);
-          
+
           if (!programEntity) {
             this.addError({
               position: entity.position,
@@ -847,7 +859,7 @@ export class DSLValidator {
   private checkUIComponentContainment(entities: Map<string, AnyEntity>): void {
     // Build a set of all UIComponents that are contained by other UIComponents
     const containedComponents = new Set<string>();
-    
+
     for (const entity of entities.values()) {
       if (entity.type === 'UIComponent') {
         const uiEntity = entity as UIComponentEntity;
@@ -858,17 +870,17 @@ export class DSLValidator {
         }
       }
     }
-    
+
     // Check that all non-root UIComponents are contained by another component
     for (const entity of entities.values()) {
       if (entity.type === 'UIComponent') {
         const uiEntity = entity as UIComponentEntity;
-        
+
         // Skip root components - they don't need to be contained
         if (uiEntity.root) {
           continue;
         }
-        
+
         // Check if this non-root component is contained by any other component
         if (!containedComponents.has(entity.name)) {
           this.addError({
@@ -885,15 +897,15 @@ export class DSLValidator {
   private checkFunctionConsumption(entities: Map<string, AnyEntity>): void {
     // Check that Functions' consumes references exist and are valid types
     const validConsumeTypes = ['RunParameter', 'Asset', 'Dependency', 'Constants'];
-    
+
     for (const entity of entities.values()) {
       if (entity.type === 'Function') {
         const funcEntity = entity as FunctionEntity;
-        
+
         if (funcEntity.consumes) {
           for (const consumeName of funcEntity.consumes) {
             const consumeEntity = entities.get(consumeName);
-            
+
             if (!consumeEntity) {
               this.addError({
                 position: entity.position,
@@ -918,11 +930,11 @@ export class DSLValidator {
     for (const entity of entities.values()) {
       if (entity.type === 'RunParameter') {
         const paramEntity = entity as RunParameterEntity;
-        
+
         if (paramEntity.consumedBy && paramEntity.consumedBy.length > 0) {
           for (const funcName of paramEntity.consumedBy) {
             const funcEntity = entities.get(funcName);
-            
+
             if (!funcEntity) {
               this.addError({
                 position: entity.position,
@@ -997,15 +1009,13 @@ export class DSLValidator {
       }
 
       // Check if this reference already exists
-      const exists = target.referencedBy!.some(
-        ref => ref.from === from.name && ref.type === refType
-      );
-      
+      const exists = target.referencedBy!.some((ref) => ref.from === from.name && ref.type === refType);
+
       if (!exists) {
         target.referencedBy!.push({
           from: from.name,
           type: refType,
-          fromType: from.type
+          fromType: from.type,
         });
       }
     };
@@ -1017,10 +1027,8 @@ export class DSLValidator {
         for (const imp of referencer.imports) {
           if (!imp.includes('*')) {
             // Check if this is a Dependency entity
-            const dependency = Array.from(entities.values()).find(
-              e => e.type === 'Dependency' && e.name === imp
-            );
-            
+            const dependency = Array.from(entities.values()).find((e) => e.type === 'Dependency' && e.name === imp);
+
             if (dependency) {
               // For Dependencies, update their importedBy field directly
               const depEntity = dependency as DependencyEntity;
@@ -1158,7 +1166,7 @@ export class DSLValidator {
     for (const entity of entities.values()) {
       if (entity.type === 'Function') {
         const funcEntity = entity as FunctionEntity & { _dependencies?: string[] };
-        
+
         // Check if there are unresolved dependencies
         if (funcEntity._dependencies) {
           for (const dep of funcEntity._dependencies) {
@@ -1181,7 +1189,7 @@ export class DSLValidator {
     for (const entity of entities.values()) {
       if (entity.type === 'DTO') {
         const dtoEntity = entity as DTOEntity;
-        
+
         if (dtoEntity.fields) {
           for (const field of dtoEntity.fields) {
             // Check if field type is exactly 'Function' or contains 'Function' as a word
@@ -1198,5 +1206,4 @@ export class DSLValidator {
       }
     }
   }
-
 }

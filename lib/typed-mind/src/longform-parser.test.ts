@@ -13,7 +13,7 @@ program TodoApp {
 }`;
       const result = parser.parse(input);
       const program = result.entities.get('TodoApp');
-      
+
       expect(program).toBeDefined();
       expect(program?.type).toBe('Program');
       if (program?.type === 'Program') {
@@ -33,7 +33,7 @@ program APIServer {
   version: "1.0.0"
 }`;
       const result = parser.parse(input);
-      
+
       expect(result.entities.size).toBe(2);
       expect(result.entities.has('WebApp')).toBe(true);
       expect(result.entities.has('APIServer')).toBe(true);
@@ -50,7 +50,7 @@ file AppEntry {
 }`;
       const result = parser.parse(input);
       const file = result.entities.get('AppEntry');
-      
+
       expect(file).toBeDefined();
       expect(file?.type).toBe('File');
       if (file?.type === 'File') {
@@ -75,7 +75,7 @@ function createUser {
 }`;
       const result = parser.parse(input);
       const func = result.entities.get('createUser');
-      
+
       expect(func).toBeDefined();
       expect(func?.type).toBe('Function');
       if (func?.type === 'Function') {
@@ -100,7 +100,7 @@ class UserService {
 }`;
       const result = parser.parse(input);
       const cls = result.entities.get('UserService');
-      
+
       expect(cls).toBeDefined();
       expect(cls?.type).toBe('Class');
       if (cls?.type === 'Class') {
@@ -138,7 +138,7 @@ dto UserDTO {
 }`;
       const result = parser.parse(input);
       const dto = result.entities.get('UserDTO');
-      
+
       expect(dto).toBeDefined();
       expect(dto?.type).toBe('DTO');
       if (dto?.type === 'DTO') {
@@ -148,13 +148,13 @@ dto UserDTO {
           name: 'id',
           type: 'string',
           description: 'Unique identifier',
-          optional: false
+          optional: false,
         });
         expect(dto.fields[3]).toEqual({
           name: 'age',
           type: 'number',
           description: 'Age in years',
-          optional: true
+          optional: true,
         });
       }
     });
@@ -171,7 +171,7 @@ component UserProfile {
 }`;
       const result = parser.parse(input);
       const component = result.entities.get('UserProfile');
-      
+
       expect(component).toBeDefined();
       expect(component?.type).toBe('UIComponent');
       if (component?.type === 'UIComponent') {
@@ -192,7 +192,7 @@ component App {
 }`;
       const result = parser.parse(input);
       const component = result.entities.get('App');
-      
+
       expect(component).toBeDefined();
       if (component?.type === 'UIComponent') {
         expect(component.root).toBe(true);
@@ -212,7 +212,7 @@ asset IndexHTML {
   containsProgram: ClientApp
 }`;
       const result = parser.parse(input);
-      
+
       const logo = result.entities.get('Logo');
       expect(logo?.type).toBe('Asset');
       if (logo?.type === 'Asset') {
@@ -236,7 +236,7 @@ constants Config {
 }`;
       const result = parser.parse(input);
       const constants = result.entities.get('Config');
-      
+
       expect(constants).toBeDefined();
       expect(constants?.type).toBe('Constants');
       if (constants?.type === 'Constants') {
@@ -278,9 +278,9 @@ parameter MAX_CONNECTIONS {
   default: "100"
 }`;
       const result = parser.parse(input);
-      
+
       expect(result.entities.size).toBe(5);
-      
+
       const dbUrl = result.entities.get('DATABASE_URL');
       if (dbUrl?.type === 'RunParameter') {
         expect(dbUrl.paramType).toBe('env');
@@ -302,23 +302,23 @@ parameter MAX_CONNECTIONS {
 import "./shared/auth.tmd" as Auth
 import "./utils/helpers.tmd"
 @import "./legacy.tmd" as Legacy`;
-      
+
       const result = parser.parse(input);
       expect(result.imports).toHaveLength(3);
       expect(result.imports[0]).toEqual({
         path: './shared/auth.tmd',
         alias: 'Auth',
-        position: { line: 2, column: 1 }
+        position: { line: 2, column: 1 },
       });
       expect(result.imports[1]).toEqual({
         path: './utils/helpers.tmd',
         alias: undefined,
-        position: { line: 3, column: 1 }
+        position: { line: 3, column: 1 },
       });
       expect(result.imports[2]).toEqual({
         path: './legacy.tmd',
         alias: 'Legacy',
-        position: { line: 4, column: 1 }
+        position: { line: 4, column: 1 },
       });
     });
   });
@@ -366,16 +366,16 @@ dto UserDTO {
     email: { type: "string" }
   }
 }`;
-      
+
       const result = parser.parse(input);
       expect(result.entities.size).toBe(8);
-      
+
       // Check shortform entities
       expect(result.entities.get('TodoApp')?.type).toBe('Program');
       expect(result.entities.get('AppEntry')?.type).toBe('File');
       expect(result.entities.get('createTodo')?.type).toBe('Function');
       expect(result.entities.get('TodoDTO')?.type).toBe('DTO');
-      
+
       // Check longform entities
       expect(result.entities.get('APIServer')?.type).toBe('Program');
       expect(result.entities.get('ApiMain')?.type).toBe('File');

@@ -31,10 +31,10 @@ export class TypedMindLanguageServer {
   private documents = new TextDocuments<TextDocument>(TextDocument);
   private parser = new DSLParser();
   private validator = new DSLValidator();
-  
+
   // Cache parsed entities per document
   private documentEntities = new Map<string, Map<string, AnyEntity>>();
-  
+
   // Semantic tokens legend
   private readonly tokenTypes = [
     SemanticTokenTypes.function,
@@ -46,14 +46,14 @@ export class TypedMindLanguageServer {
     SemanticTokenTypes.namespace,
     SemanticTokenTypes.type,
   ];
-  
+
   private readonly tokenModifiers = [
     SemanticTokenModifiers.declaration,
     SemanticTokenModifiers.definition,
     SemanticTokenModifiers.readonly,
     SemanticTokenModifiers.static,
   ];
-  
+
   constructor() {
     this.setupHandlers();
   }
@@ -180,7 +180,18 @@ export class TypedMindLanguageServer {
     const items: CompletionItem[] = [];
 
     // Add entity types
-    const entityTypes = ['Program', 'File', 'Function', 'Class', 'Constants', 'DTO', 'Asset', 'UIComponent', 'RunParameter', 'Dependency'] as const;
+    const entityTypes = [
+      'Program',
+      'File',
+      'Function',
+      'Class',
+      'Constants',
+      'DTO',
+      'Asset',
+      'UIComponent',
+      'RunParameter',
+      'Dependency',
+    ] as const;
     for (const type of entityTypes) {
       items.push({
         label: type,
@@ -271,7 +282,7 @@ export class TypedMindLanguageServer {
     // Find entity at position
     const text = document.getText();
     const offset = document.offsetAt(params.position);
-    
+
     // Simple heuristic: find word at position
     const wordRange = this.getWordRangeAtPosition(text, offset);
     if (!wordRange) return null;
@@ -305,7 +316,7 @@ export class TypedMindLanguageServer {
           refsByType.get('reference')!.push(ref);
         }
       }
-      
+
       const refStrings: string[] = [];
       for (const [type, froms] of Array.from(refsByType)) {
         refStrings.push(`${type}: ${froms.join(', ')}`);
@@ -327,8 +338,7 @@ export class TypedMindLanguageServer {
 
     // Handle purpose for non-DTO and non-UIComponent entities
     // (DTOs and UIComponents handle purpose in their specific sections)
-    if ('purpose' in entity && entity.purpose && 
-        entity.type !== 'DTO' && entity.type !== 'UIComponent') {
+    if ('purpose' in entity && entity.purpose && entity.type !== 'DTO' && entity.type !== 'UIComponent') {
       contents.push(`**Purpose**: ${entity.purpose}`);
     }
 
@@ -351,11 +361,13 @@ export class TypedMindLanguageServer {
         contents.push(`**Purpose**: ${dtoEntity.purpose}`);
       }
       if (dtoEntity.fields && dtoEntity.fields.length > 0) {
-        const fieldList = dtoEntity.fields.map((field: any) => {
-          const optional = field.optional ? ' *(optional)*' : '';
-          const desc = field.description ? ` - ${field.description}` : '';
-          return `• \`${field.name}: ${field.type}\`${optional}${desc}`;
-        }).join('\n');
+        const fieldList = dtoEntity.fields
+          .map((field: any) => {
+            const optional = field.optional ? ' *(optional)*' : '';
+            const desc = field.description ? ` - ${field.description}` : '';
+            return `• \`${field.name}: ${field.type}\`${optional}${desc}`;
+          })
+          .join('\n');
         contents.push(`**Fields**:\n${fieldList}`);
       }
     }
@@ -495,7 +507,7 @@ export class TypedMindLanguageServer {
         // Check if this is a word boundary
         const beforeChar = columnIndex > 0 ? line[columnIndex - 1] : ' ';
         const afterChar = columnIndex + word.length < line.length ? line[columnIndex + word.length] : ' ';
-        
+
         if (this.isWordBoundary(beforeChar) && this.isWordBoundary(afterChar)) {
           locations.push({
             uri: params.textDocument.uri,
@@ -505,7 +517,7 @@ export class TypedMindLanguageServer {
             },
           });
         }
-        
+
         columnIndex = line.indexOf(word, columnIndex + 1);
       }
     }
@@ -524,7 +536,7 @@ export class TypedMindLanguageServer {
     while (start > 0 && this.isEntityNameChar(text[start - 1])) {
       start--;
     }
-    
+
     // Check if there's an @ before the word
     if (start > 0 && text[start - 1] === '@') {
       // Verify it's at a word boundary
@@ -586,20 +598,14 @@ export class TypedMindLanguageServer {
         const word = match[1];
         const index = match.index;
         if (!word || index === undefined) continue;
-        
+
         const entityType = entityTypeMap.get(word);
-        
+
         if (entityType) {
           const tokenType = this.getSemanticTokenType(entityType);
           const tokenModifier = this.getSemanticTokenModifier(line, index);
-          
-          builder.push(
-            lineIndex,
-            index,
-            word.length,
-            tokenType,
-            tokenModifier
-          );
+
+          builder.push(lineIndex, index, word.length, tokenType, tokenModifier);
         }
       }
     }

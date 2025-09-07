@@ -33,12 +33,14 @@ export class LongformParser {
     const firstLine = this.lines[startLine];
     if (!firstLine) return null;
 
-    const match = firstLine.trim().match(/^(program|file|function|class|dto|component|asset|constants|parameter|dependency)\s+(\w+)\s*\{?$/);
+    const match = firstLine
+      .trim()
+      .match(/^(program|file|function|class|dto|component|asset|constants|parameter|dependency)\s+(\w+)\s*\{?$/);
     if (!match) return null;
 
     const [_, type, name] = match;
     const block = this.parseBlock(type, name, startLine);
-    
+
     return this.convertToEntity(block);
   }
 
@@ -46,33 +48,33 @@ export class LongformParser {
     const properties = new Map<string, any>();
     const position: Position = { line: startLine + 1, column: 1 };
     const rawLines: string[] = [this.lines[startLine]];
-    
+
     // Move past the opening line
     this.currentLine = startLine + 1;
-    
+
     // Parse until we find the closing brace
     while (this.currentLine < this.lines.length) {
       const line = this.lines[this.currentLine];
       rawLines.push(line);
       const trimmed = line.trim();
-      
+
       if (trimmed === '}') {
         break;
       }
-      
+
       if (trimmed && !trimmed.startsWith('#')) {
         this.parseProperty(trimmed, properties);
       }
-      
+
       this.currentLine++;
     }
-    
+
     return {
       type,
       name,
       properties,
       position,
-      raw: rawLines.join('\n')
+      raw: rawLines.join('\n'),
     };
   }
 
@@ -91,7 +93,10 @@ export class LongformParser {
     const arrayMatch = line.match(/^(\w+):\s*\[([^\]]*)\]$/);
     if (arrayMatch) {
       const [_, key, value] = arrayMatch;
-      const items = value.split(',').map(s => s.trim()).filter(s => s);
+      const items = value
+        .split(',')
+        .map((s) => s.trim())
+        .filter((s) => s);
       properties.set(key, items);
       return;
     }
@@ -175,7 +180,7 @@ export class LongformParser {
           purpose: properties.get('purpose') || properties.get('description'),
           position,
           raw,
-          comment
+          comment,
         } as ProgramEntity;
 
       case 'file':
@@ -188,7 +193,7 @@ export class LongformParser {
           purpose: properties.get('purpose') || properties.get('description'),
           position,
           raw,
-          comment
+          comment,
         } as FileEntity;
 
       case 'function':
@@ -204,7 +209,7 @@ export class LongformParser {
           consumes: properties.get('consumes') || [],
           position,
           raw,
-          comment
+          comment,
         } as FunctionEntity;
 
       case 'class':
@@ -218,20 +223,20 @@ export class LongformParser {
           purpose: properties.get('purpose') || properties.get('description'),
           position,
           raw,
-          comment
+          comment,
         } as ClassEntity;
 
       case 'dto':
         const fields: DTOField[] = [];
         const fieldsObj = properties.get('fields') || {};
-        
+
         for (const [fieldName, fieldDef] of Object.entries(fieldsObj)) {
           const def = fieldDef as any;
           fields.push({
             name: fieldName,
             type: def.type || 'any',
             description: def.description,
-            optional: def.optional || false
+            optional: def.optional || false,
           });
         }
 
@@ -242,7 +247,7 @@ export class LongformParser {
           fields,
           position,
           raw,
-          comment
+          comment,
         } as DTOEntity;
 
       case 'component':
@@ -256,7 +261,7 @@ export class LongformParser {
           affectedBy: properties.get('affectedBy') || [],
           position,
           raw,
-          comment
+          comment,
         } as UIComponentEntity;
 
       case 'asset':
@@ -267,7 +272,7 @@ export class LongformParser {
           containsProgram: properties.get('containsProgram'),
           position,
           raw,
-          comment
+          comment,
         } as AssetEntity;
 
       case 'constants':
@@ -279,7 +284,7 @@ export class LongformParser {
           purpose: properties.get('purpose') || properties.get('description'),
           position,
           raw,
-          comment
+          comment,
         } as ConstantsEntity;
 
       case 'parameter':
@@ -294,7 +299,7 @@ export class LongformParser {
           consumedBy: [],
           position,
           raw,
-          comment
+          comment,
         } as RunParameterEntity;
 
       case 'dependency':
@@ -306,7 +311,7 @@ export class LongformParser {
           importedBy: [],
           position,
           raw,
-          comment
+          comment,
         } as DependencyEntity;
 
       default:

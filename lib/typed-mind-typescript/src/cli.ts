@@ -104,7 +104,7 @@ Examples:
 
 async function main() {
   let parsed;
-  
+
   try {
     parsed = parseArgs({
       options,
@@ -204,13 +204,13 @@ function resolveEntrypoint(projectPath: string, entrypointParam: string): string
   if (existsSync(projectRelativePath)) {
     return projectRelativePath;
   }
-  
-  // 2. Try relative to current working directory  
+
+  // 2. Try relative to current working directory
   const cwdRelativePath = resolve(process.cwd(), entrypointParam);
   if (existsSync(cwdRelativePath)) {
     return cwdRelativePath;
   }
-  
+
   // 3. Error with helpful message showing both attempted paths
   const errorMessage = [
     `Entry point file not found: ${entrypointParam}`,
@@ -228,7 +228,7 @@ function resolveEntrypoint(projectPath: string, entrypointParam: string): string
     '  --entrypoint src/cli.ts          (relative to project)',
     '  --entrypoint lib/my-pkg/src/cli.ts  (relative to cwd)',
   ].join('\n');
-  
+
   throw new Error(errorMessage);
 }
 
@@ -243,7 +243,7 @@ async function handleExport(values: any): Promise<void> {
   }
 
   // Analyze TypeScript project starting from entrypoint
-  const analyzer = new TypeScriptAnalyzer(projectPath, configPath || values.config as string | undefined);
+  const analyzer = new TypeScriptAnalyzer(projectPath, configPath || (values.config as string | undefined));
   const analysis = analyzer.analyzeFromEntrypoint(resolvedEntrypoint);
 
   if (values.verbose) {
@@ -295,11 +295,14 @@ async function handleExport(values: any): Promise<void> {
 
   if (values.verbose) {
     console.log(`\nEntity summary:`);
-    const entityCounts = result.entities.reduce((counts, entity) => {
-      counts[entity.type] = (counts[entity.type] || 0) + 1;
-      return counts;
-    }, {} as Record<string, number>);
-    
+    const entityCounts = result.entities.reduce(
+      (counts, entity) => {
+        counts[entity.type] = (counts[entity.type] || 0) + 1;
+        return counts;
+      },
+      {} as Record<string, number>,
+    );
+
     for (const [type, count] of Object.entries(entityCounts)) {
       console.log(`  ${type}: ${count}`);
     }
@@ -324,7 +327,7 @@ async function handleAssert(values: any): Promise<void> {
   const tmdContent = readFileSync(tmdFilePath, 'utf-8');
 
   // Analyze TypeScript project starting from entrypoint
-  const analyzer = new TypeScriptAnalyzer(projectPath, configPath || values.config as string | undefined);
+  const analyzer = new TypeScriptAnalyzer(projectPath, configPath || (values.config as string | undefined));
   const analysis = analyzer.analyzeFromEntrypoint(resolvedEntrypoint);
 
   // Convert to TypedMind
@@ -357,25 +360,25 @@ async function handleAssert(values: any): Promise<void> {
     process.exit(0);
   } else {
     console.error('✗ TypeScript project deviates from expected architecture');
-    
+
     if (assertionResult.missingEntities.length > 0) {
       console.error(`\nMissing entities (${assertionResult.missingEntities.length}):`);
       for (const entity of assertionResult.missingEntities) {
         console.error(`  - ${entity}`);
       }
     }
-    
+
     if (assertionResult.extraEntities.length > 0) {
       console.error(`\nExtra entities (${assertionResult.extraEntities.length}):`);
       for (const entity of assertionResult.extraEntities) {
         console.error(`  + ${entity}`);
       }
     }
-    
+
     if (assertionResult.deviations.length > 0) {
-      const errors = assertionResult.deviations.filter(d => d.severity === 'error');
-      const warnings = assertionResult.deviations.filter(d => d.severity === 'warning');
-      
+      const errors = assertionResult.deviations.filter((d) => d.severity === 'error');
+      const warnings = assertionResult.deviations.filter((d) => d.severity === 'warning');
+
       if (errors.length > 0) {
         console.error(`\nErrors (${errors.length}):`);
         for (const deviation of errors) {
@@ -384,7 +387,7 @@ async function handleAssert(values: any): Promise<void> {
           console.error(`    Actual:   ${JSON.stringify(deviation.actual)}`);
         }
       }
-      
+
       if (warnings.length > 0 && values.verbose) {
         console.warn(`\nWarnings (${warnings.length}):`);
         for (const deviation of warnings) {
@@ -394,7 +397,7 @@ async function handleAssert(values: any): Promise<void> {
         }
       }
     }
-    
+
     process.exit(1);
   }
 }
@@ -409,7 +412,7 @@ async function handleCheck(values: any): Promise<void> {
   }
 
   // Analyze TypeScript project starting from entrypoint
-  const analyzer = new TypeScriptAnalyzer(projectPath, configPath || values.config as string | undefined);
+  const analyzer = new TypeScriptAnalyzer(projectPath, configPath || (values.config as string | undefined));
   const analysis = analyzer.analyzeFromEntrypoint(resolvedEntrypoint);
 
   // Convert to TypedMind
@@ -450,23 +453,26 @@ async function handleCheck(values: any): Promise<void> {
 
   if (validationResult.valid) {
     console.log('✓ TypeScript project architecture is valid');
-    
+
     if (values.verbose) {
       console.log(`\nValidated ${conversionResult.entities.length} entities:`);
-      const entityCounts = conversionResult.entities.reduce((counts, entity) => {
-        counts[entity.type] = (counts[entity.type] || 0) + 1;
-        return counts;
-      }, {} as Record<string, number>);
-      
+      const entityCounts = conversionResult.entities.reduce(
+        (counts, entity) => {
+          counts[entity.type] = (counts[entity.type] || 0) + 1;
+          return counts;
+        },
+        {} as Record<string, number>,
+      );
+
       for (const [type, count] of Object.entries(entityCounts)) {
         console.log(`  ${type}: ${count}`);
       }
     }
-    
+
     process.exit(0);
   } else {
     console.error(`✗ Architecture validation failed with ${validationResult.errors.length} error(s):`);
-    
+
     for (const error of validationResult.errors) {
       const severity = error.severity === 'warning' ? 'WARNING' : 'ERROR';
       console.error(`  ${severity}: ${error.message}`);
@@ -474,7 +480,7 @@ async function handleCheck(values: any): Promise<void> {
         console.error(`    Suggestion: ${error.suggestion}`);
       }
     }
-    
+
     process.exit(1);
   }
 }

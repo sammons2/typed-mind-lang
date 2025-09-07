@@ -51,21 +51,21 @@ export class TypeScriptToTypedMindConverter {
     try {
       // Filter modules based on ignore patterns
       const filteredModules = this.filterModules(analysis.modules);
-      
+
       // Store entry points for reference during conversion
-      this.entryPoints = new Set(analysis.entryPoints.map(ep => this.getRelativePath(ep)));
-      
+      this.entryPoints = new Set(analysis.entryPoints.map((ep) => this.getRelativePath(ep)));
+
       // Convert TypeScript constructs to TypedMind entities
       this.convertModules(filteredModules);
-      
+
       // Generate program entities if requested (after other entities are created)
       if (this.options.generatePrograms) {
         this.generatePrograms(analysis.entryPoints, filteredModules);
       }
-      
+
       // Generate TMD content
       const tmdContent = this.generateTMDContent();
-      
+
       return {
         success: this.errors.length === 0,
         entities: [...this.entities],
@@ -73,10 +73,9 @@ export class TypeScriptToTypedMindConverter {
         errors: [...this.errors],
         warnings: [...this.warnings],
       } as const;
-      
     } catch (error) {
       this.addError(`Conversion failed: ${error instanceof Error ? error.message : String(error)}`);
-      
+
       return {
         success: false,
         entities: [],
@@ -101,21 +100,16 @@ export class TypeScriptToTypedMindConverter {
   }
 
   private filterModules(modules: readonly ParsedModule[]): ParsedModule[] {
-    return modules.filter(module => {
+    return modules.filter((module) => {
       const relativePath = path.relative(process.cwd(), module.filePath);
-      return !this.options.ignorePatterns.some(pattern => 
-        this.matchesPattern(relativePath, pattern)
-      );
+      return !this.options.ignorePatterns.some((pattern) => this.matchesPattern(relativePath, pattern));
     });
   }
 
   private matchesPattern(filePath: string, pattern: string): boolean {
     // Simple glob matching - could be enhanced with a proper glob library
-    const regex = pattern
-      .replace(/\*\*/g, '.*')
-      .replace(/\*/g, '[^/]*')
-      .replace(/\?/g, '.');
-    
+    const regex = pattern.replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*').replace(/\?/g, '.');
+
     return new RegExp(`^${regex}$`).test(filePath);
   }
 
@@ -124,11 +118,11 @@ export class TypeScriptToTypedMindConverter {
     for (const module of modules) {
       this.extractDependencies(module);
     }
-    
+
     // Separate pure types files from regular files
     const pureTypesFiles: ParsedModule[] = [];
     const regularFiles: ParsedModule[] = [];
-    
+
     for (const module of modules) {
       if (this.isPureTypesFile(module)) {
         pureTypesFiles.push(module);
@@ -136,17 +130,17 @@ export class TypeScriptToTypedMindConverter {
         regularFiles.push(module);
       }
     }
-    
+
     // Second pass: convert regular modules first
     for (const module of regularFiles) {
       this.convertModule(module);
     }
-    
+
     // Third pass: convert pure types files last (so their Constants entities get created)
     for (const module of pureTypesFiles) {
       this.convertModule(module);
     }
-    
+
     // Add dependencies to entities
     this.entities.push(...this.dependencies.values());
   }
@@ -190,7 +184,7 @@ export class TypeScriptToTypedMindConverter {
       // For @sammons/typed-mind-renderer -> SammonsTypedMindRenderer
       return sanitized;
     }
-    
+
     // Handle Node.js built-ins and regular packages
     return this.sanitizeEntityName(specifier);
   }
@@ -224,26 +218,26 @@ export class TypeScriptToTypedMindConverter {
   private derivePurpose(specifier: string): string {
     // Known Node.js built-ins
     const nodeBuiltins: Record<string, string> = {
-      'fs': 'File system operations',
-      'path': 'Path manipulation utilities',
-      'util': 'Node.js utility functions', 
-      'os': 'Operating system utilities',
-      'crypto': 'Cryptographic functionality',
-      'http': 'HTTP client and server',
-      'https': 'HTTPS client and server',
-      'url': 'URL parsing utilities',
-      'querystring': 'Query string utilities',
-      'events': 'Event emitter',
-      'stream': 'Streaming data',
-      'buffer': 'Binary data handling',
-      'child_process': 'Spawn child processes',
-      'cluster': 'Multi-process support',
-      'dns': 'DNS lookup utilities',
-      'net': 'TCP networking',
-      'readline': 'Read input line-by-line',
-      'tls': 'TLS/SSL support',
-      'vm': 'Virtual machine context',
-      'zlib': 'Compression utilities',
+      fs: 'File system operations',
+      path: 'Path manipulation utilities',
+      util: 'Node.js utility functions',
+      os: 'Operating system utilities',
+      crypto: 'Cryptographic functionality',
+      http: 'HTTP client and server',
+      https: 'HTTPS client and server',
+      url: 'URL parsing utilities',
+      querystring: 'Query string utilities',
+      events: 'Event emitter',
+      stream: 'Streaming data',
+      buffer: 'Binary data handling',
+      child_process: 'Spawn child processes',
+      cluster: 'Multi-process support',
+      dns: 'DNS lookup utilities',
+      net: 'TCP networking',
+      readline: 'Read input line-by-line',
+      tls: 'TLS/SSL support',
+      vm: 'Virtual machine context',
+      zlib: 'Compression utilities',
     };
 
     if (nodeBuiltins[specifier]) {
@@ -252,25 +246,25 @@ export class TypeScriptToTypedMindConverter {
 
     // Common packages
     const knownPackages: Record<string, string> = {
-      'typescript': 'TypeScript compiler',
-      'react': 'React UI library',
-      'express': 'Web application framework',
-      'lodash': 'JavaScript utility library',
-      'axios': 'HTTP client library',
-      'moment': 'Date manipulation library',
-      'uuid': 'UUID generation library',
-      'bcrypt': 'Password hashing library',
-      'jsonwebtoken': 'JSON Web Token library',
-      'mongoose': 'MongoDB object modeling',
-      'sequelize': 'SQL ORM library',
-      'dotenv': 'Environment variable loader',
-      'cors': 'CORS middleware',
-      'helmet': 'Security headers middleware',
-      'winston': 'Logging library',
-      'jest': 'Testing framework',
-      'vitest': 'Testing framework',
-      'eslint': 'JavaScript linter',
-      'prettier': 'Code formatter',
+      typescript: 'TypeScript compiler',
+      react: 'React UI library',
+      express: 'Web application framework',
+      lodash: 'JavaScript utility library',
+      axios: 'HTTP client library',
+      moment: 'Date manipulation library',
+      uuid: 'UUID generation library',
+      bcrypt: 'Password hashing library',
+      jsonwebtoken: 'JSON Web Token library',
+      mongoose: 'MongoDB object modeling',
+      sequelize: 'SQL ORM library',
+      dotenv: 'Environment variable loader',
+      cors: 'CORS middleware',
+      helmet: 'Security headers middleware',
+      winston: 'Logging library',
+      jest: 'Testing framework',
+      vitest: 'Testing framework',
+      eslint: 'JavaScript linter',
+      prettier: 'Code formatter',
     };
 
     if (knownPackages[specifier]) {
@@ -290,18 +284,18 @@ export class TypeScriptToTypedMindConverter {
   private convertModule(module: ParsedModule): void {
     const fileName = path.basename(module.filePath, path.extname(module.filePath));
     const entityName = this.sanitizeEntityName(fileName);
-    
+
     // Check if this module is an entry point that needs special handling
     const isEntryPoint = this.isModuleEntryPoint(module);
-    
+
     // Check if this is a pure types/constants file
     const isPureTypesFile = this.isPureTypesFile(module);
-    
+
     // Decide whether to create separate entities or use ClassFile fusion
     const hasClasses = module.classes.length > 0;
     const hasFunctions = module.functions.length > 0;
     const hasExports = module.exports.length > 0;
-    
+
     if (isPureTypesFile) {
       // For pure types/constants files, only create the individual type/constant entities
       this.convertTypesAndConstants(module);
@@ -319,7 +313,7 @@ export class TypeScriptToTypedMindConverter {
     // and doesn't have any classes or functions (except type-only exports)
     const hasRealCode = module.classes.length > 0 || module.functions.length > 0;
     const hasTypesOrConstants = module.types.length > 0 || module.interfaces.length > 0 || module.constants.length > 0;
-    
+
     return !hasRealCode && hasTypesOrConstants;
   }
 
@@ -330,14 +324,14 @@ export class TypeScriptToTypedMindConverter {
         this.convertTypeAliasToDTO(typeAlias);
       }
     }
-    
+
     // Then convert interfaces to DTOs
     for (const iface of module.interfaces) {
       if (this.isInterfaceExported(iface, module)) {
         this.convertInterfaceToDTO(iface);
       }
     }
-    
+
     // Finally convert constants
     for (const constant of module.constants) {
       if (this.isConstantExported(constant, module)) {
@@ -347,18 +341,16 @@ export class TypeScriptToTypedMindConverter {
   }
 
   private isInterfaceExported(iface: { name: string }, module: ParsedModule): boolean {
-    return module.exports.some(exp => exp.name === iface.name && exp.type === 'interface');
+    return module.exports.some((exp) => exp.name === iface.name && exp.type === 'interface');
   }
 
   private isTypeAliasExported(typeAlias: { name: string }, module: ParsedModule): boolean {
-    return module.exports.some(exp => exp.name === typeAlias.name && exp.type === 'type');
+    return module.exports.some((exp) => exp.name === typeAlias.name && exp.type === 'type');
   }
 
   private convertToClassFile(module: ParsedModule, baseName: string): void {
     // Find the primary class (usually the one that matches the filename)
-    const primaryClass = module.classes.find(cls => 
-      cls.name.toLowerCase() === baseName.toLowerCase()
-    ) || module.classes[0];
+    const primaryClass = module.classes.find((cls) => cls.name.toLowerCase() === baseName.toLowerCase()) || module.classes[0];
 
     if (!primaryClass) {
       this.addWarning(`No primary class found in ${module.filePath}`);
@@ -367,12 +359,12 @@ export class TypeScriptToTypedMindConverter {
     }
 
     const entityName = createEntityName(primaryClass.name);
-    
+
     if (this.entityNames.has(entityName)) {
       this.addError(`Duplicate entity name: ${entityName}`);
       return;
     }
-    
+
     this.entityNames.add(entityName);
 
     const classFileEntity: ClassFileEntity = {
@@ -393,31 +385,31 @@ export class TypeScriptToTypedMindConverter {
     }
 
     this.entities.push(classFileEntity);
-    
+
     // Convert other classes as separate entities
     for (const cls of module.classes) {
       if (cls !== primaryClass) {
         this.convertClass(cls);
       }
     }
-    
+
     // Only convert functions that are exported
     for (const func of module.functions) {
       if (this.isFunctionExported(func, module)) {
         this.convertFunction(func);
       }
     }
-    
+
     // Convert interfaces as DTOs
     for (const iface of module.interfaces) {
       this.convertInterfaceToDTO(iface);
     }
-    
+
     // Convert all type aliases (both object-like and union types)
     for (const typeAlias of module.types) {
       this.convertTypeAliasToDTO(typeAlias);
     }
-    
+
     // Convert constants - create individual entities for exported constants
     this.convertConstants(module);
   }
@@ -425,10 +417,10 @@ export class TypeScriptToTypedMindConverter {
   private convertToSeparateEntities(module: ParsedModule, baseName: string): void {
     // Create File entity
     const fileEntityName = createEntityName(`${baseName}File`);
-    
+
     if (!this.entityNames.has(fileEntityName)) {
       this.entityNames.add(fileEntityName);
-      
+
       const fileEntity: FileEntity = {
         name: fileEntityName,
         type: 'File',
@@ -438,43 +430,43 @@ export class TypeScriptToTypedMindConverter {
         imports: this.convertImports(module.imports),
         exports: this.convertExports(module),
       };
-      
+
       this.entities.push(fileEntity);
     }
-    
+
     // Convert other entities
     for (const cls of module.classes) {
       this.convertClass(cls);
     }
-    
+
     // Only convert functions that are exported
     for (const func of module.functions) {
       if (this.isFunctionExported(func, module)) {
         this.convertFunction(func);
       }
     }
-    
+
     for (const iface of module.interfaces) {
       this.convertInterfaceToDTO(iface);
     }
-    
+
     // Convert all type aliases (both object-like and union types)
     for (const typeAlias of module.types) {
       this.convertTypeAliasToDTO(typeAlias);
     }
-    
+
     // Convert constants - create individual entities for exported constants
     this.convertConstants(module);
   }
 
   private convertClass(cls: ParsedClass): void {
     const entityName = createEntityName(cls.name);
-    
+
     if (this.entityNames.has(entityName)) {
       this.addError(`Duplicate entity name: ${entityName}`);
       return;
     }
-    
+
     this.entityNames.add(entityName);
 
     const classEntity: ClassEntity = {
@@ -496,12 +488,12 @@ export class TypeScriptToTypedMindConverter {
 
   private convertFunction(func: ParsedFunction): void {
     const entityName = createEntityName(func.name);
-    
+
     if (this.entityNames.has(entityName)) {
       this.addError(`Duplicate entity name: ${entityName}`);
       return;
     }
-    
+
     this.entityNames.add(entityName);
 
     const functionEntity: FunctionEntity = {
@@ -520,11 +512,11 @@ export class TypeScriptToTypedMindConverter {
     // Extract input/output DTOs from signature
     const inputDTO = this.extractInputDTO(func);
     const outputDTO = this.extractOutputDTO(func);
-    
+
     if (inputDTO) {
       (functionEntity as any).input = inputDTO;
     }
-    
+
     if (outputDTO) {
       (functionEntity as any).output = outputDTO;
     }
@@ -534,15 +526,15 @@ export class TypeScriptToTypedMindConverter {
 
   private convertInterfaceToDTO(iface: ParsedInterface): void {
     const entityName = createEntityName(iface.name);
-    
+
     if (this.entityNames.has(entityName)) {
       this.addError(`Duplicate entity name: ${entityName}`);
       return;
     }
-    
+
     this.addEntityName(entityName, 'convertInterfaceToDTO');
 
-    const fields: DTOField[] = iface.properties.map(prop => {
+    const fields: DTOField[] = iface.properties.map((prop) => {
       const field: DTOField = {
         name: prop.name,
         type: this.sanitizeFieldType(prop.type),
@@ -570,12 +562,12 @@ export class TypeScriptToTypedMindConverter {
 
   private convertTypeAliasToDTO(typeAlias: { name: string; type: string; description?: string }): void {
     const entityName = createEntityName(typeAlias.name);
-    
+
     if (this.entityNames.has(entityName)) {
       this.addError(`Duplicate entity name: ${entityName}`);
       return;
     }
-    
+
     // Handle union type aliases (like EntityType)
     if (typeAlias.type.includes('|')) {
       // Convert union type to Constants entity since it's like an enum
@@ -622,12 +614,12 @@ export class TypeScriptToTypedMindConverter {
 
   private createConstantEntity(constant: { name: string; type: string; value?: string }, module: ParsedModule): void {
     const entityName = createEntityName(constant.name);
-    
+
     if (this.entityNames.has(entityName)) {
       // Skip if already created - avoid duplicates
       return;
     }
-    
+
     this.entityNames.add(entityName);
 
     // Use the real path - multiple constants can share the same file path
@@ -654,7 +646,7 @@ export class TypeScriptToTypedMindConverter {
     if (this.entityNames.has(entityName)) {
       return;
     }
-    
+
     this.addEntityName(entityName, 'convertTypeAliasToConstants');
 
     // Use the real path - multiple constants can share the same file path
@@ -678,7 +670,7 @@ export class TypeScriptToTypedMindConverter {
   private generatePrograms(entryPoints: readonly string[], modules: ParsedModule[]): void {
     if (entryPoints.length === 0) {
       this.addWarning('No entry points detected, generating a default program');
-      
+
       // Create a default program pointing to the first module
       if (modules.length > 0) {
         const firstModule = modules[0];
@@ -698,12 +690,12 @@ export class TypeScriptToTypedMindConverter {
 
   private createProgramEntity(programName: string, entryFilePath: string): void {
     const entityName = createEntityName(programName);
-    
+
     if (this.entityNames.has(entityName)) {
       this.addError(`Duplicate program name: ${entityName}`);
       return;
     }
-    
+
     this.entityNames.add(entityName);
 
     // Find the actual entity that will be created for this entry file
@@ -722,19 +714,19 @@ export class TypeScriptToTypedMindConverter {
   }
 
   private convertMethods(cls: ParsedClass): string[] {
-    const methods = cls.methods.filter(method => {
+    const methods = cls.methods.filter((method) => {
       if (!this.options.includePrivateMembers && method.isPrivate) {
         return false;
       }
       return true;
     });
 
-    return methods.map(method => method.name);
+    return methods.map((method) => method.name);
   }
 
   private convertImports(imports: readonly any[]): string[] {
     const importNames: string[] = [];
-    
+
     for (const imp of imports) {
       if (this.isExternalPackage(imp.specifier)) {
         // For external packages, add the dependency entity name
@@ -745,21 +737,21 @@ export class TypeScriptToTypedMindConverter {
       } else {
         // For internal imports, add the specific imported entity names
         // These should match other entities in the project
-        
+
         if (imp.defaultImport) {
           const entityName = this.resolveImportToEntity(imp.defaultImport, imp.specifier);
           if (entityName) {
             importNames.push(entityName);
           }
         }
-        
+
         if (imp.namespaceImport) {
           const entityName = this.resolveImportToEntity(imp.namespaceImport, imp.specifier);
           if (entityName) {
             importNames.push(entityName);
           }
         }
-        
+
         for (const namedImport of imp.namedImports) {
           const entityName = this.resolveImportToEntity(namedImport, imp.specifier);
           if (entityName) {
@@ -768,15 +760,17 @@ export class TypeScriptToTypedMindConverter {
         }
       }
     }
-    
+
     return importNames;
   }
 
   private resolveImportToEntity(importName: string, specifier: string): string | undefined {
     // First check if we've already created an entity with this exact name
     const directEntityName = createEntityName(importName);
-    console.log(`    Resolving import ${importName} from ${specifier} -> ${directEntityName} (exists: ${this.entityNames.has(directEntityName)})`);
-    
+    console.log(
+      `    Resolving import ${importName} from ${specifier} -> ${directEntityName} (exists: ${this.entityNames.has(directEntityName)})`,
+    );
+
     if (this.entityNames.has(directEntityName)) {
       return directEntityName;
     }
@@ -800,7 +794,7 @@ export class TypeScriptToTypedMindConverter {
     // Check if this looks like a type alias or constant
     const typeAliasNames = ['EntityType', 'ReferenceType', 'AnyEntity', 'EntityTypeName'];
     const constantNames = ['ENTITY_PATTERNS', 'CONTINUATION_PATTERNS', 'GENERAL_PATTERNS', 'ENTITY_TYPE_NAMES', 'PATTERN_DESCRIPTIONS'];
-    
+
     return typeAliasNames.includes(name) || constantNames.includes(name);
   }
 
@@ -810,36 +804,42 @@ export class TypeScriptToTypedMindConverter {
     if (!this.isValidEntityName(name)) {
       return false;
     }
-    
+
     // Must start with uppercase (entities are PascalCase)
     if (name.length === 0 || name.charAt(0) !== name.charAt(0).toUpperCase()) {
       return false;
     }
-    
+
     // Exclude common Node.js built-in function names
     const builtinFunctions = [
-      'readFileSync', 'writeFileSync', 'readFile', 'writeFile',
-      'resolve', 'join', 'dirname', 'basename',
-      'parseArgs', 'format', 'inspect', 'promisify',
+      'readFileSync',
+      'writeFileSync',
+      'readFile',
+      'writeFile',
+      'resolve',
+      'join',
+      'dirname',
+      'basename',
+      'parseArgs',
+      'format',
+      'inspect',
+      'promisify',
     ];
-    
+
     return !builtinFunctions.includes(name);
   }
 
   private convertExports(module: ParsedModule, excludeName?: string): string[] {
     const exportNames: string[] = [];
     const seenNames = new Set<string>();
-    
+
     for (const exp of module.exports) {
-      if (exp.name !== excludeName && 
-          this.isValidEntityName(exp.name) && 
-          !seenNames.has(exp.name) &&
-          !this.isReExport(exp)) {
+      if (exp.name !== excludeName && this.isValidEntityName(exp.name) && !seenNames.has(exp.name) && !this.isReExport(exp)) {
         exportNames.push(exp.name);
         seenNames.add(exp.name);
       }
     }
-    
+
     return exportNames;
   }
 
@@ -849,7 +849,7 @@ export class TypeScriptToTypedMindConverter {
   }
 
   private isConstantExported(constant: { name: string }, module: ParsedModule): boolean {
-    return module.exports.some(exp => exp.name === constant.name && exp.type === 'constant');
+    return module.exports.some((exp) => exp.name === constant.name && exp.type === 'constant');
   }
 
   private extractInputDTO(func: ParsedFunction): string | undefined {
@@ -876,18 +876,17 @@ export class TypeScriptToTypedMindConverter {
     // Check if type looks like a custom DTO (not primitive)
     const primitives = ['string', 'number', 'boolean', 'void', 'any', 'unknown', 'null', 'undefined'];
     const cleaned = type.replace(/\[\]$/, ''); // Remove array suffix
-    return !primitives.includes(cleaned.toLowerCase()) && 
-           cleaned.charAt(0).toUpperCase() === cleaned.charAt(0);
+    return !primitives.includes(cleaned.toLowerCase()) && cleaned.charAt(0).toUpperCase() === cleaned.charAt(0);
   }
 
   private parseTypeToFields(type: string): DTOField[] {
     // Simple parsing - could be enhanced with proper TypeScript type parsing
     const fields: DTOField[] = [];
-    
+
     if (type.startsWith('{') && type.endsWith('}')) {
       const content = type.slice(1, -1);
       const properties = this.parseObjectProperties(content);
-      
+
       for (const prop of properties) {
         fields.push({
           name: prop.name,
@@ -896,7 +895,7 @@ export class TypeScriptToTypedMindConverter {
         });
       }
     }
-    
+
     return fields;
   }
 
@@ -905,18 +904,18 @@ export class TypeScriptToTypedMindConverter {
     if (fieldType === 'Function') {
       return 'string'; // Functions should be string literals in DTOs
     }
-    
+
     // Convert literal union types to string
     if (fieldType.includes("'") && fieldType.includes('|')) {
       return 'string'; // Union of string literals -> string
     }
-    
+
     // Convert entity types to string literals (they're usually discriminated unions)
     const entityTypePattern = /^'(Program|File|Function|Class|ClassFile|Constants|DTO|Asset|UIComponent|RunParameter|Dependency)'$/;
     if (entityTypePattern.test(fieldType)) {
       return 'string';
     }
-    
+
     // Clean up the type string
     return fieldType.trim();
   }
@@ -935,7 +934,7 @@ export class TypeScriptToTypedMindConverter {
     if (type.includes('{') && type.includes('}')) {
       return 'Object';
     }
-    
+
     return type;
   }
 
@@ -943,11 +942,11 @@ export class TypeScriptToTypedMindConverter {
     // Very simple parser - would need enhancement for complex types
     const properties: Array<{ name: string; type: string; optional: boolean }> = [];
     const lines = content.split(/[;,\n]/);
-    
+
     for (const line of lines) {
       const trimmed = line.trim();
       if (!trimmed) continue;
-      
+
       const match = trimmed.match(/^(\w+)(\?)?\s*:\s*(.+)$/);
       if (match && match[1] && match[3]) {
         properties.push({
@@ -957,23 +956,23 @@ export class TypeScriptToTypedMindConverter {
         });
       }
     }
-    
+
     return properties;
   }
 
   private generateTMDContent(): string {
     const lines: string[] = [];
-    
+
     // Group entities by type for better organization
-    const programs = this.entities.filter(e => e.type === 'Program');
-    const dependencies = this.entities.filter(e => e.type === 'Dependency');
-    const files = this.entities.filter(e => e.type === 'File');
-    const classFiles = this.entities.filter(e => e.type === 'ClassFile');
-    const classes = this.entities.filter(e => e.type === 'Class');
-    const functions = this.entities.filter(e => e.type === 'Function');
-    const dtos = this.entities.filter(e => e.type === 'DTO');
-    const constants = this.entities.filter(e => e.type === 'Constants');
-    
+    const programs = this.entities.filter((e) => e.type === 'Program');
+    const dependencies = this.entities.filter((e) => e.type === 'Dependency');
+    const files = this.entities.filter((e) => e.type === 'File');
+    const classFiles = this.entities.filter((e) => e.type === 'ClassFile');
+    const classes = this.entities.filter((e) => e.type === 'Class');
+    const functions = this.entities.filter((e) => e.type === 'Function');
+    const dtos = this.entities.filter((e) => e.type === 'DTO');
+    const constants = this.entities.filter((e) => e.type === 'Constants');
+
     // Generate content in logical order
     if (programs.length > 0) {
       lines.push('# Programs');
@@ -982,7 +981,7 @@ export class TypeScriptToTypedMindConverter {
       }
       lines.push('');
     }
-    
+
     if (dependencies.length > 0) {
       lines.push('# Dependencies');
       for (const entity of dependencies) {
@@ -990,7 +989,7 @@ export class TypeScriptToTypedMindConverter {
       }
       lines.push('');
     }
-    
+
     if (files.length > 0) {
       lines.push('# Files');
       for (const entity of files) {
@@ -998,7 +997,7 @@ export class TypeScriptToTypedMindConverter {
       }
       lines.push('');
     }
-    
+
     if (classFiles.length > 0) {
       lines.push('# ClassFiles (Services/Controllers)');
       for (const entity of classFiles) {
@@ -1006,7 +1005,7 @@ export class TypeScriptToTypedMindConverter {
       }
       lines.push('');
     }
-    
+
     if (classes.length > 0) {
       lines.push('# Classes');
       for (const entity of classes) {
@@ -1014,7 +1013,7 @@ export class TypeScriptToTypedMindConverter {
       }
       lines.push('');
     }
-    
+
     if (functions.length > 0) {
       lines.push('# Functions');
       for (const entity of functions) {
@@ -1022,7 +1021,7 @@ export class TypeScriptToTypedMindConverter {
       }
       lines.push('');
     }
-    
+
     if (dtos.length > 0) {
       lines.push('# DTOs');
       for (const entity of dtos) {
@@ -1030,7 +1029,7 @@ export class TypeScriptToTypedMindConverter {
       }
       lines.push('');
     }
-    
+
     if (constants.length > 0) {
       lines.push('# Constants');
       for (const entity of constants) {
@@ -1038,20 +1037,20 @@ export class TypeScriptToTypedMindConverter {
       }
       lines.push('');
     }
-    
+
     return lines.join('\n');
   }
 
   private generateEntityTMD(entity: AnyEntity): string {
     const lines: string[] = [];
-    
+
     switch (entity.type) {
       case 'Program': {
         const prog = entity as ProgramEntity;
         lines.push(`${prog.name} -> ${prog.entry}${prog.version ? ` v${prog.version}` : ''}`);
         break;
       }
-      
+
       case 'File': {
         const file = entity as FileEntity;
         lines.push(`${file.name} @ ${file.path}:`);
@@ -1063,7 +1062,7 @@ export class TypeScriptToTypedMindConverter {
         }
         break;
       }
-      
+
       case 'ClassFile': {
         const cf = entity as ClassFileEntity;
         let declaration = `${cf.name} #: ${cf.path}`;
@@ -1076,7 +1075,7 @@ export class TypeScriptToTypedMindConverter {
           declaration += ` <: ${cf.implements.join(', ')}`;
         }
         lines.push(declaration);
-        
+
         if (cf.imports.length > 0) {
           lines.push(`  <- [${cf.imports.join(', ')}]`);
         }
@@ -1088,7 +1087,7 @@ export class TypeScriptToTypedMindConverter {
         }
         break;
       }
-      
+
       case 'Class': {
         const cls = entity as ClassEntity;
         let declaration = `${cls.name}`;
@@ -1100,13 +1099,13 @@ export class TypeScriptToTypedMindConverter {
           declaration += ` <:`;
         }
         lines.push(declaration);
-        
+
         if (cls.methods.length > 0) {
           lines.push(`  => [${cls.methods.join(', ')}]`);
         }
         break;
       }
-      
+
       case 'Function': {
         const func = entity as FunctionEntity;
         lines.push(`${func.name} :: ${func.signature}`);
@@ -1124,7 +1123,7 @@ export class TypeScriptToTypedMindConverter {
         }
         break;
       }
-      
+
       case 'DTO': {
         const dto = entity as DTOEntity;
         lines.push(`${dto.name} %`);
@@ -1138,20 +1137,20 @@ export class TypeScriptToTypedMindConverter {
         }
         break;
       }
-      
+
       case 'Constants': {
         const constants = entity as ConstantsEntity;
         lines.push(`${constants.name} ! ${constants.path}`);
         break;
       }
-      
+
       case 'Dependency': {
         const dep = entity as DependencyEntity;
         lines.push(`${dep.name} ^ "${dep.purpose}"${dep.version ? ` v${dep.version}` : ''}`);
         break;
       }
     }
-    
+
     return lines.join('\n');
   }
 
@@ -1167,7 +1166,7 @@ export class TypeScriptToTypedMindConverter {
       .replace(/^_+|_+$/g, '')
       .replace(/^(\d)/, '_$1') // Ensure doesn't start with number
       .split('_')
-      .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
       .join('');
   }
 
@@ -1181,7 +1180,7 @@ export class TypeScriptToTypedMindConverter {
   }
 
   private addError(message: string, filePath?: string): void {
-    const error: ConversionError = { 
+    const error: ConversionError = {
       message,
       filePath: filePath || undefined,
       line: undefined,
@@ -1191,7 +1190,7 @@ export class TypeScriptToTypedMindConverter {
   }
 
   private addWarning(message: string, filePath?: string, suggestion?: string): void {
-    const warning: ConversionWarning = { 
+    const warning: ConversionWarning = {
       message,
       filePath: filePath || undefined,
       suggestion: suggestion || undefined,
@@ -1201,9 +1200,8 @@ export class TypeScriptToTypedMindConverter {
 
   private isFunctionExported(func: ParsedFunction, module: ParsedModule): boolean {
     // Check if function is in module exports
-    return module.exports.some(exp => exp.name === func.name);
+    return module.exports.some((exp) => exp.name === func.name);
   }
-
 
   private isExternalPackage(specifier: string): boolean {
     // Check if it's a Node.js built-in or external package
@@ -1216,22 +1214,21 @@ export class TypeScriptToTypedMindConverter {
     return this.entryPoints.has(relativePath);
   }
 
-
   private findEntryEntityName(entryFilePath: string): string {
     const relativePath = this.getRelativePath(entryFilePath);
-    
+
     // Look for a File entity (Programs can only reference File entities)
-    const matchingFileEntity = this.entities.find(entity => {
+    const matchingFileEntity = this.entities.find((entity) => {
       if (entity.type === 'File' && 'path' in entity) {
         return entity.path === relativePath;
       }
       return false;
     });
-    
+
     if (matchingFileEntity) {
       return matchingFileEntity.name;
     }
-    
+
     // Since we force File entity creation for entry points in convertModule,
     // this should always find a File entity. Fallback to predictable name.
     const fileName = path.basename(entryFilePath, path.extname(entryFilePath));

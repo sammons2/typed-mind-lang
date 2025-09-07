@@ -439,7 +439,7 @@ ${this.generateRendererJS()}
   private openInBrowser(url: string): void {
     const { exec } = require('child_process');
     const platform = process.platform;
-    
+
     let command: string;
     if (platform === 'darwin') {
       command = `open ${url}`;
@@ -448,7 +448,7 @@ ${this.generateRendererJS()}
     } else {
       command = `xdg-open ${url}`;
     }
-    
+
     exec(command, (error: Error | null) => {
       if (error) {
         console.error('Failed to open browser:', error);

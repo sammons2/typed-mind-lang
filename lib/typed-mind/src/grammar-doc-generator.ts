@@ -1,10 +1,4 @@
-import { 
-  ENTITY_PATTERNS, 
-  CONTINUATION_PATTERNS, 
-  GENERAL_PATTERNS,
-  PATTERN_DESCRIPTIONS,
-  ENTITY_TYPE_NAMES 
-} from './parser-patterns';
+import { ENTITY_PATTERNS, CONTINUATION_PATTERNS, GENERAL_PATTERNS, PATTERN_DESCRIPTIONS, ENTITY_TYPE_NAMES } from './parser-patterns';
 
 const explanation = `
 ## Note from Author
@@ -25,7 +19,7 @@ export class GrammarDocGenerator {
     sections.push('');
     sections.push('This document is auto-generated from the parser patterns.');
     sections.push('');
-    
+
     // Add the explanation
     sections.push(explanation.trim());
     sections.push('');
@@ -55,21 +49,21 @@ export class GrammarDocGenerator {
     sections.push('');
     sections.push('| Entity Type | Description |');
     sections.push('|------------|-------------|');
-    
+
     const entityDescriptions: Record<string, string> = {
-      'Program': 'Defines an application entry point',
-      'File': 'Defines a source code file',
-      'Function': 'Defines a function with its type signature',
-      'Class': 'Defines a class with inheritance',
-      'ClassFile': 'Combines class and file definitions in one entity - perfect for services, controllers, and modules',
-      'Constants': 'Defines a constants/configuration file',
-      'DTO': 'Defines a Data Transfer Object for data structures (config, parameters, serialization) - NO function fields allowed',
-      'Asset': 'Defines a static asset',
-      'UIComponent': 'Defines a UI component (&! for root)',
-      'RunParameter': 'Defines a runtime parameter',
-      'Dependency': 'Defines an external dependency'
+      Program: 'Defines an application entry point',
+      File: 'Defines a source code file',
+      Function: 'Defines a function with its type signature',
+      Class: 'Defines a class with inheritance',
+      ClassFile: 'Combines class and file definitions in one entity - perfect for services, controllers, and modules',
+      Constants: 'Defines a constants/configuration file',
+      DTO: 'Defines a Data Transfer Object for data structures (config, parameters, serialization) - NO function fields allowed',
+      Asset: 'Defines a static asset',
+      UIComponent: 'Defines a UI component (&! for root)',
+      RunParameter: 'Defines a runtime parameter',
+      Dependency: 'Defines an external dependency',
     };
-    
+
     for (const typeName of ENTITY_TYPE_NAMES) {
       const desc = entityDescriptions[typeName];
       if (desc) {
@@ -95,7 +89,9 @@ export class GrammarDocGenerator {
       }
     }
     sections.push('');
-    sections.push('**Note:** Version format - The parser strips the \'v\' prefix from versions. Both `v1.0.0` and `1.0.0` are stored as `1.0.0`.');
+    sections.push(
+      "**Note:** Version format - The parser strips the 'v' prefix from versions. Both `v1.0.0` and `1.0.0` are stored as `1.0.0`.",
+    );
     sections.push('');
 
     // Continuation Patterns
@@ -105,7 +101,7 @@ export class GrammarDocGenerator {
     sections.push('');
     sections.push('| Pattern | Description | Example |');
     sections.push('|---------|-------------|---------|');
-    
+
     const continuationInfo: Record<string, { desc: string; example: string }> = {
       IMPORTS: { desc: 'Entity imports', example: '<- [Database, UserModel]' },
       EXPORTS: { desc: 'Entity exports', example: '-> [createUser, getUser]' },
@@ -314,7 +310,7 @@ export class GrammarDocGenerator {
     sections.push('# consumes: [STRIPE_KEY, stripe]');
     sections.push('```');
     sections.push('');
-    
+
     // Method Call Syntax
     sections.push('### Method Call Syntax');
     sections.push('');
@@ -341,7 +337,7 @@ export class GrammarDocGenerator {
     sections.push('- Direct function names: `functionName`');
     sections.push('- Class methods: `ClassName.methodName`');
     sections.push('- ClassFile methods: `ClassFileName.methodName`');
-    sections.push('- Called methods must be defined in the entity\'s `=> [...]` list');
+    sections.push("- Called methods must be defined in the entity's `=> [...]` list");
     sections.push('- Circular function calls are detected and reported as errors');
     sections.push('- Self-referencing (recursive) calls are allowed');
     sections.push('');
@@ -461,7 +457,7 @@ export class GrammarDocGenerator {
     sections.push('  => [createUser, findUser]         # Has methods');
     sections.push('```');
     sections.push('');
-    
+
     // Comprehensive DTO Field Syntax
     sections.push('### DTO Field Syntax');
     sections.push('');
@@ -571,19 +567,19 @@ export class GrammarDocGenerator {
     sections.push('| RunParameter | ❌ | ❌ | ❌ | ❌ | ❌ |');
     sections.push('| Dependency | ❌ | ❌ | ❌ | ❌ | ❌ |');
     sections.push('');
-    
+
     // Valid RunParameter Types
     sections.push('## Valid RunParameter Types');
     sections.push('');
     sections.push('RunParameters use `$type` syntax with these valid types:');
     sections.push('- **$env**: Environment variable');
-    sections.push('- **$iam**: IAM role or permission');  
+    sections.push('- **$iam**: IAM role or permission');
     sections.push('- **$runtime**: Runtime configuration');
     sections.push('- **$config**: Configuration parameter');
     sections.push('');
     sections.push('Example: `DATABASE_URL $env "Connection string" (required)`');
     sections.push('');
-    
+
     // What Can Be Exported
     sections.push('## Export Rules');
     sections.push('');
@@ -608,15 +604,15 @@ export class GrammarDocGenerator {
     sections.push('  # -> [UserService]  # ❌ Redundant - auto-exported');
     sections.push('```');
     sections.push('');
-    
+
     // Common Pitfalls
     sections.push('## Common Pitfalls');
     sections.push('');
-    sections.push('### ❌ Don\'t Import Class Methods Directly');
+    sections.push("### ❌ Don't Import Class Methods Directly");
     sections.push('```tmd');
     sections.push('# Wrong');
     sections.push('File @ src/app.ts:');
-    sections.push('  <- [UserService.createUser]  # Can\'t import methods');
+    sections.push("  <- [UserService.createUser]  # Can't import methods");
     sections.push('');
     sections.push('# Right');
     sections.push('File @ src/app.ts:');
@@ -624,39 +620,39 @@ export class GrammarDocGenerator {
     sections.push('  # Now createUser method is available');
     sections.push('```');
     sections.push('');
-    sections.push('### ❌ Don\'t Call ClassFiles Directly');
+    sections.push("### ❌ Don't Call ClassFiles Directly");
     sections.push('```tmd');
     sections.push('# Wrong');
     sections.push('processData :: () => void');
-    sections.push('  ~> [DataProcessor]  # Can\'t call ClassFile');
+    sections.push("  ~> [DataProcessor]  # Can't call ClassFile");
     sections.push('');
     sections.push('# Right');
     sections.push('processData :: () => void');
     sections.push('  ~> [process]  # Call the method, not the ClassFile');
     sections.push('```');
     sections.push('');
-    sections.push('### ❌ Don\'t Give Classes Import/Export');
+    sections.push("### ❌ Don't Give Classes Import/Export");
     sections.push('```tmd');
-    sections.push('# Wrong - Classes can\'t import');
+    sections.push("# Wrong - Classes can't import");
     sections.push('MyClass <: Base');
-    sections.push('  <- [Logger]  # Classes don\'t support imports!');
+    sections.push("  <- [Logger]  # Classes don't support imports!");
     sections.push('');
     sections.push('# Right - Use ClassFile for import capability');
     sections.push('MyClass #: src/my-class.ts <: Base');
     sections.push('  <- [Logger]  # ClassFiles can import');
     sections.push('```');
     sections.push('');
-    sections.push('### ❌ Don\'t Confuse Entity Capabilities');
+    sections.push("### ❌ Don't Confuse Entity Capabilities");
     sections.push('```tmd');
     sections.push('# Wrong - Mixed capabilities');
     sections.push('DataFile @ src/data.ts:');
-    sections.push('  => [processData]  # Files can\'t have methods!');
+    sections.push("  => [processData]  # Files can't have methods!");
     sections.push('');
     sections.push('DataClass <: Base');
-    sections.push('  @ src/data.ts:  # Classes can\'t have paths!');
+    sections.push("  @ src/data.ts:  # Classes can't have paths!");
     sections.push('```');
     sections.push('');
-    
+
     // Detailed DTO Field Syntax Section
     sections.push('## DTO Field Syntax');
     sections.push('');
@@ -688,7 +684,7 @@ export class GrammarDocGenerator {
     sections.push('- Descriptions are optional but recommended for clarity');
     sections.push('- Optional fields can use `?` suffix or `(optional)` annotation');
     sections.push('');
-    
+
     // Method Call Syntax Section
     sections.push('## Method Call Syntax');
     sections.push('');
@@ -717,7 +713,7 @@ export class GrammarDocGenerator {
     sections.push('- All called entities must be defined in the program');
     sections.push('- Circular function calls are detected and reported as warnings');
     sections.push('');
-    
+
     // Function Auto-Distribution Details
     sections.push('## Function Auto-Distribution Details');
     sections.push('');
@@ -753,7 +749,7 @@ export class GrammarDocGenerator {
     sections.push('- **Bidirectional links**: All relationships are automatically maintained');
     sections.push('- **Error detection**: Invalid entity types or missing entities are caught');
     sections.push('');
-    
+
     // Enhanced Entity Naming Rules
     sections.push('## Entity Naming Rules');
     sections.push('');
@@ -788,7 +784,7 @@ export class GrammarDocGenerator {
     sections.push('- **Reserved keywords**: Using TypedMind operators as entity names');
     sections.push('- **Empty names**: Missing or empty entity names');
     sections.push('');
-    
+
     // Compact best practices
     sections.push('## Best Practices');
     sections.push('');
@@ -893,7 +889,7 @@ export class GrammarDocGenerator {
     lines.push('(* Common Elements *)');
     lines.push('identifier = letter (letter | digit | "_")*;');
     lines.push('identifier_list = identifier ("," identifier)*;');
-    lines.push('string_literal = \'"\' character* \'"\';');
+    lines.push("string_literal = '\"' character* '\"';");
     lines.push('path = string_literal;');
     lines.push('type = identifier;');
     lines.push('signature = "(" [parameters] ")" "=>" return_type;');
@@ -907,7 +903,7 @@ export class GrammarDocGenerator {
   private formatPatternName(name: string): string {
     return name
       .split('_')
-      .map(word => word.charAt(0) + word.slice(1).toLowerCase())
+      .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
       .join(' ');
   }
 

@@ -11,38 +11,38 @@ describe('Documentation Examples', () => {
   it('should validate all TypedMind examples in grammar.md', () => {
     const grammarPath = join(__dirname, '..', 'grammar.md');
     const content = readFileSync(grammarPath, 'utf-8');
-    
+
     // Extract all ```tmd code blocks
     const tmdBlocks = content.match(/```tmd\n([\s\S]*?)```/g) || [];
-    
+
     expect(tmdBlocks.length).toBeGreaterThan(0);
-    
+
     tmdBlocks.forEach((block, index) => {
       // Remove the ```tmd and ``` markers
       const code = block.replace(/```tmd\n/, '').replace(/\n```$/, '');
-      
+
       // Skip blocks that are just fragments or syntax demonstrations
       if (code.split('\n').length < 10) return;
-      
+
       // Skip blocks that don't have a Program entity (they're just syntax examples)
       if (!code.includes('->')) return;
-      
+
       // Parse and validate
       const parseResult = parser.parse(code);
       const validationResult = validator.validate(parseResult.entities);
-      
+
       // For syntax demonstration examples, we allow orphaned entities
-      const isSyntaxDemo = code.includes('# Example showing other entity types:') ||
-                           code.includes('# Example patterns - showing syntax only');
-      
+      const isSyntaxDemo =
+        code.includes('# Example showing other entity types:') || code.includes('# Example patterns - showing syntax only');
+
       if (!validationResult.valid) {
         // For syntax demonstration examples, skip validation entirely
         if (isSyntaxDemo) {
           return; // Skip validation for syntax demos
         }
-        
+
         const relevantErrors = validationResult.errors;
-        
+
         if (relevantErrors.length > 0) {
           console.error(`\nExample ${index + 1} has validation errors:`);
           console.error('Code:\n', code);
@@ -59,20 +59,20 @@ describe('Documentation Examples', () => {
     try {
       const generatedPath = join(__dirname, '..', 'generated-grammar.md');
       const content = readFileSync(generatedPath, 'utf-8');
-      
+
       // Extract the complete application example
       const match = content.match(/### Complete Application Example\n\n```tmd\n([\s\S]*?)```/);
-      
+
       if (match) {
         const code = match[1];
         const parseResult = parser.parse(code);
         const validationResult = validator.validate(parseResult.entities);
-        
+
         if (!validationResult.valid) {
           console.error('\nGenerated example has validation errors:');
           console.error('Errors:', validationResult.errors);
         }
-        
+
         expect(validationResult.valid).toBe(true);
       }
     } catch (e) {

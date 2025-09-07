@@ -159,26 +159,19 @@ export interface Deviation {
 }
 
 // Type predicates for narrowing
-export const isFunction = (node: ts.Node): node is ts.FunctionDeclaration => 
-  ts.isFunctionDeclaration(node);
+export const isFunction = (node: ts.Node): node is ts.FunctionDeclaration => ts.isFunctionDeclaration(node);
 
-export const isClass = (node: ts.Node): node is ts.ClassDeclaration => 
-  ts.isClassDeclaration(node);
+export const isClass = (node: ts.Node): node is ts.ClassDeclaration => ts.isClassDeclaration(node);
 
-export const isInterface = (node: ts.Node): node is ts.InterfaceDeclaration => 
-  ts.isInterfaceDeclaration(node);
+export const isInterface = (node: ts.Node): node is ts.InterfaceDeclaration => ts.isInterfaceDeclaration(node);
 
-export const isTypeAlias = (node: ts.Node): node is ts.TypeAliasDeclaration => 
-  ts.isTypeAliasDeclaration(node);
+export const isTypeAlias = (node: ts.Node): node is ts.TypeAliasDeclaration => ts.isTypeAliasDeclaration(node);
 
-export const isVariableStatement = (node: ts.Node): node is ts.VariableStatement => 
-  ts.isVariableStatement(node);
+export const isVariableStatement = (node: ts.Node): node is ts.VariableStatement => ts.isVariableStatement(node);
 
-export const isExportDeclaration = (node: ts.Node): node is ts.ExportDeclaration => 
-  ts.isExportDeclaration(node);
+export const isExportDeclaration = (node: ts.Node): node is ts.ExportDeclaration => ts.isExportDeclaration(node);
 
-export const isImportDeclaration = (node: ts.Node): node is ts.ImportDeclaration => 
-  ts.isImportDeclaration(node);
+export const isImportDeclaration = (node: ts.Node): node is ts.ImportDeclaration => ts.isImportDeclaration(node);
 
 // Branded types for safety
 export type FilePath = string & { readonly __brand: 'FilePath' };

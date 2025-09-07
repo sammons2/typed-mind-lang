@@ -29,8 +29,13 @@ export class GrammarValidator {
 
     // Validate entity type is valid
     if (!ENTITY_TYPE_NAMES.includes(entity.type as EntityTypeName)) {
-      this.addError(entity, 'type', 'valid entity type', entity.type, 
-        `Invalid entity type: ${entity.type}. Must be one of: ${ENTITY_TYPE_NAMES.join(', ')}`);
+      this.addError(
+        entity,
+        'type',
+        'valid entity type',
+        entity.type,
+        `Invalid entity type: ${entity.type}. Must be one of: ${ENTITY_TYPE_NAMES.join(', ')}`,
+      );
     }
 
     // Validate entity-specific fields
@@ -69,7 +74,7 @@ export class GrammarValidator {
 
     return {
       valid: this.errors.length === 0,
-      errors: this.errors
+      errors: this.errors,
     };
   }
 
@@ -114,25 +119,33 @@ export class GrammarValidator {
   private validateDTOEntity(entity: AnyEntity): void {
     this.validateRequiredField(entity, 'fields', 'array');
     this.validateOptionalField(entity, 'purpose', 'string');
-    
+
     // Validate each field
     if ('fields' in entity && Array.isArray(entity.fields)) {
       entity.fields.forEach((field, index) => {
         if (!field.name || typeof field.name !== 'string') {
-          this.addError(entity, `fields[${index}].name`, 'string', typeof field.name,
-            `DTO field at index ${index} must have a name`);
+          this.addError(entity, `fields[${index}].name`, 'string', typeof field.name, `DTO field at index ${index} must have a name`);
         }
         if (!field.type || typeof field.type !== 'string') {
-          this.addError(entity, `fields[${index}].type`, 'string', typeof field.type,
-            `DTO field '${field.name}' must have a type`);
+          this.addError(entity, `fields[${index}].type`, 'string', typeof field.type, `DTO field '${field.name}' must have a type`);
         }
         if (field.description !== undefined && typeof field.description !== 'string') {
-          this.addError(entity, `fields[${index}].description`, 'string', typeof field.description,
-            `DTO field '${field.name}' description must be a string`);
+          this.addError(
+            entity,
+            `fields[${index}].description`,
+            'string',
+            typeof field.description,
+            `DTO field '${field.name}' description must be a string`,
+          );
         }
         if (field.optional !== undefined && typeof field.optional !== 'boolean') {
-          this.addError(entity, `fields[${index}].optional`, 'boolean', typeof field.optional,
-            `DTO field '${field.name}' optional flag must be a boolean`);
+          this.addError(
+            entity,
+            `fields[${index}].optional`,
+            'boolean',
+            typeof field.optional,
+            `DTO field '${field.name}' optional flag must be a boolean`,
+          );
         }
       });
     }
@@ -165,39 +178,26 @@ export class GrammarValidator {
     this.validateOptionalField(entity, 'version', 'string');
   }
 
-  private validateRequiredField(
-    entity: AnyEntity, 
-    field: string, 
-    expectedType: string,
-    pattern?: RegExp
-  ): void {
+  private validateRequiredField(entity: AnyEntity, field: string, expectedType: string, pattern?: RegExp): void {
     if (!(field in entity)) {
-      this.addError(entity, field, expectedType, 'undefined',
-        `Required field '${field}' is missing`);
+      this.addError(entity, field, expectedType, 'undefined', `Required field '${field}' is missing`);
       return;
     }
 
     const value = (entity as any)[field];
     const actualType = Array.isArray(value) ? 'array' : typeof value;
-    
+
     if (actualType !== expectedType) {
-      this.addError(entity, field, expectedType, actualType,
-        `Field '${field}' must be of type ${expectedType}`);
+      this.addError(entity, field, expectedType, actualType, `Field '${field}' must be of type ${expectedType}`);
       return;
     }
 
     if (pattern && typeof value === 'string' && !pattern.test(value)) {
-      this.addError(entity, field, `string matching ${pattern}`, value,
-        `Field '${field}' does not match required pattern ${pattern}`);
+      this.addError(entity, field, `string matching ${pattern}`, value, `Field '${field}' does not match required pattern ${pattern}`);
     }
   }
 
-  private validateOptionalField(
-    entity: AnyEntity,
-    field: string,
-    expectedType: string,
-    pattern?: RegExp
-  ): void {
+  private validateOptionalField(entity: AnyEntity, field: string, expectedType: string, pattern?: RegExp): void {
     if (!(field in entity)) {
       return; // Optional field is missing, which is fine
     }
@@ -208,40 +208,38 @@ export class GrammarValidator {
     }
 
     const actualType = Array.isArray(value) ? 'array' : typeof value;
-    
+
     if (actualType !== expectedType) {
-      this.addError(entity, field, expectedType, actualType,
-        `Optional field '${field}' must be of type ${expectedType} when present`);
+      this.addError(entity, field, expectedType, actualType, `Optional field '${field}' must be of type ${expectedType} when present`);
       return;
     }
 
     if (pattern && typeof value === 'string' && !pattern.test(value)) {
-      this.addError(entity, field, `string matching ${pattern}`, value,
-        `Optional field '${field}' does not match required pattern ${pattern}`);
+      this.addError(
+        entity,
+        field,
+        `string matching ${pattern}`,
+        value,
+        `Optional field '${field}' does not match required pattern ${pattern}`,
+      );
     }
   }
 
-  private addError(
-    entity: AnyEntity,
-    field: string,
-    expected: string,
-    actual: string | undefined,
-    message: string
-  ): void {
+  private addError(entity: AnyEntity, field: string, expected: string, actual: string | undefined, message: string): void {
     this.errors.push({
       entity: entity.name,
       type: entity.type,
       field,
       expected,
       actual,
-      message
+      message,
     });
   }
 
   // Batch validation for multiple entities
   validateEntities(entities: Map<string, AnyEntity>): GrammarValidationResult {
     const allErrors: GrammarValidationError[] = [];
-    
+
     for (const [_, entity] of entities) {
       const result = this.validateEntity(entity);
       allErrors.push(...result.errors);
@@ -249,7 +247,7 @@ export class GrammarValidator {
 
     return {
       valid: allErrors.length === 0,
-      errors: allErrors
+      errors: allErrors,
     };
   }
 
@@ -259,9 +257,7 @@ export class GrammarValidator {
       return 'No grammar validation errors found.';
     }
 
-    const errorMessages = errors.map(error => 
-      `  - ${error.entity} (${error.type}): ${error.message}`
-    );
+    const errorMessages = errors.map((error) => `  - ${error.entity} (${error.type}): ${error.message}`);
 
     return `Grammar validation errors found:\n${errorMessages.join('\n')}`;
   }

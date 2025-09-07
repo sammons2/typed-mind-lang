@@ -22,7 +22,7 @@ AppEntry @ src/index.ts:
   <- [ExpressSetup, Routes]
   -> [startServer]
 `;
-    
+
     const document = TextDocument.create('file:///test.tmd', 'typedmind', 1, content);
     expect(document.getText()).toBe(content);
   });

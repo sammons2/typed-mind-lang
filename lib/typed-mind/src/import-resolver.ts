@@ -18,8 +18,8 @@ export class ImportResolver {
 
   resolveImports(
     imports: ImportStatement[],
-    basePath: string
-  ): { 
+    basePath: string,
+  ): {
     resolvedEntities: Map<string, AnyEntity>;
     errors: ValidationError[];
   } {
@@ -40,9 +40,9 @@ export class ImportResolver {
 
       // Push to stack before resolving
       this.resolutionStack.push(fullPath);
-      
+
       const result = this.resolveImport(importStmt, basePath);
-      
+
       if (result.errors) {
         errors.push(...result.errors);
         this.resolutionStack.pop();
@@ -51,10 +51,10 @@ export class ImportResolver {
 
       // Apply alias prefix if specified
       const prefix = result.import.alias ? `${result.import.alias}.` : '';
-      
+
       for (const [name, entity] of result.entities) {
         const prefixedName = prefix + name;
-        
+
         if (allEntities.has(prefixedName)) {
           errors.push({
             position: result.import.position,
@@ -73,17 +73,17 @@ export class ImportResolver {
       if (result.imports.length > 0) {
         const importDir = dirname(fullPath);
         const nestedResult = this.resolveImports(result.imports, importDir);
-        
+
         for (const [name, entity] of nestedResult.resolvedEntities) {
           const nestedName = prefix + name;
           if (!allEntities.has(nestedName)) {
             allEntities.set(nestedName, { ...entity, name: nestedName });
           }
         }
-        
+
         errors.push(...nestedResult.errors);
       }
-      
+
       // Pop from stack after all nested imports are resolved
       this.resolutionStack.pop();
     }
@@ -91,10 +91,7 @@ export class ImportResolver {
     return { resolvedEntities: allEntities, errors };
   }
 
-  private resolveImport(
-    importStmt: ImportStatement,
-    basePath: string
-  ): ResolvedImport {
+  private resolveImport(importStmt: ImportStatement, basePath: string): ResolvedImport {
     const fullPath = this.resolvePath(importStmt.path, basePath);
 
     // Check if already resolved
@@ -111,7 +108,7 @@ export class ImportResolver {
       // Read and parse the imported file
       const content = readFileSync(fullPath, 'utf-8');
       const parseResult = this.parser.parse(content);
-      
+
       this.resolvedPaths.set(fullPath, parseResult);
 
       return {
@@ -124,11 +121,13 @@ export class ImportResolver {
         import: importStmt,
         entities: new Map(),
         imports: [],
-        errors: [{
-          position: importStmt.position,
-          message: `Failed to import '${importStmt.path}': ${error}`,
-          severity: 'error',
-        }],
+        errors: [
+          {
+            position: importStmt.position,
+            message: `Failed to import '${importStmt.path}': ${error}`,
+            severity: 'error',
+          },
+        ],
       };
     }
   }

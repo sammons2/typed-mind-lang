@@ -1,9 +1,5 @@
 import { DSLChecker, AnyEntity, ProgramGraph } from '@sammons/typed-mind';
-import {
-  AssertionResult,
-  Deviation,
-  ConversionResult,
-} from './types';
+import { AssertionResult, Deviation, ConversionResult } from './types';
 
 export class AssertionEngine {
   private readonly checker = new DSLChecker();
@@ -11,19 +7,15 @@ export class AssertionEngine {
   /**
    * Compare TypeScript-derived entities against a TypedMind file
    */
-  assert(
-    conversionResult: ConversionResult,
-    tmdFilePath: string,
-    tmdContent: string
-  ): AssertionResult {
+  assert(conversionResult: ConversionResult, tmdFilePath: string, tmdContent: string): AssertionResult {
     try {
       // Parse the expected TMD content
       const validationResult = this.checker.check(tmdContent, tmdFilePath);
-      
+
       if (!validationResult.valid) {
         return {
           success: false,
-          deviations: validationResult.errors.map(error => ({
+          deviations: validationResult.errors.map((error) => ({
             entityName: '<parsing>',
             property: 'syntax',
             expected: 'valid syntax',
@@ -37,29 +29,27 @@ export class AssertionEngine {
 
       const expectedGraph = this.checker.parse(tmdContent, tmdFilePath);
       return this.compareGraphs(conversionResult.entities, expectedGraph);
-      
     } catch (error) {
       return {
         success: false,
-        deviations: [{
-          entityName: '<assertion>',
-          property: 'execution',
-          expected: 'successful comparison',
-          actual: error instanceof Error ? error.message : String(error),
-          severity: 'error' as const,
-        }],
+        deviations: [
+          {
+            entityName: '<assertion>',
+            property: 'execution',
+            expected: 'successful comparison',
+            actual: error instanceof Error ? error.message : String(error),
+            severity: 'error' as const,
+          },
+        ],
         missingEntities: [],
         extraEntities: [],
       };
     }
   }
 
-  private compareGraphs(
-    actualEntities: readonly AnyEntity[],
-    expectedGraph: ProgramGraph
-  ): AssertionResult {
+  private compareGraphs(actualEntities: readonly AnyEntity[], expectedGraph: ProgramGraph): AssertionResult {
     const deviations: Deviation[] = [];
-    const actualEntityMap = new Map(actualEntities.map(e => [e.name, e]));
+    const actualEntityMap = new Map(actualEntities.map((e) => [e.name, e]));
     const expectedEntityMap = expectedGraph.entities;
 
     // Find missing entities (in expected but not in actual)
@@ -81,16 +71,15 @@ export class AssertionEngine {
     // Compare entities that exist in both
     for (const [name, expectedEntity] of expectedEntityMap) {
       const actualEntity = actualEntityMap.get(name);
-      
+
       if (actualEntity) {
         const entityDeviations = this.compareEntities(actualEntity, expectedEntity);
         deviations.push(...entityDeviations);
       }
     }
 
-    const success = deviations.filter(d => d.severity === 'error').length === 0 &&
-                   missingEntities.length === 0 &&
-                   extraEntities.length === 0;
+    const success =
+      deviations.filter((d) => d.severity === 'error').length === 0 && missingEntities.length === 0 && extraEntities.length === 0;
 
     return {
       success,
@@ -143,11 +132,7 @@ export class AssertionEngine {
     return deviations;
   }
 
-  private compareProgramEntities(
-    actual: AnyEntity,
-    expected: AnyEntity,
-    deviations: Deviation[]
-  ): void {
+  private compareProgramEntities(actual: AnyEntity, expected: AnyEntity, deviations: Deviation[]): void {
     const actualProg = actual as any;
     const expectedProg = expected as any;
 
@@ -172,11 +157,7 @@ export class AssertionEngine {
     }
   }
 
-  private compareFileEntities(
-    actual: AnyEntity,
-    expected: AnyEntity,
-    deviations: Deviation[]
-  ): void {
+  private compareFileEntities(actual: AnyEntity, expected: AnyEntity, deviations: Deviation[]): void {
     const actualFile = actual as any;
     const expectedFile = expected as any;
 
@@ -194,11 +175,7 @@ export class AssertionEngine {
     this.compareArrayProperty(actual.name, 'exports', actualFile.exports, expectedFile.exports, deviations);
   }
 
-  private compareFunctionEntities(
-    actual: AnyEntity,
-    expected: AnyEntity,
-    deviations: Deviation[]
-  ): void {
+  private compareFunctionEntities(actual: AnyEntity, expected: AnyEntity, deviations: Deviation[]): void {
     const actualFunc = actual as any;
     const expectedFunc = expected as any;
 
@@ -218,11 +195,7 @@ export class AssertionEngine {
     this.compareArrayProperty(actual.name, 'calls', actualFunc.calls, expectedFunc.calls, deviations);
   }
 
-  private compareClassEntities(
-    actual: AnyEntity,
-    expected: AnyEntity,
-    deviations: Deviation[]
-  ): void {
+  private compareClassEntities(actual: AnyEntity, expected: AnyEntity, deviations: Deviation[]): void {
     const actualClass = actual as any;
     const expectedClass = expected as any;
 
@@ -231,11 +204,7 @@ export class AssertionEngine {
     this.compareArrayProperty(actual.name, 'methods', actualClass.methods, expectedClass.methods, deviations);
   }
 
-  private compareClassFileEntities(
-    actual: AnyEntity,
-    expected: AnyEntity,
-    deviations: Deviation[]
-  ): void {
+  private compareClassFileEntities(actual: AnyEntity, expected: AnyEntity, deviations: Deviation[]): void {
     const actualCF = actual as any;
     const expectedCF = expected as any;
 
@@ -256,11 +225,7 @@ export class AssertionEngine {
     this.compareArrayProperty(actual.name, 'exports', actualCF.exports, expectedCF.exports, deviations);
   }
 
-  private compareDTOEntities(
-    actual: AnyEntity,
-    expected: AnyEntity,
-    deviations: Deviation[]
-  ): void {
+  private compareDTOEntities(actual: AnyEntity, expected: AnyEntity, deviations: Deviation[]): void {
     const actualDTO = actual as any;
     const expectedDTO = expected as any;
 
@@ -297,16 +262,18 @@ export class AssertionEngine {
     for (const [fieldName] of expectedFieldMap) {
       const expectedField = expectedFieldMap.get(fieldName);
       const actualField = actualFieldMap.get(fieldName);
-      
-      if (actualField && expectedField && 
-          typeof expectedField === 'object' && 
-          expectedField !== null &&
-          'type' in expectedField && 
-          'optional' in expectedField) {
-        
+
+      if (
+        actualField &&
+        expectedField &&
+        typeof expectedField === 'object' &&
+        expectedField !== null &&
+        'type' in expectedField &&
+        'optional' in expectedField
+      ) {
         const expectedFieldObj = expectedField as { type: string; optional: boolean };
         const actualFieldObj = actualField as { type: string; optional: boolean };
-        
+
         if (actualFieldObj.type !== expectedFieldObj.type) {
           deviations.push({
             entityName: actual.name,
@@ -330,11 +297,7 @@ export class AssertionEngine {
     }
   }
 
-  private compareConstantsEntities(
-    actual: AnyEntity,
-    expected: AnyEntity,
-    deviations: Deviation[]
-  ): void {
+  private compareConstantsEntities(actual: AnyEntity, expected: AnyEntity, deviations: Deviation[]): void {
     const actualConst = actual as any;
     const expectedConst = expected as any;
 
@@ -356,7 +319,7 @@ export class AssertionEngine {
     propertyName: string,
     actual: string | undefined,
     expected: string | undefined,
-    deviations: Deviation[]
+    deviations: Deviation[],
   ): void {
     if (actual !== expected) {
       deviations.push({
@@ -374,13 +337,13 @@ export class AssertionEngine {
     propertyName: string,
     actual: string[] | undefined,
     expected: string[] | undefined,
-    deviations: Deviation[]
+    deviations: Deviation[],
   ): void {
     const actualSet = new Set(actual || []);
     const expectedSet = new Set(expected || []);
 
-    const missing = [...expectedSet].filter(item => !actualSet.has(item));
-    const extra = [...actualSet].filter(item => !expectedSet.has(item));
+    const missing = [...expectedSet].filter((item) => !actualSet.has(item));
+    const extra = [...actualSet].filter((item) => !expectedSet.has(item));
 
     if (missing.length > 0) {
       deviations.push({

@@ -1,13 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { TypeScriptToTypedMindConverter } from './typescript-to-typedmind-converter';
-import type { 
-  TypeScriptProjectAnalysis, 
-  ParsedModule,
-  ParsedFunction,
-  ParsedClass,
-  ParsedInterface,
-  ConversionOptions 
-} from './types';
+import type { TypeScriptProjectAnalysis, ParsedModule, ParsedFunction, ParsedClass, ParsedInterface, ConversionOptions } from './types';
 import { createFilePath } from './types';
 
 const createMockAnalysis = (): TypeScriptProjectAnalysis => ({
@@ -19,14 +12,14 @@ const createMockAnalysis = (): TypeScriptProjectAnalysis => ({
           specifier: './services/user-service',
           namedImports: ['UserService'],
           isTypeOnly: false,
-        }
+        },
       ],
       exports: [
         {
           name: 'main',
           isDefault: false,
           type: 'function',
-        }
+        },
       ],
       functions: [
         {
@@ -36,7 +29,7 @@ const createMockAnalysis = (): TypeScriptProjectAnalysis => ({
           returnType: 'Promise<void>',
           isAsync: true,
           decorators: [],
-        }
+        },
       ],
       classes: [],
       interfaces: [],
@@ -50,14 +43,14 @@ const createMockAnalysis = (): TypeScriptProjectAnalysis => ({
           specifier: '../types/user',
           namedImports: ['UserDTO', 'CreateUserDTO'],
           isTypeOnly: false,
-        }
+        },
       ],
       exports: [
         {
           name: 'UserService',
           isDefault: false,
           type: 'class',
-        }
+        },
       ],
       functions: [],
       classes: [
@@ -80,7 +73,7 @@ const createMockAnalysis = (): TypeScriptProjectAnalysis => ({
                   type: 'CreateUserDTO',
                   isOptional: false,
                   hasDefaultValue: false,
-                }
+                },
               ],
               returnType: 'Promise<UserDTO>',
               isAsync: true,
@@ -98,15 +91,15 @@ const createMockAnalysis = (): TypeScriptProjectAnalysis => ({
                   type: 'string',
                   isOptional: false,
                   hasDefaultValue: false,
-                }
+                },
               ],
               returnType: 'Promise<UserDTO | null>',
               isAsync: true,
-            }
+            },
           ],
           properties: [],
           decorators: [],
-        }
+        },
       ],
       interfaces: [],
       types: [],
@@ -125,7 +118,7 @@ const createMockAnalysis = (): TypeScriptProjectAnalysis => ({
           name: 'CreateUserDTO',
           isDefault: false,
           type: 'interface',
-        }
+        },
       ],
       functions: [],
       classes: [],
@@ -169,7 +162,7 @@ const createMockAnalysis = (): TypeScriptProjectAnalysis => ({
               isPrivate: false,
               isProtected: false,
               isOptional: true,
-            }
+            },
           ],
           methods: [],
         },
@@ -194,10 +187,10 @@ const createMockAnalysis = (): TypeScriptProjectAnalysis => ({
               isPrivate: false,
               isProtected: false,
               isOptional: false,
-            }
+            },
           ],
           methods: [],
-        }
+        },
       ],
       types: [],
       constants: [],
@@ -206,7 +199,7 @@ const createMockAnalysis = (): TypeScriptProjectAnalysis => ({
   entryPoints: ['/project/src/index.ts'],
   projectConfig: {
     target: 99, // ScriptTarget.ES2020
-    module: 1,  // ModuleKind.CommonJS
+    module: 1, // ModuleKind.CommonJS
   },
 });
 
@@ -214,9 +207,9 @@ describe('TypeScriptToTypedMindConverter', () => {
   it('should convert TypeScript analysis to TypedMind entities', () => {
     const converter = new TypeScriptToTypedMindConverter();
     const analysis = createMockAnalysis();
-    
+
     const result = converter.convert(analysis);
-    
+
     expect(result.success).toBe(true);
     expect(result.errors).toHaveLength(0);
     expect(result.entities.length).toBeGreaterThan(0);
@@ -225,13 +218,13 @@ describe('TypeScriptToTypedMindConverter', () => {
   it('should use ClassFile fusion by default', () => {
     const converter = new TypeScriptToTypedMindConverter({ preferClassFile: true });
     const analysis = createMockAnalysis();
-    
+
     const result = converter.convert(analysis);
-    
-    const userServiceEntity = result.entities.find(e => e.name === 'UserService');
+
+    const userServiceEntity = result.entities.find((e) => e.name === 'UserService');
     expect(userServiceEntity).toBeDefined();
     expect(userServiceEntity?.type).toBe('ClassFile');
-    
+
     // Should have both class methods and file imports/exports
     const classFile = userServiceEntity as any;
     expect(classFile.methods).toContain('createUser');
@@ -243,12 +236,12 @@ describe('TypeScriptToTypedMindConverter', () => {
   it('should create separate entities when preferClassFile is false', () => {
     const converter = new TypeScriptToTypedMindConverter({ preferClassFile: false });
     const analysis = createMockAnalysis();
-    
+
     const result = converter.convert(analysis);
-    
-    const fileEntity = result.entities.find(e => e.name === 'UserServiceFile');
-    const classEntity = result.entities.find(e => e.name === 'UserService');
-    
+
+    const fileEntity = result.entities.find((e) => e.name === 'UserServiceFile');
+    const classEntity = result.entities.find((e) => e.name === 'UserService');
+
     expect(fileEntity).toBeDefined();
     expect(fileEntity?.type).toBe('File');
     expect(classEntity).toBeDefined();
@@ -258,20 +251,20 @@ describe('TypeScriptToTypedMindConverter', () => {
   it('should convert interfaces to DTOs', () => {
     const converter = new TypeScriptToTypedMindConverter();
     const analysis = createMockAnalysis();
-    
+
     const result = converter.convert(analysis);
-    
-    const userDTO = result.entities.find(e => e.name === 'UserDTO');
+
+    const userDTO = result.entities.find((e) => e.name === 'UserDTO');
     expect(userDTO).toBeDefined();
     expect(userDTO?.type).toBe('DTO');
-    
+
     const dto = userDTO as any;
     expect(dto.fields).toHaveLength(4);
-    
+
     const idField = dto.fields.find((f: any) => f.name === 'id');
     expect(idField.type).toBe('string');
     expect(idField.optional).toBe(false);
-    
+
     const createdAtField = dto.fields.find((f: any) => f.name === 'createdAt');
     expect(createdAtField.optional).toBe(true);
   });
@@ -279,17 +272,17 @@ describe('TypeScriptToTypedMindConverter', () => {
   it('should generate programs by default', () => {
     const converter = new TypeScriptToTypedMindConverter({ generatePrograms: true });
     const analysis = createMockAnalysis();
-    
+
     const result = converter.convert(analysis);
-    
-    const program = result.entities.find(e => e.type === 'Program');
+
+    const program = result.entities.find((e) => e.type === 'Program');
     expect(program).toBeDefined();
     expect(program?.name).toMatch(/App$/);
   });
 
   it('should skip private members by default', () => {
     const analysis = createMockAnalysis();
-    
+
     // Add a private method to the class
     const userServiceClass = analysis.modules[1].classes[0] as any;
     userServiceClass.methods.push({
@@ -303,17 +296,17 @@ describe('TypeScriptToTypedMindConverter', () => {
       returnType: 'void',
       isAsync: false,
     });
-    
+
     const converter = new TypeScriptToTypedMindConverter({ includePrivateMembers: false });
     const result = converter.convert(analysis);
-    
-    const userServiceEntity = result.entities.find(e => e.name === 'UserService') as any;
+
+    const userServiceEntity = result.entities.find((e) => e.name === 'UserService') as any;
     expect(userServiceEntity.methods).not.toContain('privateHelper');
   });
 
   it('should include private members when requested', () => {
     const analysis = createMockAnalysis();
-    
+
     // Add a private method to the class
     const userServiceClass = analysis.modules[1].classes[0] as any;
     userServiceClass.methods.push({
@@ -327,20 +320,20 @@ describe('TypeScriptToTypedMindConverter', () => {
       returnType: 'void',
       isAsync: false,
     });
-    
+
     const converter = new TypeScriptToTypedMindConverter({ includePrivateMembers: true });
     const result = converter.convert(analysis);
-    
-    const userServiceEntity = result.entities.find(e => e.name === 'UserService') as any;
+
+    const userServiceEntity = result.entities.find((e) => e.name === 'UserService') as any;
     expect(userServiceEntity.methods).toContain('privateHelper');
   });
 
   it('should generate valid TMD content', () => {
     const converter = new TypeScriptToTypedMindConverter();
     const analysis = createMockAnalysis();
-    
+
     const result = converter.convert(analysis);
-    
+
     expect(result.tmdContent).toBeTruthy();
     expect(result.tmdContent).toContain('# Programs');
     expect(result.tmdContent).toContain('# ClassFiles');
@@ -352,21 +345,23 @@ describe('TypeScriptToTypedMindConverter', () => {
 
   it('should handle duplicate entity names', () => {
     const analysis = createMockAnalysis();
-    
+
     // Create a duplicate by adding another class with the same name
-    analysis.modules[0].classes = [{
-      name: 'UserService', // Duplicate name
-      isAbstract: false,
-      extends: [],
-      implements: [],
-      methods: [],
-      properties: [],
-      decorators: [],
-    }];
-    
+    analysis.modules[0].classes = [
+      {
+        name: 'UserService', // Duplicate name
+        isAbstract: false,
+        extends: [],
+        implements: [],
+        methods: [],
+        properties: [],
+        decorators: [],
+      },
+    ];
+
     const converter = new TypeScriptToTypedMindConverter();
     const result = converter.convert(analysis);
-    
+
     expect(result.success).toBe(false);
     expect(result.errors.length).toBeGreaterThan(0);
     expect(result.errors[0].message).toContain('Duplicate entity name');
@@ -374,7 +369,7 @@ describe('TypeScriptToTypedMindConverter', () => {
 
   it('should handle entity naming edge cases', () => {
     const analysis = createMockAnalysis();
-    
+
     // Add problematic names
     analysis.modules.push({
       filePath: createFilePath('/project/src/123-invalid.ts'),
@@ -388,17 +383,17 @@ describe('TypeScriptToTypedMindConverter', () => {
           returnType: 'void',
           isAsync: false,
           decorators: [],
-        }
+        },
       ],
       classes: [],
       interfaces: [],
       types: [],
       constants: [],
     } as ParsedModule);
-    
+
     const converter = new TypeScriptToTypedMindConverter();
     const result = converter.convert(analysis);
-    
+
     // Should handle invalid names gracefully (convert to valid names or skip)
     expect(result.success).toBe(true);
   });

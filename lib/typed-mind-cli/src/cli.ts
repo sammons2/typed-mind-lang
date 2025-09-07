@@ -62,7 +62,7 @@ Examples:
 
 async function main() {
   let parsed;
-  
+
   try {
     parsed = parseArgs({
       options,
@@ -97,7 +97,7 @@ async function main() {
     if (values.check) {
       console.log(`Checking ${filePath}...`);
       const result = checker.check(content, absolutePath);
-      
+
       if (result.valid) {
         console.log('\u2713 No errors found!');
         process.exit(0);
@@ -114,7 +114,7 @@ async function main() {
           }
           console.error(''); // Empty line between errors
         }
-        
+
         console.error(`\u2717 Found ${result.errors.length} error(s)`);
         process.exit(1);
       }
@@ -122,7 +122,7 @@ async function main() {
       console.log(`Rendering ${filePath}...`);
       const programGraph = checker.parse(content, absolutePath);
       const validationResult = checker.check(content, absolutePath);
-      
+
       const renderer = new TypedMindRenderer({
         port: parseInt(values.port || '3000', 10),
         openBrowser: !values['no-browser'],
@@ -142,7 +142,7 @@ async function main() {
       // Default to check
       console.log(`Checking ${filePath}...`);
       const result = checker.check(content, absolutePath);
-      
+
       if (result.valid) {
         console.log('\u2713 No errors found!');
         process.exit(0);
@@ -159,7 +159,7 @@ async function main() {
           }
           console.error(''); // Empty line between errors
         }
-        
+
         console.error(`\u2717 Found ${result.errors.length} error(s)`);
         process.exit(1);
       }

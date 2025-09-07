@@ -14,7 +14,7 @@ describe('GrammarValidator', () => {
         version: '1.0.0',
         purpose: 'Main application',
         position: { line: 1, column: 1 },
-        raw: 'TodoApp -> AppEntry v1.0.0'
+        raw: 'TodoApp -> AppEntry v1.0.0',
       };
 
       const result = validator.validateEntity(program);
@@ -31,7 +31,7 @@ describe('GrammarValidator', () => {
         type: 'Program',
         // missing entry field
         position: { line: 1, column: 1 },
-        raw: 'TodoApp -> ???'
+        raw: 'TodoApp -> ???',
       } as AnyEntity;
 
       const result = validator.validateEntity(invalidProgram);
@@ -46,12 +46,12 @@ describe('GrammarValidator', () => {
         name: 'Invalid',
         type: 'InvalidType' as any,
         position: { line: 1, column: 1 },
-        raw: 'Invalid'
+        raw: 'Invalid',
       } as AnyEntity;
 
       const result = validator.validateEntity(invalidEntity);
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.field === 'type')).toBe(true);
+      expect(result.errors.some((e) => e.field === 'type')).toBe(true);
     });
 
     it('should validate File entity with arrays', () => {
@@ -62,7 +62,7 @@ describe('GrammarValidator', () => {
         imports: ['Database', 'UserModel'],
         exports: ['createUser', 'getUser'],
         position: { line: 1, column: 1 },
-        raw: 'UserService @ src/services/user.ts:'
+        raw: 'UserService @ src/services/user.ts:',
       };
 
       const result = validator.validateEntity(file);
@@ -79,16 +79,16 @@ describe('GrammarValidator', () => {
             name: 'name',
             type: 'string',
             description: 'User name',
-            optional: false
+            optional: false,
           },
           {
             name: 'age',
             type: 'number',
-            optional: true
-          }
+            optional: true,
+          },
         ],
         position: { line: 1, column: 1 },
-        raw: 'UserDTO % "User data transfer object"'
+        raw: 'UserDTO % "User data transfer object"',
       };
 
       const result = validator.validateEntity(dto);
@@ -102,16 +102,16 @@ describe('GrammarValidator', () => {
         fields: [
           {
             // missing name
-            type: 'string'
-          } as any
+            type: 'string',
+          } as any,
         ],
         position: { line: 1, column: 1 },
-        raw: 'UserDTO %'
+        raw: 'UserDTO %',
       };
 
       const result = validator.validateEntity(invalidDto);
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.field.includes('fields[0].name'))).toBe(true);
+      expect(result.errors.some((e) => e.field.includes('fields[0].name'))).toBe(true);
     });
 
     it('should validate pattern matching for version', () => {
@@ -121,12 +121,12 @@ describe('GrammarValidator', () => {
         entry: 'AppEntry',
         version: 'invalid-version',
         position: { line: 1, column: 1 },
-        raw: 'TodoApp -> AppEntry v???'
+        raw: 'TodoApp -> AppEntry v???',
       };
 
       const result = validator.validateEntity(program);
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.field === 'version')).toBe(true);
+      expect(result.errors.some((e) => e.field === 'version')).toBe(true);
     });
 
     it('should validate RunParameter paramType enum', () => {
@@ -137,7 +137,7 @@ describe('GrammarValidator', () => {
         description: 'Database connection',
         consumedBy: [],
         position: { line: 1, column: 1 },
-        raw: 'DATABASE_URL $env "Database connection"'
+        raw: 'DATABASE_URL $env "Database connection"',
       } as AnyEntity;
 
       const result = validator.validateEntity(validParam);
@@ -145,34 +145,40 @@ describe('GrammarValidator', () => {
 
       const invalidParam = {
         ...validParam,
-        paramType: 'invalid'
+        paramType: 'invalid',
       } as AnyEntity;
 
       const result2 = validator.validateEntity(invalidParam);
       expect(result2.valid).toBe(false);
-      expect(result2.errors.some(e => e.field === 'paramType')).toBe(true);
+      expect(result2.errors.some((e) => e.field === 'paramType')).toBe(true);
     });
   });
 
   describe('validateEntities', () => {
     it('should validate multiple entities', () => {
       const entities = new Map<string, AnyEntity>([
-        ['TodoApp', {
-          name: 'TodoApp',
-          type: 'Program',
-          entry: 'AppEntry',
-          position: { line: 1, column: 1 },
-          raw: 'TodoApp -> AppEntry'
-        } as ProgramEntity],
-        ['UserService', {
-          name: 'UserService',
-          type: 'File',
-          path: 'src/user.ts',
-          imports: [],
-          exports: [],
-          position: { line: 2, column: 1 },
-          raw: 'UserService @ src/user.ts:'
-        } as FileEntity]
+        [
+          'TodoApp',
+          {
+            name: 'TodoApp',
+            type: 'Program',
+            entry: 'AppEntry',
+            position: { line: 1, column: 1 },
+            raw: 'TodoApp -> AppEntry',
+          } as ProgramEntity,
+        ],
+        [
+          'UserService',
+          {
+            name: 'UserService',
+            type: 'File',
+            path: 'src/user.ts',
+            imports: [],
+            exports: [],
+            position: { line: 2, column: 1 },
+            raw: 'UserService @ src/user.ts:',
+          } as FileEntity,
+        ],
       ]);
 
       const result = validator.validateEntities(entities);
@@ -190,8 +196,8 @@ describe('GrammarValidator', () => {
           field: 'entry',
           expected: 'string',
           actual: 'undefined',
-          message: "Required field 'entry' is missing"
-        }
+          message: "Required field 'entry' is missing",
+        },
       ];
 
       const formatted = validator.formatErrors(errors);

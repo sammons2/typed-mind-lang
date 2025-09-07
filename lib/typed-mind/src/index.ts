@@ -22,16 +22,13 @@ export class DSLChecker {
 
   check(input: string, filePath?: string): ValidationResult {
     const parseResult = this.parser.parse(input);
-    let allEntities = new Map(parseResult.entities);
+    const allEntities = new Map(parseResult.entities);
     const allErrors: ValidationError[] = [];
 
     // Resolve imports if any exist and filePath is provided
     if (parseResult.imports.length > 0 && filePath) {
       const basePath = dirname(filePath);
-      const { resolvedEntities, errors } = this.importResolver.resolveImports(
-        parseResult.imports,
-        basePath
-      );
+      const { resolvedEntities, errors } = this.importResolver.resolveImports(parseResult.imports, basePath);
 
       // Merge resolved entities
       for (const [name, entity] of resolvedEntities) {
@@ -65,15 +62,12 @@ export class DSLChecker {
 
   parse(input: string, filePath?: string): ProgramGraph {
     const parseResult = this.parser.parse(input);
-    let allEntities = new Map(parseResult.entities);
+    const allEntities = new Map(parseResult.entities);
 
     // Resolve imports if any exist and filePath is provided
     if (parseResult.imports.length > 0 && filePath) {
       const basePath = dirname(filePath);
-      const { resolvedEntities } = this.importResolver.resolveImports(
-        parseResult.imports,
-        basePath
-      );
+      const { resolvedEntities } = this.importResolver.resolveImports(parseResult.imports, basePath);
 
       // Merge resolved entities
       for (const [name, entity] of resolvedEntities) {

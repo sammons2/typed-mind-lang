@@ -30,11 +30,11 @@ export class TypeScriptAnalyzer {
 
   constructor(
     private readonly projectPath: string,
-    private readonly configPath?: string
+    private readonly configPath?: string,
   ) {
     const configFilePath = this.resolveConfigPath();
     const { config, error } = this.loadTsConfig(configFilePath);
-    
+
     if (error) {
       throw new Error(`Failed to load tsconfig.json: ${error.messageText}`);
     }
@@ -45,19 +45,15 @@ export class TypeScriptAnalyzer {
       skipLibCheck: true,
     };
 
-    this.program = ts.createProgram(
-      config.fileNames || [],
-      compilerOptions
-    );
-    
+    this.program = ts.createProgram(config.fileNames || [], compilerOptions);
+
     this.checker = this.program.getTypeChecker();
   }
 
   analyze(): TypeScriptProjectAnalysis {
-    const sourceFiles = this.program.getSourceFiles()
-      .filter(file => !file.isDeclarationFile && !file.fileName.includes('node_modules'));
+    const sourceFiles = this.program.getSourceFiles().filter((file) => !file.isDeclarationFile && !file.fileName.includes('node_modules'));
 
-    const modules = sourceFiles.map(file => this.analyzeModule(file));
+    const modules = sourceFiles.map((file) => this.analyzeModule(file));
     const entryPoints = this.detectEntryPoints(modules);
 
     return {
@@ -79,7 +75,7 @@ export class TypeScriptAnalyzer {
 
     while (traverseQueue.length > 0) {
       const currentPath = traverseQueue.shift()!;
-      
+
       if (visitedModules.has(currentPath)) {
         continue;
       }
@@ -118,8 +114,7 @@ export class TypeScriptAnalyzer {
     }
 
     const searchPath = path.resolve(this.projectPath);
-    return ts.findConfigFile(searchPath, ts.sys.fileExists, 'tsconfig.json') || 
-           path.join(searchPath, 'tsconfig.json');
+    return ts.findConfigFile(searchPath, ts.sys.fileExists, 'tsconfig.json') || path.join(searchPath, 'tsconfig.json');
   }
 
   private loadTsConfig(configPath: string): { config: any; error?: ts.Diagnostic } {
@@ -137,24 +132,20 @@ export class TypeScriptAnalyzer {
       return { config: {}, error: configFile.error };
     }
 
-    const parsedConfig = ts.parseJsonConfigFileContent(
-      configFile.config,
-      ts.sys,
-      path.dirname(configPath)
-    );
+    const parsedConfig = ts.parseJsonConfigFileContent(configFile.config, ts.sys, path.dirname(configPath));
 
     return { config: parsedConfig };
   }
 
   private getSourceFiles(dir: string): string[] {
     const files: string[] = [];
-    
+
     const traverse = (currentPath: string) => {
       const entries = fs.readdirSync(currentPath, { withFileTypes: true });
-      
+
       for (const entry of entries) {
         const fullPath = path.join(currentPath, entry.name);
-        
+
         if (entry.isDirectory() && entry.name !== 'node_modules') {
           traverse(fullPath);
         } else if (entry.isFile() && /\.(ts|tsx)$/.test(entry.name)) {
@@ -184,7 +175,7 @@ export class TypeScriptAnalyzer {
       } else if (isFunction(node)) {
         const func = this.parseFunction(node);
         functions.push(func);
-        
+
         if (this.hasExportModifier(node)) {
           exports.push({
             name: func.name,
@@ -196,7 +187,7 @@ export class TypeScriptAnalyzer {
       } else if (isClass(node)) {
         const cls = this.parseClass(node);
         classes.push(cls);
-        
+
         if (this.hasExportModifier(node)) {
           exports.push({
             name: cls.name,
@@ -208,7 +199,7 @@ export class TypeScriptAnalyzer {
       } else if (isInterface(node)) {
         const iface = this.parseInterface(node);
         interfaces.push(iface);
-        
+
         if (this.hasExportModifier(node)) {
           exports.push({
             name: iface.name,
@@ -220,7 +211,7 @@ export class TypeScriptAnalyzer {
       } else if (isTypeAlias(node)) {
         const typeAlias = this.parseTypeAlias(node);
         types.push(typeAlias);
-        
+
         if (this.hasExportModifier(node)) {
           exports.push({
             name: typeAlias.name,
@@ -232,7 +223,7 @@ export class TypeScriptAnalyzer {
       } else if (isVariableStatement(node)) {
         const consts = this.parseVariableStatement(node);
         constants.push(...consts);
-        
+
         if (this.hasExportModifier(node)) {
           for (const constant of consts) {
             exports.push({
@@ -251,14 +242,14 @@ export class TypeScriptAnalyzer {
           type: 'enum',
           value: undefined,
           isEnum: true,
-          enumValues: node.members.map(member => {
+          enumValues: node.members.map((member) => {
             const name = member.name?.getText() || 'unknown';
             const value = member.initializer?.getText();
             return { name, value };
           }),
           isConst: false,
         });
-        
+
         if (this.hasExportModifier(node)) {
           exports.push({
             name: enumName,
@@ -289,7 +280,7 @@ export class TypeScriptAnalyzer {
   private parseImport(node: ts.ImportDeclaration): ParsedImport {
     const specifier = (node.moduleSpecifier as ts.StringLiteral).text;
     const importClause = node.importClause;
-    
+
     if (!importClause) {
       return {
         specifier,
@@ -339,10 +330,9 @@ export class TypeScriptAnalyzer {
 
     // Handle export { name1, name2 } from 'module'
     if (node.exportClause && ts.isNamedExports(node.exportClause)) {
-      const source = node.moduleSpecifier ? 
-        (node.moduleSpecifier as ts.StringLiteral).text : undefined;
+      const source = node.moduleSpecifier ? (node.moduleSpecifier as ts.StringLiteral).text : undefined;
 
-      return node.exportClause.elements.map(element => ({
+      return node.exportClause.elements.map((element) => ({
         name: element.name.text,
         isDefault: false,
         type: this.inferExportType(element.name.text, source),
@@ -361,10 +351,12 @@ export class TypeScriptAnalyzer {
     if (name.endsWith('Type') || name.endsWith('Types')) {
       return 'type';
     }
-    if (name.match(/^[A-Z_][A-Z0-9_]*$/)) { // ALL_CAPS suggests constant
+    if (name.match(/^[A-Z_][A-Z0-9_]*$/)) {
+      // ALL_CAPS suggests constant
       return 'constant';
     }
-    if (name.charAt(0) === name.charAt(0).toUpperCase()) { // PascalCase suggests class/interface
+    if (name.charAt(0) === name.charAt(0).toUpperCase()) {
+      // PascalCase suggests class/interface
       return 'class';
     }
     return 'variable';
@@ -403,9 +395,9 @@ export class TypeScriptAnalyzer {
     if (node.heritageClauses) {
       for (const clause of node.heritageClauses) {
         if (clause.token === ts.SyntaxKind.ExtendsKeyword) {
-          extendsClasses.push(...clause.types.map(type => this.getTypeString(type)));
+          extendsClasses.push(...clause.types.map((type) => this.getTypeString(type)));
         } else if (clause.token === ts.SyntaxKind.ImplementsKeyword) {
-          implementsInterfaces.push(...clause.types.map(type => this.getTypeString(type)));
+          implementsInterfaces.push(...clause.types.map((type) => this.getTypeString(type)));
         }
       }
     }
@@ -440,7 +432,7 @@ export class TypeScriptAnalyzer {
     if (node.heritageClauses) {
       for (const clause of node.heritageClauses) {
         if (clause.token === ts.SyntaxKind.ExtendsKeyword) {
-          extendsInterfaces.push(...clause.types.map(type => this.getTypeString(type)));
+          extendsInterfaces.push(...clause.types.map((type) => this.getTypeString(type)));
         }
       }
     }
@@ -602,7 +594,7 @@ export class TypeScriptAnalyzer {
   }
 
   private parseParameters(parameters: ts.NodeArray<ts.ParameterDeclaration>): ParsedParameter[] {
-    return parameters.map(param => ({
+    return parameters.map((param) => ({
       name: (param.name as ts.Identifier).text,
       type: this.getTypeString(param.type),
       isOptional: !!param.questionToken,
@@ -614,22 +606,15 @@ export class TypeScriptAnalyzer {
     const decorators = ts.canHaveDecorators(node) ? ts.getDecorators(node) : undefined;
     if (!decorators) return [];
 
-    return decorators.map(decorator => {
+    return decorators.map((decorator) => {
       const expression = decorator.expression;
       return expression.getText();
     });
   }
 
-  private buildFunctionSignature(
-    name: string, 
-    parameters: readonly ParsedParameter[], 
-    returnType: string, 
-    isAsync: boolean
-  ): string {
-    const paramStr = parameters.map(p => 
-      `${p.name}${p.isOptional ? '?' : ''}: ${p.type}`
-    ).join(', ');
-    
+  private buildFunctionSignature(name: string, parameters: readonly ParsedParameter[], returnType: string, isAsync: boolean): string {
+    const paramStr = parameters.map((p) => `${p.name}${p.isOptional ? '?' : ''}: ${p.type}`).join(', ');
+
     const asyncPrefix = isAsync ? 'async ' : '';
     return `${asyncPrefix}${name}(${paramStr}) => ${returnType}`;
   }
@@ -673,7 +658,7 @@ export class TypeScriptAnalyzer {
 
   private hasModifier(node: ts.Node, kind: ts.SyntaxKind): boolean {
     const modifiers = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
-    return modifiers?.some(modifier => modifier.kind === kind) || false;
+    return modifiers?.some((modifier) => modifier.kind === kind) || false;
   }
 
   private extractJSDocDescription(node: ts.Node): string | undefined {
@@ -681,39 +666,40 @@ export class TypeScriptAnalyzer {
     if (!symbol) return undefined;
 
     const jsDocTags = symbol.getJsDocTags();
-    const descriptionTag = jsDocTags.find(tag => tag.name === 'description');
-    
-    return descriptionTag?.text?.map(text => text.text).join('') || 
-           symbol.getDocumentationComment(this.checker)
-             .map(comment => comment.text)
-             .join('');
+    const descriptionTag = jsDocTags.find((tag) => tag.name === 'description');
+
+    return (
+      descriptionTag?.text?.map((text) => text.text).join('') ||
+      symbol
+        .getDocumentationComment(this.checker)
+        .map((comment) => comment.text)
+        .join('')
+    );
   }
 
   private detectEntryPoints(modules: readonly ParsedModule[]): string[] {
     const entryPoints: string[] = [];
-    
+
     // Look for files named index.ts, main.ts, app.ts, or server.ts
     const entryFilePatterns = ['index.ts', 'main.ts', 'app.ts', 'server.ts'];
-    
+
     for (const module of modules) {
       const fileName = path.basename(module.filePath);
       if (entryFilePatterns.includes(fileName)) {
         entryPoints.push(module.filePath);
       }
     }
-    
+
     // If no obvious entry points, look for files with main functions
     if (entryPoints.length === 0) {
       for (const module of modules) {
-        const hasMainFunction = module.functions.some(fn => 
-          fn.name === 'main' || fn.name === 'start' || fn.name === 'bootstrap'
-        );
+        const hasMainFunction = module.functions.some((fn) => fn.name === 'main' || fn.name === 'start' || fn.name === 'bootstrap');
         if (hasMainFunction) {
           entryPoints.push(module.filePath);
         }
       }
     }
-    
+
     return entryPoints;
   }
 
@@ -724,11 +710,11 @@ export class TypeScriptAnalyzer {
     }
 
     const fromDir = path.dirname(fromPath);
-    let resolvedPath = path.resolve(fromDir, importSpecifier);
+    const resolvedPath = path.resolve(fromDir, importSpecifier);
 
     // Try different extensions if the import doesn't have one
     const extensions = ['.ts', '.tsx', '.js', '.jsx'];
-    
+
     // First try exact match
     if (fs.existsSync(resolvedPath)) {
       return resolvedPath;
