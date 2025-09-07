@@ -1,9 +1,9 @@
 # Shortform syntax is for LLMs
-FileExample -> UserController v1.0.0
+FileExample -> UserControllerFile v1.0.0
 
-UserController @ controllers/user.controller.ts:
+UserControllerFile @ controllers/user.controller.ts:
   <- [User, CreateUserDto, UserService]
-  -> [UserController]
+  -> [UserController, BaseController, UserService, getUser, createUser, handleError, save, find]
 
 # Classes and functions defined in this file
 UserController <: BaseController

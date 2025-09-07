@@ -1,27 +1,16 @@
-# Longform syntax is for humans
-component App {
-  root: true
-  description: "Main application component"
-  contains: [Header, MainContent, Footer]
-}
+# Longform syntax for UI components
+App &! "Main application component"
+  > [Header, MainContent, Footer]
 
 # Child components
-component Header {
-  description: "Application header"
-  containedBy: [App]
-  contains: [Logo, Navigation, UserMenu]
-  affectedBy: [login, logout]
-}
+Header & "Application header"
+  < [App]
+  > [Logo, Navigation, UserMenu]
 
-component MainContent {
-  description: "Main content area"
-  containedBy: [App]
-  contains: [Sidebar, ContentArea]
-}
+MainContent & "Main content area"
+  < [App]
+  > [Sidebar, ContentArea]
 
 # Component affected by functions
-component UserProfile {
-  description: "User profile display"
-  containedBy: [ContentArea]
-  affectedBy: [updateUserProfile, deleteUser]
-}
+UserProfile & "User profile display"
+  < [ContentArea]

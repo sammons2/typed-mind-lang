@@ -1,0 +1,42 @@
+# Supplementary content for constants-longform snippet
+# Provides program and file structure for constants demonstration
+
+program ConstantsExampleApp {
+  entry: ConfigFile
+  version: "1.0.0"
+}
+
+file ConfigFile {
+  path: "src/app.ts"
+  imports: [API_VERSION, MAX_RETRIES, DEFAULT_TIMEOUT, DATABASE_CONFIG, FEATURE_FLAGS, ALLOWED_ORIGINS, SUPPORTED_LOCALES, DatabaseConfig, FeatureFlags, Locale]
+  exports: [startApp]
+}
+
+function startApp {
+  signature: "() => void"
+  description: "Starts the application"
+  consumes: [API_VERSION, MAX_RETRIES, DEFAULT_TIMEOUT, DATABASE_CONFIG, FEATURE_FLAGS, ALLOWED_ORIGINS, SUPPORTED_LOCALES]
+}
+
+dto DatabaseConfig {
+  description: "Database configuration"
+  fields: {
+    host: "string # Database host",
+    port: "number # Database port"
+  }
+}
+
+dto FeatureFlags {
+  description: "Feature flags configuration"  
+  fields: {
+    newFeature: "boolean # New feature enabled"
+  }
+}
+
+dto Locale {
+  description: "Locale configuration"
+  fields: {
+    code: "string # Language code",
+    name: "string # Language name"
+  }
+}

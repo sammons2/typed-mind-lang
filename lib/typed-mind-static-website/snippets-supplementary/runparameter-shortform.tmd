@@ -1,0 +1,14 @@
+# Supplementary content for runparameter-shortform snippet
+# Provides program and functions that consume the runtime parameters
+
+# Program entry point
+RunParameterExampleApp -> AppFile v1.0.0
+
+# File that uses runtime parameters
+AppFile @ src/app.ts:
+  -> [startApp]
+
+# Function that consumes runtime parameters
+startApp :: () => void
+  "Starts the application with runtime configuration"
+  $< [DATABASE_URL, PORT, NODE_ENV, AWS_ROLE_ARN, SERVICE_ACCOUNT, MAX_WORKERS, MEMORY_LIMIT, FEATURE_FLAGS, API_RATE_LIMITS]

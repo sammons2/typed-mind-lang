@@ -1,0 +1,15 @@
+# Supplementary content for dependency-longform snippet
+# The dependency-longform already has program structure with ServerMain
+# but needs the missing referenced function
+
+program DependencyExampleApp {
+  entry: ServerMain
+  version: "1.0.0"
+}
+
+# The startServer function that's exported by ServerMain
+function startServer {
+  signature: "() => void"
+  description: "Starts the HTTP server"
+  calls: [start]
+}

@@ -1,5 +1,5 @@
 # Shortform syntax is for LLMs
-TodoApp -> TodoService v1.0.0
+TodoApp -> MainFile v1.0.0
 
 # Use ClassFile fusion operator for cleaner syntax
 TodoService #: api.ts <: BaseService
@@ -16,11 +16,8 @@ getTodos :: () => Todo[]
   "Retrieves all todo items"
   -> Todo
 
-# Define the base service for completeness
-BaseServiceModule @ base-service.ts:
-  -> [BaseService]
-
-BaseService
+# Convert BaseService to ClassFile for proper referencing
+BaseService #: base-service.ts:
   => [validate]
 
 validate :: (data: any) => boolean

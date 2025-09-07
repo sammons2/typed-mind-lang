@@ -1,0 +1,36 @@
+# Supplementary content for getting-started-shortform snippet
+
+# Create a main entry file since programs need File entry points, not ClassFiles
+MainFile @ main.ts:
+  <- [App]
+  -> [startApp]
+
+# Entry function that starts the App ClassFile
+startApp :: () => void
+  "Entry point that starts the application"
+  ~> [start]
+
+# Import entities into MainFile and export startApp
+file MainFile {
+  imports: [Application, initialize, listen, BaseService]
+  exports: [startApp]
+}
+
+# Base service that exports Application class
+BaseService @ base.ts:
+  -> [Application, initialize, listen]
+
+# Base class that App extends  
+Application <: Object
+  => [initialize, listen]
+
+# Missing functions that are called by start
+initialize :: () => void
+  "Initializes the application"
+
+listen :: () => void
+  "Starts listening on port"
+
+# Missing runtime parameters
+PORT $env "Server port" (required)
+NODE_ENV $env "Node environment" (required)

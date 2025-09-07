@@ -6,7 +6,7 @@ program FileExample {
 
 file controllers {
   path: "controllers/user.controller.ts"
-  imports: [User, CreateUserDto, UserService]
+  imports: [User, CreateUserDto, UserService, models, services]
   exports: [UserController, BaseController]
 }
 

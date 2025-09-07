@@ -419,7 +419,7 @@ export class TypeScriptToTypedMindConverter {
     }
     
     // Convert constants - create individual entities for exported constants
-    this.convertConstants(module, baseName);
+    this.convertConstants(module);
   }
 
   private convertToSeparateEntities(module: ParsedModule, baseName: string): void {
@@ -464,7 +464,7 @@ export class TypeScriptToTypedMindConverter {
     }
     
     // Convert constants - create individual entities for exported constants
-    this.convertConstants(module, baseName);
+    this.convertConstants(module);
   }
 
   private convertClass(cls: ParsedClass): void {
@@ -607,7 +607,7 @@ export class TypeScriptToTypedMindConverter {
     this.convertTypeAliasToConstants(typeAlias);
   }
 
-  private convertConstants(module: ParsedModule, baseName: string): void {
+  private convertConstants(module: ParsedModule): void {
     if (module.constants.length === 0) {
       return;
     }
@@ -683,7 +683,7 @@ export class TypeScriptToTypedMindConverter {
       if (modules.length > 0) {
         const firstModule = modules[0];
         if (firstModule) {
-          this.createProgramEntity('DefaultApp', firstModule.filePath, modules);
+          this.createProgramEntity('DefaultApp', firstModule.filePath);
         }
       }
       return;
@@ -692,11 +692,11 @@ export class TypeScriptToTypedMindConverter {
     for (const entryPoint of entryPoints) {
       const fileName = path.basename(entryPoint, path.extname(entryPoint));
       const programName = this.deriveProgramName(fileName);
-      this.createProgramEntity(programName, entryPoint, modules);
+      this.createProgramEntity(programName, entryPoint);
     }
   }
 
-  private createProgramEntity(programName: string, entryFilePath: string, modules: ParsedModule[]): void {
+  private createProgramEntity(programName: string, entryFilePath: string): void {
     const entityName = createEntityName(programName);
     
     if (this.entityNames.has(entityName)) {
@@ -707,7 +707,7 @@ export class TypeScriptToTypedMindConverter {
     this.entityNames.add(entityName);
 
     // Find the actual entity that will be created for this entry file
-    const entryEntityName = this.findEntryEntityName(entryFilePath, modules);
+    const entryEntityName = this.findEntryEntityName(entryFilePath);
 
     const programEntity: ProgramEntity = {
       name: entityName,
@@ -1217,7 +1217,7 @@ export class TypeScriptToTypedMindConverter {
   }
 
 
-  private findEntryEntityName(entryFilePath: string, modules: ParsedModule[]): string {
+  private findEntryEntityName(entryFilePath: string): string {
     const relativePath = this.getRelativePath(entryFilePath);
     
     // Look for a File entity (Programs can only reference File entities)

@@ -1,0 +1,24 @@
+# Supplementary content for import-shortform snippet
+# Create the entry file
+api @ api.ts:
+  <- [User, UserService, checkPermissions, getUser]
+  -> [getUser, checkPermissions]
+
+# Define the imported entities  
+User % "User model"
+  - id: string "User ID"
+  - name: string "User name"
+  - email: string "User email"
+
+UserService #: src/services/user.ts:
+  => [findUser]
+
+findUser :: (id: string) => User
+  "Finds user by ID"
+
+checkPermissions :: (user: User) => boolean
+  "Checks user permissions"
+
+getUser :: (id: string) => User
+  "Retrieves user by ID"
+  ~> [findUser, checkPermissions]

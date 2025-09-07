@@ -1,53 +1,53 @@
-# Longform syntax is for humans
-runparam DATABASE_URL {
-  source: "env"
+# Longform syntax for runtime parameters
+parameter DATABASE_URL {
+  type: "env"
   description: "Database connection string"
   required: true
 }
 
-runparam PORT {
-  source: "env"
+parameter PORT {
+  type: "env"
   description: "Server port"
   default: "3000"
 }
 
-runparam NODE_ENV {
-  source: "env"
+parameter NODE_ENV {
+  type: "env"
   description: "Environment mode"
   default: "development"
 }
 
 # IAM/Security parameters
-runparam AWS_ROLE_ARN {
-  source: "iam"
+parameter AWS_ROLE_ARN {
+  type: "iam"
   description: "AWS role for service"
   required: true
 }
 
-runparam SERVICE_ACCOUNT {
-  source: "iam"
+parameter SERVICE_ACCOUNT {
+  type: "iam"
   description: "GCP service account"
 }
 
 # Runtime configuration
-runparam MAX_WORKERS {
-  source: "runtime"
+parameter MAX_WORKERS {
+  type: "runtime"
   description: "Maximum worker threads"
   default: "4"
 }
 
-runparam MEMORY_LIMIT {
-  source: "runtime"
+parameter MEMORY_LIMIT {
+  type: "runtime"
   description: "Memory limit in MB"
 }
 
 # Config file parameters
-runparam FEATURE_FLAGS {
-  source: "config"
+parameter FEATURE_FLAGS {
+  type: "config"
   description: "Feature toggle configuration"
 }
 
-runparam API_RATE_LIMITS {
-  source: "config"
+parameter API_RATE_LIMITS {
+  type: "config"
   description: "Rate limiting rules"
 }

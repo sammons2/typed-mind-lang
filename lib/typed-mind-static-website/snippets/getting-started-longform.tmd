@@ -1,13 +1,26 @@
 # Longform syntax is for humans
 program MyFirstApp {
-  entryPoint: App
+  entry: AppFile
   version: "1.0.0"
+}
+
+file AppFile {
+  path: "src/app.ts"
+  imports: [App]
+  exports: [startApp]
+}
+
+function startApp {
+  signature: "() => void"
+  description: "Application entry point"
+  ~> [start]
 }
 
 # ClassFile fusion operator eliminates boilerplate
 App #: main.ts {
   extends: Application
   methods: [start, stop]
+  exports: [start, stop, initialize, listen]
 }
 
 function start {

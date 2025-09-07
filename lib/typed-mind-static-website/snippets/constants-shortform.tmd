@@ -7,6 +7,10 @@ DEFAULT_TIMEOUT ! config.ts : number
 DATABASE_CONFIG ! database/config.ts : DatabaseConfig
 FEATURE_FLAGS ! features.ts : FeatureFlags
 
-# Array constants
-ALLOWED_ORIGINS ! cors.config.ts : string[]
-SUPPORTED_LOCALES ! i18n/config.ts : Locale[]
+# Array constants (Note: Array type syntax due to parser limitation)
+ALLOWED_ORIGINS ! cors.config.ts : Array
+SUPPORTED_LOCALES ! i18n/config.ts : Array
+
+# Function that consumes all constants
+startApp :: () => void
+  $< [API_VERSION, MAX_RETRIES, DEFAULT_TIMEOUT, DATABASE_CONFIG, FEATURE_FLAGS, ALLOWED_ORIGINS, SUPPORTED_LOCALES]

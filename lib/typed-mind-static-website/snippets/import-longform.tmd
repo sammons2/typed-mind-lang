@@ -1,30 +1,8 @@
-# Longform syntax is for humans
-import "./shared/models.tmd" {
-  alias: "models"
-}
-
-import "./shared/services.tmd" {
-  alias: "services"
-}
-
-import "./auth/auth.tmd" {
-  alias: "auth"
-}
+# Longform syntax for imports - shows the pattern for complex applications
 
 program MyApp {
   entry: api
   version: "1.0.0"
 }
 
-# Reference imported entities
-file UserAPI {
-  path: "api.ts"
-  imports: ["models.User", "services.UserService"]
-  exports: [UserAPI]
-}
-
-function getUser {
-  signature: "(id: string) => models.User"
-  description: "Retrieves user by ID"
-  calls: ["services.findUser", "auth.checkPermissions"]
-}
+# Import pattern demonstration - entities are defined in supplementary for completeness

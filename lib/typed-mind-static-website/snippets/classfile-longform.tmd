@@ -1,7 +1,19 @@
 # Longform syntax is for humans
 program ClassFileExample {
-  entry: UserService
+  entry: mainFile
   version: "1.0.0"
+}
+
+file mainFile {
+  path: "src/main.ts"
+  imports: [utilities]
+  exports: [startApp]
+}
+
+function startApp {
+  signature: "() => void"
+  description: "Application entry point"
+  calls: [findById, create, validate]
 }
 
 # ClassFile combines file and class definition - eliminates boilerplate!

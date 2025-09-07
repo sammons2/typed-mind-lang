@@ -1,0 +1,13 @@
+# Supplementary content for file-shortform snippet
+# The file-shortform snippet already has a program (FileExample -> UserController)
+# but needs some missing entities referenced by functions
+
+# Required functions that are called
+handleError :: () => void
+  "Handles application errors"
+
+save :: (entity: any) => any
+  "Saves entity to database"
+
+find :: (id: string) => any
+  "Finds entity by ID"

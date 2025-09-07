@@ -1,0 +1,11 @@
+# Supplementary content for hero-shortform snippet
+
+# Create proper entry point file since programs need File entry points
+MainFile @ main.ts:
+  <- [TodoService, createTodo]
+  -> [startTodoApp, createTodo]
+
+# Entry function
+startTodoApp :: () => void
+  "Starts the Todo application"
+  ~> [createTodo]

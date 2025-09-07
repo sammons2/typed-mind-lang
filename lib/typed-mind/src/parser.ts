@@ -39,7 +39,7 @@ export class DSLParser {
   private lines: string[] = [];
   private entities = new Map<string, AnyEntity>();
   private imports: ImportStatement[] = [];
-  private namingConflicts: Array<{name: string; existingEntity: AnyEntity; newEntity: AnyEntity}> = [];
+  private namingConflicts: Array<{ name: string; existingEntity: AnyEntity; newEntity: AnyEntity }> = [];
   private longformParser = new LongformParser();
   private grammarValidator = new GrammarValidator();
   private validateGrammar = false;
@@ -95,10 +95,10 @@ export class DSLParser {
             this.namingConflicts.push({
               name: currentEntity.name,
               existingEntity,
-              newEntity: currentEntity
+              newEntity: currentEntity,
             });
           }
-          
+
           this.entities.set(currentEntity.name, currentEntity);
           entityStack.push(currentEntity);
         }
@@ -110,7 +110,7 @@ export class DSLParser {
 
     // Post-process function dependencies
     this.distributeFunctionDependencies();
-    
+
     // Post-process bidirectional relationships
     this.establishBidirectionalRelationships();
 
@@ -118,7 +118,7 @@ export class DSLParser {
       entities: this.entities,
       imports: this.imports,
     };
-    
+
     // Add naming conflicts if any were detected
     if (this.namingConflicts.length > 0) {
       result.namingConflicts = this.namingConflicts;
@@ -128,11 +128,11 @@ export class DSLParser {
     if (this.validateGrammar) {
       const validationResult = this.grammarValidator.validateEntities(this.entities);
       if (!validationResult.valid) {
-        result.grammarErrors = validationResult.errors.map(e => ({
+        result.grammarErrors = validationResult.errors.map((e) => ({
           entity: e.entity,
           type: e.type,
           field: e.field,
-          message: e.message
+          message: e.message,
         }));
       }
     }
@@ -157,7 +157,7 @@ export class DSLParser {
 
   private parseEntity(line: string, lineNum: number): AnyEntity | null {
     const position: Position = { line: lineNum, column: 1 };
-    
+
     // Extract inline comment if present
     const { cleanLine, comment } = this.extractInlineComment(line);
 
@@ -238,7 +238,7 @@ export class DSLParser {
       const inheritance = classFileMatch[3]?.trim();
       let baseClass: string | undefined;
       let interfaces: string[] = [];
-      
+
       if (inheritance) {
         const parts = inheritance.split(',').map((s) => s.trim());
         if (parts.length > 0 && parts[0]) {
@@ -246,7 +246,7 @@ export class DSLParser {
           interfaces = parts.slice(1);
         }
       }
-      
+
       return {
         name: classFileMatch[1] as string,
         type: 'ClassFile',
@@ -268,7 +268,7 @@ export class DSLParser {
       const inheritance = classMatch[2]?.trim();
       let baseClass: string | undefined;
       let interfaces: string[] = [];
-      
+
       if (inheritance) {
         const parts = inheritance.split(',').map((s) => s.trim());
         if (parts.length > 0 && parts[0]) {
@@ -276,7 +276,7 @@ export class DSLParser {
           interfaces = parts.slice(1);
         }
       }
-      
+
       return {
         name: classMatch[1] as string,
         type: 'Class',
@@ -367,7 +367,7 @@ export class DSLParser {
     if (runParamMatch) {
       const paramType = runParamMatch[2] as 'env' | 'iam' | 'runtime' | 'config';
       const isRequired = runParamMatch[4] === 'required';
-      
+
       return {
         name: runParamMatch[1] as string,
         type: 'RunParameter',
@@ -382,7 +382,7 @@ export class DSLParser {
     }
 
     // Dependency: axios ^ "HTTP client library" v3.0.0
-    // Short form: axios ^ "HTTP client" 
+    // Short form: axios ^ "HTTP client"
     // Supports scoped packages like @org/package
     const depMatch = cleanLine.match(ENTITY_PATTERNS.DEPENDENCY);
     if (depMatch) {
@@ -432,13 +432,13 @@ export class DSLParser {
       if (entity.type === 'Function') {
         const funcEntity = entity as FunctionEntity;
         const items = this.parseList(importMatch[1] as string);
-        
+
         // We'll need access to entities to check types, so for now just store them
         // The validator will need to handle the validation
         if (!funcEntity.calls) funcEntity.calls = [];
         if (!funcEntity.affects) funcEntity.affects = [];
         if (!funcEntity.consumes) funcEntity.consumes = [];
-        
+
         // For now, store all in a temporary field that validator can process
         (funcEntity as any)._dependencies = items;
         return;
@@ -492,7 +492,7 @@ export class DSLParser {
     if (affectsMatch && entity.type === 'Function') {
       const funcEntity = entity as FunctionEntity;
       funcEntity.affects = this.parseList(affectsMatch[1] as string);
-      
+
       // Update affected components' affectedBy list
       for (const componentName of funcEntity.affects) {
         const component = this.entities.get(componentName);
@@ -541,7 +541,7 @@ export class DSLParser {
         name: dtoFieldMatch[1] as string,
         type: dtoFieldMatch[3]?.trim() as string,
         description: dtoFieldMatch[4],
-        optional: (dtoFieldMatch[2] === '?') || (dtoFieldMatch[5]?.includes('optional') || false),
+        optional: dtoFieldMatch[2] === '?' || dtoFieldMatch[5]?.includes('optional') || false,
       };
       dtoEntity.fields.push(field);
       return;
@@ -558,7 +558,7 @@ export class DSLParser {
     const descMatch = trimmedLine.match(CONTINUATION_PATTERNS.DESCRIPTION);
     if (descMatch) {
       const description = descMatch[1] as string;
-      
+
       if (entity.type === 'Function') {
         const funcEntity = entity as FunctionEntity;
         funcEntity.description = description;
@@ -591,7 +591,7 @@ export class DSLParser {
     if (consumesMatch && entity.type === 'Function') {
       const funcEntity = entity as FunctionEntity;
       funcEntity.consumes = this.parseList(consumesMatch[1] as string);
-      
+
       // Update consumed RunParameters' consumedBy list
       for (const paramName of funcEntity.consumes) {
         const param = this.entities.get(paramName);
@@ -663,7 +663,7 @@ export class DSLParser {
     for (const entity of this.entities.values()) {
       if (entity.type === 'Function') {
         const funcEntity = entity as FunctionEntity;
-        
+
         // Update affectedBy for UIComponents
         if (funcEntity.affects) {
           for (const componentName of funcEntity.affects) {
@@ -679,7 +679,7 @@ export class DSLParser {
             }
           }
         }
-        
+
         // Update consumedBy for RunParameters, Assets, and Constants
         if (funcEntity.consumes) {
           for (const resourceName of funcEntity.consumes) {
@@ -699,7 +699,7 @@ export class DSLParser {
           }
         }
       }
-      
+
       // Update containedBy for UIComponents
       if (entity.type === 'UIComponent') {
         const uiComponent = entity as UIComponentEntity;
@@ -729,7 +729,7 @@ export class DSLParser {
         if (funcEntity._dependencies) {
           const unresolvedDeps: string[] = [];
           const dtos: string[] = [];
-          
+
           // First pass: collect DTOs and distribute other entity types
           for (const dep of funcEntity._dependencies) {
             const depEntity = this.entities.get(dep);
@@ -753,7 +753,7 @@ export class DSLParser {
                   if (!funcEntity.affects.includes(dep)) {
                     funcEntity.affects.push(dep);
                   }
-                  
+
                   // Update bidirectional reference
                   const uiComponent = depEntity as UIComponentEntity;
                   if (!uiComponent.affectedBy) {
@@ -772,7 +772,7 @@ export class DSLParser {
                   if (!funcEntity.consumes.includes(dep)) {
                     funcEntity.consumes.push(dep);
                   }
-                  
+
                   // Update bidirectional reference for RunParameters
                   if (depEntity.type === 'RunParameter') {
                     const runParam = depEntity as RunParameterEntity;
@@ -794,14 +794,14 @@ export class DSLParser {
               unresolvedDeps.push(dep);
             }
           }
-          
+
           // Second pass: handle DTO auto-distribution
           if (dtos.length > 0) {
             // If no explicit input is set, assign the first DTO as input
             if (!funcEntity.input && dtos.length >= 1) {
               funcEntity.input = dtos[0];
             }
-            
+
             // Additional DTOs beyond the first are not supported in dependency arrays
             // They should use explicit syntax like <- InputDTO, -> OutputDTO
             // For now, we just ignore extra DTOs (they'll be caught by validator if needed)
@@ -810,7 +810,7 @@ export class DSLParser {
               // Extra DTOs are simply ignored since Functions should only have one input DTO
             }
           }
-          
+
           // Keep unresolved dependencies for validator
           if (unresolvedDeps.length > 0) {
             funcEntity._dependencies = unresolvedDeps;

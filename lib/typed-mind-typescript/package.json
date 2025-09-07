@@ -44,13 +44,13 @@
   },
   "dependencies": {
     "@sammons/typed-mind": "workspace:*",
-    "typescript": "^5.7.3"
+    "typescript": "^5.9.2"
   },
   "devDependencies": {
-    "@types/node": "^22.10.5",
+    "@types/node": "^22.18.1",
     "tsup": "^8.3.5",
-    "vitest": "^2.1.8",
-    "typescript-eslint": "^8.19.1"
+    "typescript-eslint": "^8.42.0",
+    "vitest": "^3.2.4"
   },
   "publishConfig": {
     "access": "public"

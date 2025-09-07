@@ -1,0 +1,53 @@
+# Supplementary content for function-shortform snippet
+# Provides minimal context needed for validation
+
+# Program entry point
+FunctionExampleApp -> ExampleFile v1.0.0
+
+# File that exports the functions
+ExampleFile @ examples/functions.ts:
+  <- [App]  
+  -> [validateEmail, login, updateUserProfile, validateCredentials, generateToken, initializeApp]
+
+# Required DTOs
+LoginDto % "Login credentials"
+  - email: string "User email"
+  - password: string "User password"
+
+AuthToken % "Authentication token"
+  - token: string "JWT token"
+  - expiresAt: Date "Token expiration"
+
+ProfileDto % "Profile update data"
+  - name: string "User name"
+  - email: string "User email"
+
+User % "User entity"
+  - id: string "User ID"
+  - name: string "User name"
+  - email: string "User email"
+
+# Required UI Components (these are affected by functions)
+App &! "Main application component"
+  > [ProfileComponent, HeaderComponent]
+
+ProfileComponent & "Profile display component"
+  < [App]
+
+HeaderComponent & "Header component"
+  < [App]
+
+# Required functions for calls
+validateCredentials :: (data: LoginDto) => boolean
+  "Validates user credentials"
+
+generateToken :: (user: User) => AuthToken
+  "Generates authentication token"
+
+# Function that affects the App UI component (to prevent App from being orphaned)
+initializeApp :: () => void
+  "Initializes the application UI"
+  ~ [App]
+
+# Required runtime parameter
+JWT_SECRET $env "JWT secret key" (required)

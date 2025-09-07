@@ -1,0 +1,75 @@
+# Supplementary content for uicomponent-longform snippet
+# Provides program and functions that affect UI components
+
+program UIExampleApp {
+  entry: UIFile
+  version: "1.0.0"
+}
+
+file UIFile {
+  path: "src/ui-manager.ts"
+  <- [LoginDto, AuthToken, ProfileDto, User]
+  exports: [login, logout, updateUserProfile, deleteUser, initializeApp, App]
+}
+
+# Function that will affect the App component (defined after main snippet)
+initializeApp :: () => void
+  "Initializes the application UI"
+
+# Functions that affect UI components
+login :: (credentials: LoginDto) => AuthToken
+  "Authenticates user"
+  <- LoginDto
+  -> AuthToken
+  ~ [Header]
+
+logout :: () => void
+  "Logs out user"
+  ~ [Header]
+
+updateUserProfile :: (data: ProfileDto) => User
+  "Updates user profile"
+  <- ProfileDto
+  -> User
+  ~ [UserProfile]
+
+deleteUser :: (id: string) => void
+  "Deletes user account"
+  ~ [UserProfile]
+
+# Required DTOs
+LoginDto % "Login credentials"
+  - email: string "User email"
+  - password: string "User password"
+
+AuthToken % "Authentication token" 
+  - token: string "JWT token"
+
+ProfileDto % "Profile update data"
+  - name: string "User name"
+
+User % "User entity"
+  - id: string "User ID"
+  - name: string "User name"
+
+# Missing UI components referenced in containment
+Logo & "Application logo"
+  < [Header]
+
+Navigation & "Navigation menu"
+  < [Header]
+
+UserMenu & "User menu dropdown"
+  < [Header]
+
+Footer & "Application footer"
+  < [App]
+
+Sidebar & "Sidebar component"
+  < [MainContent]
+
+ContentArea & "Content area"
+  < [MainContent]
+  > [UserProfile]
+
+# End of supplementary content

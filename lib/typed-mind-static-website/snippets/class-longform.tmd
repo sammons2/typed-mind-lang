@@ -6,7 +6,7 @@ program ClassExample {
 
 file services {
   path: "services.ts"
-  exports: [UserService, BaseService, IUserService]
+  exports: [UserService, BaseService, IUserService, validateId, queryDatabase, save, validate, findById, create, update, delete]
 }
 
 class UserService {
@@ -59,6 +59,17 @@ function save {
   signature: "(data: any) => User"
   description: "Saves data"
   output: User
+}
+
+function update {
+  signature: "(id: string, data: any) => User"
+  description: "Updates user data"
+  output: User
+}
+
+function delete {
+  signature: "(id: string) => boolean"
+  description: "Deletes a user"
 }
 
 dto User {

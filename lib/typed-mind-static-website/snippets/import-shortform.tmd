@@ -1,15 +1,4 @@
-# Shortform syntax is for LLMs
-@import "./shared/models.tmd" as models
-@import "./shared/services.tmd" as services
-@import "./auth/auth.tmd" as auth
-
+# Shortform syntax for imports
 MyApp -> api v1.0.0
 
-# Reference imported entities
-UserAPI @ api.ts:
-  <- [models.User, services.UserService]
-  -> [UserAPI]
-
-getUser :: (id: string) => models.User
-  "Retrieves user by ID"
-  ~> [services.findUser, auth.checkPermissions]
+# Import pattern demonstration - entities defined in supplementary

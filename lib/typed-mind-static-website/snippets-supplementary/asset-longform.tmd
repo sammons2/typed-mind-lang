@@ -1,0 +1,76 @@
+# Supplementary content for asset-longform snippet
+# Provides programs referenced by assets
+
+# Main program for the example
+AssetDemo -> MainEntry "Asset demonstration" v1.0.0
+
+file MainEntry {
+  path: "src/main.ts"
+  exports: [demoFunction]
+}
+
+function demoFunction {
+  signature: "() => void"
+  description: "Demo function to consume all assets"
+  consumes: [UserServiceContainer, APIGateway, WebApp, MobileApp, WorkerService]
+}
+
+program GatewayProgram {
+  entry: GatewayEntry
+  version: "1.0.0"
+}
+
+file GatewayEntry {
+  path: "src/gateway.ts"
+  exports: [gatewayMain]
+}
+
+function gatewayMain {
+  signature: "() => void"
+  description: "Main gateway function"
+}
+
+program ReactApp {
+  entry: ReactEntry
+  version: "1.0.0"
+}
+
+file ReactEntry {
+  path: "src/index.tsx"
+  exports: [reactMain]
+}
+
+function reactMain {
+  signature: "() => void"
+  description: "React app entry point"
+}
+
+program MobileProgram {
+  entry: MobileEntry
+  version: "1.0.0"
+}
+
+file MobileEntry {
+  path: "src/mobile.ts"
+  exports: [mobileMain]
+}
+
+function mobileMain {
+  signature: "() => void"
+  description: "Mobile app entry point"
+}
+
+program WorkerProgram {
+  entry: WorkerEntry
+  version: "1.0.0"
+}
+
+file WorkerEntry {
+  path: "src/worker.ts"
+  exports: [workerMain]
+}
+
+function workerMain {
+  signature: "() => void"
+  description: "Worker service entry point"
+}

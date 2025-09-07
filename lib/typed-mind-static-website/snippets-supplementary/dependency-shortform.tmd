@@ -1,0 +1,10 @@
+# Supplementary content for dependency-shortform snippet
+# The dependency-shortform already has program structure with ServerMain
+# but needs the missing referenced function
+
+DependencyExampleApp -> ServerMain v1.0.0
+
+# The startServer function that's exported by ServerMain
+startServer :: () => void
+  "Starts the HTTP server"
+  ~> [start]

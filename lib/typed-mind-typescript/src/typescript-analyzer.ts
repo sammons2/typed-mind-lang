@@ -332,7 +332,6 @@ export class TypeScriptAnalyzer {
 
     // Handle export * from 'module'
     if (!node.exportClause && node.moduleSpecifier) {
-      const source = (node.moduleSpecifier as ts.StringLiteral).text;
       // For export *, we don't know what's being exported
       // This will be resolved later by the import resolver
       return [];

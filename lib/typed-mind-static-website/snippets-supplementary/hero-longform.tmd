@@ -1,0 +1,21 @@
+# Supplementary content for hero-longform snippet
+
+# Remove this import declaration since it's causing conflicts
+
+# Create proper entry point file since programs need File entry points
+MainFile @ main.ts:
+  <- [createTodo, getTodos]
+  -> [startTodoApp, createTodo, getTodos]
+
+# Entry function
+startTodoApp :: () => void
+  "Starts the Todo application"
+  ~> [createTodo]
+
+# Base service needs to be a ClassFile to be properly referenced
+BaseService #: base-service.ts:
+  => [validate]
+
+# Validate function called by base service
+validate :: (data: any) => boolean
+  "Validates input data"

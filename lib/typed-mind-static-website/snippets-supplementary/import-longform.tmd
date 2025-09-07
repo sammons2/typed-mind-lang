@@ -1,0 +1,25 @@
+# Supplementary content for import-longform snippet
+# Create the main entry file
+api @ api.ts:
+  <- [User, UserService, checkPermissions, getUser]
+  -> [getUser, checkPermissions]
+
+# Define the entities that would be imported
+User % "User model"
+  - id: string "User ID"
+  - name: string "User name"
+  - email: string "User email"
+
+# ClassFile for the service
+UserService #: src/services/user.ts:
+  => [findUser]
+
+findUser :: (id: string) => User
+  "Finds user by ID"
+
+checkPermissions :: (user: User) => boolean
+  "Checks user permissions"
+
+getUser :: (id: string) => User
+  "Retrieves user by ID"
+  ~> [findUser, checkPermissions]

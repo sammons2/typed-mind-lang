@@ -41,12 +41,12 @@
     "prepublishOnly": "npm run clean && npm run build && npm test"
   },
   "dependencies": {
-    "@sammons/typed-mind": "^0.1.0"
+    "@sammons/typed-mind": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^22.10.5",
+    "@types/node": "^22.18.1",
     "tsup": "^8.3.5",
-    "vitest": "^2.1.8"
+    "vitest": "^3.2.4"
   },
   "publishConfig": {
     "access": "public"

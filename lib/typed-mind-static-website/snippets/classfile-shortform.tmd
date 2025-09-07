@@ -1,5 +1,13 @@
 # Shortform syntax is for LLMs
-ClassFileExample -> UserService v1.0.0
+ClassFileExample -> mainFile v1.0.0
+
+mainFile @ src/main.ts:
+  <- [UserService]
+  -> [startApp]
+
+startApp :: () => void
+  "Application entry point"
+  ~> [findById]
 
 # ClassFile combines file and class definition - eliminates boilerplate!
 # Compare: Before you needed separate file and class definitions

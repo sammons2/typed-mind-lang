@@ -223,7 +223,7 @@ export class TypedMindLanguageServer {
     }
 
     // Add existing entity names for references
-    for (const [name, entity] of entities) {
+    for (const [name, entity] of Array.from(entities)) {
       items.push({
         label: name,
         kind: this.getCompletionItemKind(entity.type),
@@ -307,7 +307,7 @@ export class TypedMindLanguageServer {
       }
       
       const refStrings: string[] = [];
-      for (const [type, froms] of refsByType) {
+      for (const [type, froms] of Array.from(refsByType)) {
         refStrings.push(`${type}: ${froms.join(', ')}`);
       }
       contents.push(`**Referenced By**: ${refStrings.join(' | ')}`);
@@ -332,7 +332,7 @@ export class TypedMindLanguageServer {
       contents.push(`**Purpose**: ${entity.purpose}`);
     }
 
-    if ('imports' in entity && entity.imports.length > 0) {
+    if ('imports' in entity && entity.imports && entity.imports.length > 0) {
       contents.push(`**Imports**: ${entity.imports.join(', ')}`);
     }
 
@@ -571,7 +571,7 @@ export class TypedMindLanguageServer {
 
     // Build a map of entity names to their types for quick lookup
     const entityTypeMap = new Map<string, string>();
-    for (const [name, entity] of entities) {
+    for (const [name, entity] of Array.from(entities)) {
       entityTypeMap.set(name, entity.type);
     }
 
@@ -581,7 +581,7 @@ export class TypedMindLanguageServer {
       if (!line) continue;
 
       // Check each word in the line
-      const words = line.matchAll(/\b([A-Za-z][A-Za-z0-9@/_-]*)\b/g);
+      const words = Array.from(line.matchAll(/\b([A-Za-z][A-Za-z0-9@/_-]*)\b/g));
       for (const match of words) {
         const word = match[1];
         const index = match.index;

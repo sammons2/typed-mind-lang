@@ -2,6 +2,7 @@
   "name": "@sammons/typed-mind-monorepo",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "TypedMind - A domain-specific language for program architecture",
   "author": "sammons",
   "license": "MIT",
@@ -17,15 +18,16 @@
     "dev": "pnpm run -r --parallel dev"
   },
   "devDependencies": {
-    "@eslint/js": "^9.16.0",
-    "@types/node": "^22.10.5",
-    "eslint": "^9.16.0",
-    "eslint-plugin-prettier": "^5.2.1",
+    "@eslint/js": "^9.35.0",
+    "@types/node": "^22.18.1",
+    "eslint": "^9.35.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
     "prettier": "^3.4.2",
-    "tsx": "^4.19.2",
-    "typescript": "^5.7.2",
-    "typescript-eslint": "^8.20.0",
-    "vitest": "^2.1.8"
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.42.0",
+    "vitest": "^3.2.4"
   },
   "engines": {
     "node": ">=22.0.0",

@@ -28,12 +28,12 @@ dependency "@aws-sdk/client-s3" {
 file ServerMain {
   path: "src/server.ts"
   imports: [express, axios]
-  exports: [startServer]
+  exports: [startServer, start]
 }
 
-# Dependencies are referenced in function calls
+# Dependencies are consumed by functions
 function start {
   signature: "() => void"
   description: "Starts the server"
-  calls: ["express.listen"]
+  consumes: [express]
 }

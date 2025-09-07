@@ -1,0 +1,45 @@
+# Supplementary content for asset-shortform snippet
+# Provides programs referenced by assets
+
+# Main program for the example
+AssetDemo -> MainEntry v1.0.0
+
+MainEntry @ src/main.ts:
+  -> [demoFunction]
+
+demoFunction :: () => void
+  "Demo function to consume all assets"
+  $< [UserServiceContainer, APIGateway, WebApp, MobileApp, WorkerService]
+
+# Programs referenced by assets using >>
+GatewayProgram -> GatewayEntry v1.0.0
+
+GatewayEntry @ src/gateway.ts:
+  -> [gatewayMain]
+
+gatewayMain :: () => void
+  "Main gateway function"
+
+ReactApp -> ReactEntry v1.0.0
+
+ReactEntry @ src/index.tsx:
+  -> [reactMain]
+
+reactMain :: () => void
+  "React app entry point"
+
+MobileProgram -> MobileEntry v1.0.0
+
+MobileEntry @ src/mobile.ts:
+  -> [mobileMain]
+
+mobileMain :: () => void
+  "Mobile app entry point"
+
+WorkerProgram -> WorkerEntry v1.0.0
+
+WorkerEntry @ src/worker.ts:
+  -> [workerMain]
+
+workerMain :: () => void
+  "Worker service entry point"

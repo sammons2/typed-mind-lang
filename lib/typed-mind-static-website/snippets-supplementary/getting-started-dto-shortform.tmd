@@ -1,0 +1,28 @@
+# Supplementary content for getting-started-dto-shortform snippet
+# Provides program and file structure for DTO demonstration
+
+# Program entry point
+DTOExampleApp -> ModelsFile v1.0.0
+
+# File that exports DTOs and classes
+ModelsFile @ models/user.ts:
+  -> [User, UserService, BaseService, getUser, createUser, updateUser, validateId, queryDatabase, baseMethod]
+
+# Base service for UserService to extend
+BaseService <:
+  => [baseMethod]
+
+baseMethod :: () => void
+  "Base service method"
+
+validateId :: (id: string) => boolean
+  "Validates ID format"
+
+queryDatabase :: (id: string) => User
+  "Queries database for user"
+
+createUser :: (user: User) => User
+  "Creates a new user"
+
+updateUser :: (id: string, user: User) => User
+  "Updates an existing user"

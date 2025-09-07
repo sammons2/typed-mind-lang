@@ -1,0 +1,31 @@
+# Supplementary content for getting-started-longform snippet
+
+# SOLUTION: Define App class before AppFile imports it to resolve forward reference
+# This creates an intentional naming conflict with the main snippet's App ClassFile
+# but allows the import to succeed
+
+# Program that uses all supporting entities to prevent orphaning
+LongformExampleProgram -> LongformFile v1.0.0
+
+# Main file that imports and exports supporting infrastructure  
+LongformFile @ longform-support.ts:
+  -> [App, Application, initialize, listen]
+
+# App class that AppFile can import (defined first)
+App <: Object
+  => [start, stop]
+
+# Base class for the main snippet's App ClassFile  
+Application <: Object
+  => [start, stop, initialize]
+
+# Missing functions
+initialize :: () => void
+  "Initialize application"
+
+listen :: () => void  
+  "Start listening for requests"
+
+# Required runtime parameters
+PORT $env "Server port" (required)
+NODE_ENV $env "Node environment" (required)

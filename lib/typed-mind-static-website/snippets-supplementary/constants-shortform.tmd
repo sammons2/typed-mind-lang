@@ -1,0 +1,24 @@
+# Supplementary content for constants-shortform snippet
+# Provides program and file structure for constants demonstration
+
+# Program entry point
+ConstantsExampleApp -> ConfigFile v1.0.0
+
+# File that uses the constants
+ConfigFile @ src/app.ts:
+  <- [DatabaseConfig, FeatureFlags, Locale]
+  -> [startApp]
+
+# Note: startApp function is defined in the main snippet
+
+# Required schemas for constants
+DatabaseConfig % "Database configuration"
+  - host: string "Database host"
+  - port: number "Database port"
+
+FeatureFlags % "Feature flags configuration"
+  - newFeature: boolean "New feature enabled"
+
+Locale % "Locale configuration"
+  - code: string "Language code"
+  - name: string "Language name"

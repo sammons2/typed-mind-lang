@@ -1,0 +1,44 @@
+# Supplementary content for class-shortform snippet
+# Provides program and file structure for class demonstration
+
+# Program entry point
+ClassExampleApp -> ServiceFile v1.0.0
+
+# File that contains the services
+ServiceFile @ services/user.ts:
+  -> [UserService, BaseService, IUserService, validateId, queryDatabase, validate, save, commonMethod]
+
+# Required functions for method calls
+validateId :: (id: string) => boolean
+  "Validates ID format"
+
+queryDatabase :: (id: string) => User
+  "Queries user from database"
+
+validate :: (data: any) => boolean
+  "Validates input data"
+
+save :: (user: User) => User
+  "Saves user to database"
+
+# Required DTOs
+CreateUserDto % "User creation input"
+  - name: string "User name"
+  - email: string "User email"
+
+User % "User entity"
+  - id: string "User ID"
+  - name: string "User name"
+  - email: string "User email"
+
+# Base service class that UserService extends
+BaseService <:
+  => [commonMethod]
+
+# Interface (represented as class) for service contract
+IUserService <:
+  => [findById, create, update, delete]
+
+# Common method for BaseService
+commonMethod :: () => void
+  "Common service functionality"

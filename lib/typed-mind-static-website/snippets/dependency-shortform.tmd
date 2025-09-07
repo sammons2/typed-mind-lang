@@ -9,10 +9,10 @@ lodash ^ "Utility library"
 
 # Referenced in files
 ServerMain @ src/server.ts:
-  <- [express^, axios^]
-  -> [startServer]
+  <- [express, axios]
+  -> [startServer, start]
 
-# Dependencies are marked with ^ in imports
+# Dependencies are consumed by functions
 start :: () => void
   "Starts the server"
-  ~> [express^.listen]
+  $< [express]

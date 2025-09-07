@@ -1,6 +1,6 @@
 # Longform syntax is for humans
 program TodoApp {
-  entry: TodoService
+  entry: MainFile
   version: "1.0.0"
 }
 
@@ -25,20 +25,7 @@ function getTodos {
   output: Todo
 }
 
-# Define the base service for completeness
-file BaseServiceModule {
-  path: "base-service.ts"
-  exports: [BaseService]
-}
-
-class BaseService {
-  methods: [validate]
-}
-
-function validate {
-  signature: "(data: any) => boolean"
-  description: "Validates input data"
-}
+# Base service is defined in supplementary content
 
 dto CreateTodoDto {
   description: "Input for creating todos"

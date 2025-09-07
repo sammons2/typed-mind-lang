@@ -1,0 +1,12 @@
+# Supplementary content for classfile-longform snippet
+# Utility file to export the method functions
+
+file utilities {
+  path: "src/utils/methods.ts"
+  exports: [findById, create, validate]
+}
+
+# Import utilities in mainFile
+file mainFile {
+  imports: [utilities]
+}

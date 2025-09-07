@@ -1,0 +1,18 @@
+# Supplementary content for runparameter-longform snippet
+# Provides program and functions that consume the runtime parameters
+
+program RunParameterExampleApp {
+  entry: AppFile
+  version: "1.0.0"
+}
+
+file AppFile {
+  path: "src/app.ts"
+  exports: [startApp]
+}
+
+function startApp {
+  signature: "() => void"
+  description: "Starts the application with runtime configuration"
+  consumes: [DATABASE_URL, PORT, NODE_ENV, AWS_ROLE_ARN, SERVICE_ACCOUNT, MAX_WORKERS, MEMORY_LIMIT, FEATURE_FLAGS, API_RATE_LIMITS]
+}
