@@ -35,6 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.get_version.outputs.version }}
+      package_version: ${{ steps.get_version.outputs.package_version }}
       tag_name: ${{ steps.get_version.outputs.tag_name }}
       is_prerelease: ${{ steps.get_version.outputs.is_prerelease }}
     
@@ -51,9 +52,18 @@ jobs:
             version="${{ github.event.inputs.version }}"
             tag_name="v${version}"
             is_prerelease="${{ github.event.inputs.prerelease }}"
+            package_version="${version}"
           else
             tag_name="${{ github.ref_name }}"
             version="${tag_name#v}"
+            
+            # For tags with suffixes like v0.1.4-vsix, extract the base version for package validation
+            if [[ "$version" =~ ^([0-9]+\.[0-9]+\.[0-9]+)(-.*)?$ ]]; then
+              package_version="${BASH_REMATCH[1]}"
+            else
+              package_version="${version}"
+            fi
+            
             # Check if it's a prerelease (contains alpha, beta, rc, etc.)
             if [[ "$version" =~ (alpha|beta|rc|pre) ]]; then
               is_prerelease="true"
@@ -64,10 +74,12 @@ jobs:
           
           echo "version=${version}" >> $GITHUB_OUTPUT
           echo "tag_name=${tag_name}" >> $GITHUB_OUTPUT
+          echo "package_version=${package_version}" >> $GITHUB_OUTPUT
           echo "is_prerelease=${is_prerelease}" >> $GITHUB_OUTPUT
           
           echo "Release version: ${version}"
           echo "Tag name: ${tag_name}"
+          echo "Package version: ${package_version}"
           echo "Is prerelease: ${is_prerelease}"
 
       - name: Setup Node.js
@@ -86,7 +98,7 @@ jobs:
 
       - name: Validate package versions
         run: |
-          expected_version="${{ steps.get_version.outputs.version }}"
+          expected_version="${{ steps.get_version.outputs.package_version }}"
           
           check_version() {
             local package_path=$1
@@ -102,7 +114,7 @@ jobs:
             fi
           }
           
-          echo "Validating package versions against release version $expected_version..."
+          echo "Validating package versions against expected version $expected_version (from tag ${{ steps.get_version.outputs.tag_name }})..."
           
           check_version "lib/typed-mind" "@sammons/typed-mind"
           check_version "lib/typed-mind-cli" "@sammons/typed-mind-cli"
@@ -180,11 +192,11 @@ jobs:
             cd "$package_dir"
             
             # Check if already published
-            if npm view "$package_name@${{ needs.validate.outputs.version }}" version &>/dev/null; then
-              echo "⚠️ $package_name@${{ needs.validate.outputs.version }} already published, skipping"
+            if npm view "$package_name@${{ needs.validate.outputs.package_version }}" version &>/dev/null; then
+              echo "⚠️ $package_name@${{ needs.validate.outputs.package_version }} already published, skipping"
             else
               npm publish --access public --provenance
-              echo "✅ $package_name@${{ needs.validate.outputs.version }} published"
+              echo "✅ $package_name@${{ needs.validate.outputs.package_version }} published"
             fi
             
             cd - > /dev/null
@@ -238,19 +250,19 @@ jobs:
           npx @vscode/vsce package --no-dependencies
           
           # Check if already published
-          if npx @vscode/vsce show sammons.typed-mind --json 2>/dev/null | jq -e --arg version "${{ needs.validate.outputs.version }}" '.versions[] | select(.version == $version)' > /dev/null; then
-            echo "⚠️ VS Code extension typed-mind@${{ needs.validate.outputs.version }} already published, skipping"
+          if npx @vscode/vsce show sammons.typed-mind --json 2>/dev/null | jq -e --arg version "${{ needs.validate.outputs.package_version }}" '.versions[] | select(.version == $version)' > /dev/null; then
+            echo "⚠️ VS Code extension typed-mind@${{ needs.validate.outputs.package_version }} already published, skipping"
           else
             echo "Publishing VS Code extension..."
-            npx @vscode/vsce publish --packagePath typed-mind-${{ needs.validate.outputs.version }}.vsix
-            echo "✅ VS Code extension typed-mind@${{ needs.validate.outputs.version }} published"
+            npx @vscode/vsce publish --packagePath typed-mind-${{ needs.validate.outputs.package_version }}.vsix
+            echo "✅ VS Code extension typed-mind@${{ needs.validate.outputs.package_version }} published"
           fi
 
       - name: Upload extension artifact
         uses: actions/upload-artifact@v4
         with:
-          name: vscode-extension-${{ needs.validate.outputs.version }}
-          path: lib/typed-mind-vscode-extension/typed-mind-${{ needs.validate.outputs.version }}.vsix
+          name: vscode-extension-${{ needs.validate.outputs.package_version }}
+          path: lib/typed-mind-vscode-extension/typed-mind-${{ needs.validate.outputs.package_version }}.vsix
           retention-days: 90
 
   create-release:
@@ -301,13 +313,13 @@ jobs:
             echo "## Published Packages"
             echo ""
             echo "### NPM Packages"
-            echo "- \`@sammons/typed-mind@${{ needs.validate.outputs.version }}\`"
-            echo "- \`@sammons/typed-mind-cli@${{ needs.validate.outputs.version }}\`"
-            echo "- \`@sammons/typed-mind-lsp@${{ needs.validate.outputs.version }}\`"
-            echo "- \`@sammons/typed-mind-renderer@${{ needs.validate.outputs.version }}\`"
+            echo "- \`@sammons/typed-mind@${{ needs.validate.outputs.package_version }}\`"
+            echo "- \`@sammons/typed-mind-cli@${{ needs.validate.outputs.package_version }}\`"
+            echo "- \`@sammons/typed-mind-lsp@${{ needs.validate.outputs.package_version }}\`"
+            echo "- \`@sammons/typed-mind-renderer@${{ needs.validate.outputs.package_version }}\`"
             echo ""
             echo "### VS Code Extension"
-            echo "- \`typed-mind@${{ needs.validate.outputs.version }}\` - [Install from Marketplace](https://marketplace.visualstudio.com/items?itemName=sammons.typed-mind)"
+            echo "- \`typed-mind@${{ needs.validate.outputs.package_version }}\` - [Install from Marketplace](https://marketplace.visualstudio.com/items?itemName=sammons.typed-mind)"
             echo ""
             echo "## Installation"
             echo ""
@@ -341,7 +353,7 @@ jobs:
       - name: Download VS Code extension artifact
         uses: actions/download-artifact@v4
         with:
-          name: vscode-extension-${{ needs.validate.outputs.version }}
+          name: vscode-extension-${{ needs.validate.outputs.package_version }}
           path: ./artifacts
 
       - name: Upload VS Code extension to release
@@ -350,8 +362,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/typed-mind-${{ needs.validate.outputs.version }}.vsix
-          asset_name: typed-mind-${{ needs.validate.outputs.version }}.vsix
+          asset_path: ./artifacts/typed-mind-${{ needs.validate.outputs.package_version }}.vsix
+          asset_name: typed-mind-${{ needs.validate.outputs.package_version }}.vsix
           asset_content_type: application/zip
 
       - name: Create release summary
