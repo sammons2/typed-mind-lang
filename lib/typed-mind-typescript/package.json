@@ -1,6 +1,6 @@
 {
   "name": "@sammons/typed-mind-typescript",
-  "version": "0.1.0",
+  "version": "0.1.4",
   "description": "TypeScript analysis and bridge to TypedMind DSL - extract architecture from TypeScript codebases",
   "keywords": [
     "typescript",
