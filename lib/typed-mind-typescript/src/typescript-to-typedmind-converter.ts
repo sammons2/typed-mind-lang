@@ -163,7 +163,6 @@ export class TypeScriptToTypedMindConverter {
 
   private convertModules(modules: ParsedModule[]): void {
     // PHASE 1: Collection and Export Registration
-    console.log('=== PHASE 1: Collection and Export Registration ===');
     
     // 1.1: Extract all dependencies first
     for (const module of modules) {
@@ -180,17 +179,7 @@ export class TypeScriptToTypedMindConverter {
       this.collectModuleEntities(module);
     }
 
-    console.log('Export registry built:', Object.keys(this.exportRegistry));
-    console.log('Entity registry sizes:', {
-      functions: this.entityRegistry.functions.size,
-      classes: this.entityRegistry.classes.size,
-      interfaces: this.entityRegistry.interfaces.size,
-      types: this.entityRegistry.types.size,
-      constants: this.entityRegistry.constants.size,
-    });
-
     // PHASE 2: Processing with Complete Knowledge
-    console.log('=== PHASE 2: Processing with Complete Knowledge ===');
 
     // Separate pure types files from regular files for proper ordering
     const pureTypesFiles: ParsedModule[] = [];
@@ -293,11 +282,6 @@ export class TypeScriptToTypedMindConverter {
     for (const specifier of specifiers) {
       this.exportRegistry[specifier] = moduleExports;
     }
-    
-    console.log(`  Registered exports for ${fileName} under specifiers:`, specifiers, {
-      default: moduleExports.defaultExport,
-      named: Array.from(moduleExports.namedExports),
-    });
   }
 
   private collectModuleEntities(module: ParsedModule): void {
@@ -358,13 +342,6 @@ export class TypeScriptToTypedMindConverter {
       this.entityRegistry.constants.set(constant.name, entityInfo);
     }
 
-    console.log(`  Collected entities from ${path.basename(sourceFile)}:`, {
-      functions: module.functions.length,
-      classes: module.classes.length,
-      interfaces: module.interfaces.length,
-      types: module.types.length,
-      constants: module.constants.length,
-    });
   }
 
 
@@ -922,17 +899,14 @@ export class TypeScriptToTypedMindConverter {
 
   private convertImports(imports: readonly any[]): string[] {
     const importNames: string[] = [];
-    console.log(`  Converting imports for module with ${imports.length} import statements`);
 
     for (const imp of imports) {
-      console.log(`  Processing import from '${imp.specifier}'`);
       
       if (this.isExternalPackage(imp.specifier)) {
         // For external packages, add the dependency entity name
         const dependencyName = this.createDependencyName(imp.specifier);
         if (this.dependencies.has(imp.specifier)) {
           importNames.push(dependencyName);
-          console.log(`    Added external dependency: ${dependencyName}`);
         }
       } else {
         // For internal imports, add the specific imported entity names
@@ -942,7 +916,6 @@ export class TypeScriptToTypedMindConverter {
           const entityName = this.resolveImportToEntity(imp.defaultImport, imp.specifier);
           if (entityName) {
             importNames.push(entityName);
-            console.log(`    Added default import: ${entityName}`);
           }
         }
 
@@ -950,7 +923,6 @@ export class TypeScriptToTypedMindConverter {
           const entityName = this.resolveImportToEntity(imp.namespaceImport, imp.specifier);
           if (entityName) {
             importNames.push(entityName);
-            console.log(`    Added namespace import: ${entityName}`);
           }
         }
 
@@ -958,18 +930,15 @@ export class TypeScriptToTypedMindConverter {
           const entityName = this.resolveImportToEntity(namedImport, imp.specifier);
           if (entityName) {
             importNames.push(entityName);
-            console.log(`    Added named import: ${entityName}`);
           }
         }
       }
     }
 
-    console.log(`  Final imports list: [${importNames.join(', ')}]`);
     return importNames;
   }
 
   private resolveImportToEntity(importName: string, specifier: string): string | undefined {
-    console.log(`    Resolving import '${importName}' from '${specifier}'`);
     
     // Handle external packages
     if (this.isExternalPackage(specifier)) {
@@ -983,7 +952,6 @@ export class TypeScriptToTypedMindConverter {
     // Handle internal imports using the export registry
     const moduleExports = this.exportRegistry[specifier];
     if (!moduleExports) {
-      console.log(`    No export registry found for specifier: ${specifier}`);
       return undefined;
     }
 
@@ -993,7 +961,6 @@ export class TypeScriptToTypedMindConverter {
                       moduleExports.namespaceExport === importName;
 
     if (!isExported) {
-      console.log(`    '${importName}' is not exported by ${specifier}`);
       return undefined;
     }
 
@@ -1008,24 +975,20 @@ export class TypeScriptToTypedMindConverter {
     const foundInConstants = this.entityRegistry.constants.has(importName);
 
     if (foundInFunctions || foundInClasses || foundInInterfaces || foundInTypes || foundInConstants) {
-      console.log(`    Resolved '${importName}' to entity '${entityName}'`);
       return entityName;
     }
 
     // Check if it's already in our created entity names (for backward compatibility)
     if (this.entityNames.has(entityName)) {
-      console.log(`    Found in created entities: '${entityName}'`);
       return entityName;
     }
 
     // For type imports from ./types, they should resolve to Constants entities
     // But defer until they're actually created
     if (specifier.includes('types') && this.isTypeOrConstantName(importName)) {
-      console.log(`    Deferring ${importName} - will be created by types file processing`);
       return undefined;
     }
 
-    console.log(`    Could not resolve import '${importName}' from '${specifier}'`);
     return undefined;
   }
 
