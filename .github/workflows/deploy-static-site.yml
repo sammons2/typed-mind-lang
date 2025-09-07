@@ -36,12 +36,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
         
-      - name: Build all packages
+      - name: Build typed-mind parser
+        working-directory: ./lib/typed-mind
         run: pnpm run build
         
       - name: Build static website
         working-directory: ./lib/typed-mind-static-website
-        run: npm run build
+        run: pnpm run build
         
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
