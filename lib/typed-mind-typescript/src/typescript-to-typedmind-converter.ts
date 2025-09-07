@@ -25,6 +25,32 @@ import {
   DependencyEntity,
 } from '@sammons/typed-mind';
 
+// Two-pass architecture data structures
+interface ExportRegistry {
+  [moduleSpecifier: string]: {
+    defaultExport?: string;
+    namedExports: Set<string>;
+    namespaceExport?: string;
+    filePath: string;
+  };
+}
+
+interface EntityInfo {
+  name: string;
+  type: 'function' | 'class' | 'interface' | 'type' | 'constant';
+  sourceFile: string;
+  exported: boolean;
+}
+
+interface EntityRegistry {
+  functions: Map<string, EntityInfo>;
+  classes: Map<string, EntityInfo>;
+  interfaces: Map<string, EntityInfo>;
+  types: Map<string, EntityInfo>;
+  constants: Map<string, EntityInfo>;
+  files: Map<string, EntityInfo>;
+}
+
 export class TypeScriptToTypedMindConverter {
   private readonly options: Required<ConversionOptions>;
   private readonly errors: ConversionError[] = [];
@@ -34,6 +60,17 @@ export class TypeScriptToTypedMindConverter {
   private readonly dependencies = new Map<string, DependencyEntity>();
   private readonly externalTypeToPackage = new Map<string, string>(); // Maps external types to their package
   private entryPoints = new Set<string>();
+  
+  // Two-pass architecture registries
+  private readonly exportRegistry: ExportRegistry = {};
+  private readonly entityRegistry: EntityRegistry = {
+    functions: new Map(),
+    classes: new Map(),
+    interfaces: new Map(),
+    types: new Map(),
+    constants: new Map(),
+    files: new Map(),
+  };
 
   constructor(options: Partial<ConversionOptions> = {}) {
     this.options = {
@@ -95,6 +132,15 @@ export class TypeScriptToTypedMindConverter {
     this.dependencies.clear();
     this.externalTypeToPackage.clear();
     this.entryPoints.clear();
+    
+    // Clear two-pass registries
+    Object.keys(this.exportRegistry).forEach(key => delete this.exportRegistry[key]);
+    this.entityRegistry.functions.clear();
+    this.entityRegistry.classes.clear();
+    this.entityRegistry.interfaces.clear();
+    this.entityRegistry.types.clear();
+    this.entityRegistry.constants.clear();
+    this.entityRegistry.files.clear();
   }
 
   private addEntityName(entityName: string, _context: string): void {
@@ -116,12 +162,37 @@ export class TypeScriptToTypedMindConverter {
   }
 
   private convertModules(modules: ParsedModule[]): void {
-    // First pass: extract all dependencies
+    // PHASE 1: Collection and Export Registration
+    console.log('=== PHASE 1: Collection and Export Registration ===');
+    
+    // 1.1: Extract all dependencies first
     for (const module of modules) {
       this.extractDependencies(module);
     }
 
-    // Separate pure types files from regular files
+    // 1.2: Build complete export registry for all modules
+    for (const module of modules) {
+      this.registerModuleExports(module);
+    }
+
+    // 1.3: Collect all entities information without processing imports
+    for (const module of modules) {
+      this.collectModuleEntities(module);
+    }
+
+    console.log('Export registry built:', Object.keys(this.exportRegistry));
+    console.log('Entity registry sizes:', {
+      functions: this.entityRegistry.functions.size,
+      classes: this.entityRegistry.classes.size,
+      interfaces: this.entityRegistry.interfaces.size,
+      types: this.entityRegistry.types.size,
+      constants: this.entityRegistry.constants.size,
+    });
+
+    // PHASE 2: Processing with Complete Knowledge
+    console.log('=== PHASE 2: Processing with Complete Knowledge ===');
+
+    // Separate pure types files from regular files for proper ordering
     const pureTypesFiles: ParsedModule[] = [];
     const regularFiles: ParsedModule[] = [];
 
@@ -133,17 +204,17 @@ export class TypeScriptToTypedMindConverter {
       }
     }
 
-    // Second pass: convert regular modules first
+    // 2.1: Process regular modules first (now imports can be resolved)
     for (const module of regularFiles) {
-      this.convertModule(module);
+      this.processModule(module);
     }
 
-    // Third pass: convert pure types files last (so their Constants entities get created)
+    // 2.2: Process pure types files last
     for (const module of pureTypesFiles) {
-      this.convertModule(module);
+      this.processModule(module);
     }
 
-    // Add dependencies to entities
+    // 2.3: Add dependencies to entities
     this.entities.push(...this.dependencies.values());
   }
 
@@ -186,6 +257,145 @@ export class TypeScriptToTypedMindConverter {
 
     this.dependencies.set(specifier, dependencyEntity);
     this.entityNames.add(entityName);
+  }
+
+  // PHASE 1 METHODS: Collection and Export Registration
+  
+  private registerModuleExports(module: ParsedModule): void {
+    const moduleExports = {
+      namedExports: new Set<string>(),
+      filePath: module.filePath,
+    } as ExportRegistry[string];
+
+    // Register all exports from this module
+    for (const exp of module.exports) {
+      if (exp.isDefault) {
+        moduleExports.defaultExport = exp.name;
+      } else {
+        moduleExports.namedExports.add(exp.name);
+      }
+    }
+
+    // Register this module under multiple keys for easier resolution
+    const relativePath = this.getRelativePath(module.filePath);
+    const withoutExt = relativePath.replace(/\.(ts|tsx|js|jsx)$/, '');
+    const fileName = path.basename(module.filePath, path.extname(module.filePath));
+    
+    // Register under various possible import specifier formats:
+    const specifiers = [
+      withoutExt,                              // './src/start-server'
+      withoutExt.startsWith('./') ? withoutExt : `./${withoutExt}`,  // with ./ prefix
+      `./${fileName}`,                         // './start-server' 
+      `../${fileName}`,                       // '../start-server'
+      fileName,                               // 'start-server' (bare name)
+    ];
+
+    for (const specifier of specifiers) {
+      this.exportRegistry[specifier] = moduleExports;
+    }
+    
+    console.log(`  Registered exports for ${fileName} under specifiers:`, specifiers, {
+      default: moduleExports.defaultExport,
+      named: Array.from(moduleExports.namedExports),
+    });
+  }
+
+  private collectModuleEntities(module: ParsedModule): void {
+    const sourceFile = module.filePath;
+    
+    // Collect all functions
+    for (const func of module.functions) {
+      const entityInfo: EntityInfo = {
+        name: func.name,
+        type: 'function',
+        sourceFile,
+        exported: this.isFunctionExported(func, module),
+      };
+      this.entityRegistry.functions.set(func.name, entityInfo);
+    }
+
+    // Collect all classes
+    for (const cls of module.classes) {
+      const entityInfo: EntityInfo = {
+        name: cls.name,
+        type: 'class',
+        sourceFile,
+        exported: module.exports.some(exp => exp.name === cls.name),
+      };
+      this.entityRegistry.classes.set(cls.name, entityInfo);
+    }
+
+    // Collect all interfaces
+    for (const iface of module.interfaces) {
+      const entityInfo: EntityInfo = {
+        name: iface.name,
+        type: 'interface',
+        sourceFile,
+        exported: module.exports.some(exp => exp.name === iface.name),
+      };
+      this.entityRegistry.interfaces.set(iface.name, entityInfo);
+    }
+
+    // Collect all type aliases
+    for (const type of module.types) {
+      const entityInfo: EntityInfo = {
+        name: type.name,
+        type: 'type',
+        sourceFile,
+        exported: module.exports.some(exp => exp.name === type.name),
+      };
+      this.entityRegistry.types.set(type.name, entityInfo);
+    }
+
+    // Collect all constants
+    for (const constant of module.constants) {
+      const entityInfo: EntityInfo = {
+        name: constant.name,
+        type: 'constant',
+        sourceFile,
+        exported: this.isConstantExported(constant, module),
+      };
+      this.entityRegistry.constants.set(constant.name, entityInfo);
+    }
+
+    console.log(`  Collected entities from ${path.basename(sourceFile)}:`, {
+      functions: module.functions.length,
+      classes: module.classes.length,
+      interfaces: module.interfaces.length,
+      types: module.types.length,
+      constants: module.constants.length,
+    });
+  }
+
+
+  // PHASE 2 METHODS: Processing with Complete Knowledge
+
+  private processModule(module: ParsedModule): void {
+    // This replaces the old convertModule method but with complete export registry available
+    const fileName = path.basename(module.filePath, path.extname(module.filePath));
+    const entityName = this.sanitizeEntityName(fileName);
+
+    // Check if this module is an entry point that needs special handling
+    const isEntryPoint = this.isModuleEntryPoint(module);
+
+    // Check if this is a pure types/constants file
+    const isPureTypesFile = this.isPureTypesFile(module);
+
+    // Decide whether to create separate entities or use ClassFile fusion
+    const hasClasses = module.classes.length > 0;
+    const hasFunctions = module.functions.length > 0;
+    const hasExports = module.exports.length > 0;
+
+    if (isPureTypesFile) {
+      // For pure types/constants files, only create the individual type/constant entities
+      this.convertTypesAndConstants(module);
+    } else if (this.options.preferClassFile && hasClasses && (hasFunctions || hasExports) && !isEntryPoint) {
+      // Use ClassFile fusion for service/controller patterns (but not for entry points)
+      this.convertToClassFile(module, entityName);
+    } else {
+      // Create separate File entity and other entities (always for entry points)
+      this.convertToSeparateEntities(module, entityName);
+    }
   }
 
   private createDependencyName(specifier: string): string {
@@ -293,32 +503,6 @@ export class TypeScriptToTypedMindConverter {
     return `${specifier.replace(/-/g, ' ')} library`;
   }
 
-  private convertModule(module: ParsedModule): void {
-    const fileName = path.basename(module.filePath, path.extname(module.filePath));
-    const entityName = this.sanitizeEntityName(fileName);
-
-    // Check if this module is an entry point that needs special handling
-    const isEntryPoint = this.isModuleEntryPoint(module);
-
-    // Check if this is a pure types/constants file
-    const isPureTypesFile = this.isPureTypesFile(module);
-
-    // Decide whether to create separate entities or use ClassFile fusion
-    const hasClasses = module.classes.length > 0;
-    const hasFunctions = module.functions.length > 0;
-    const hasExports = module.exports.length > 0;
-
-    if (isPureTypesFile) {
-      // For pure types/constants files, only create the individual type/constant entities
-      this.convertTypesAndConstants(module);
-    } else if (this.options.preferClassFile && hasClasses && (hasFunctions || hasExports) && !isEntryPoint) {
-      // Use ClassFile fusion for service/controller patterns (but not for entry points)
-      this.convertToClassFile(module, entityName);
-    } else {
-      // Create separate File entity and other entities (always for entry points)
-      this.convertToSeparateEntities(module, entityName);
-    }
-  }
 
   private isPureTypesFile(module: ParsedModule): boolean {
     // A file is considered "pure types" if it only exports types, interfaces, and constants
@@ -738,22 +922,27 @@ export class TypeScriptToTypedMindConverter {
 
   private convertImports(imports: readonly any[]): string[] {
     const importNames: string[] = [];
+    console.log(`  Converting imports for module with ${imports.length} import statements`);
 
     for (const imp of imports) {
+      console.log(`  Processing import from '${imp.specifier}'`);
+      
       if (this.isExternalPackage(imp.specifier)) {
         // For external packages, add the dependency entity name
         const dependencyName = this.createDependencyName(imp.specifier);
         if (this.dependencies.has(imp.specifier)) {
           importNames.push(dependencyName);
+          console.log(`    Added external dependency: ${dependencyName}`);
         }
       } else {
         // For internal imports, add the specific imported entity names
-        // These should match other entities in the project
+        // Now using the complete export registry for proper resolution
 
         if (imp.defaultImport) {
           const entityName = this.resolveImportToEntity(imp.defaultImport, imp.specifier);
           if (entityName) {
             importNames.push(entityName);
+            console.log(`    Added default import: ${entityName}`);
           }
         }
 
@@ -761,6 +950,7 @@ export class TypeScriptToTypedMindConverter {
           const entityName = this.resolveImportToEntity(imp.namespaceImport, imp.specifier);
           if (entityName) {
             importNames.push(entityName);
+            console.log(`    Added namespace import: ${entityName}`);
           }
         }
 
@@ -768,37 +958,74 @@ export class TypeScriptToTypedMindConverter {
           const entityName = this.resolveImportToEntity(namedImport, imp.specifier);
           if (entityName) {
             importNames.push(entityName);
+            console.log(`    Added named import: ${entityName}`);
           }
         }
       }
     }
 
+    console.log(`  Final imports list: [${importNames.join(', ')}]`);
     return importNames;
   }
 
   private resolveImportToEntity(importName: string, specifier: string): string | undefined {
-    // First check if we've already created an entity with this exact name
-    const directEntityName = createEntityName(importName);
-    console.log(
-      `    Resolving import ${importName} from ${specifier} -> ${directEntityName} (exists: ${this.entityNames.has(directEntityName)})`,
-    );
+    console.log(`    Resolving import '${importName}' from '${specifier}'`);
+    
+    // Handle external packages
+    if (this.isExternalPackage(specifier)) {
+      const dependencyName = this.createDependencyName(specifier);
+      if (this.dependencies.has(specifier)) {
+        return dependencyName;
+      }
+      return undefined;
+    }
 
-    if (this.entityNames.has(directEntityName)) {
-      return directEntityName;
+    // Handle internal imports using the export registry
+    const moduleExports = this.exportRegistry[specifier];
+    if (!moduleExports) {
+      console.log(`    No export registry found for specifier: ${specifier}`);
+      return undefined;
+    }
+
+    // Check if this import name is actually exported by the target module
+    const isExported = moduleExports.defaultExport === importName || 
+                      moduleExports.namedExports.has(importName) ||
+                      moduleExports.namespaceExport === importName;
+
+    if (!isExported) {
+      console.log(`    '${importName}' is not exported by ${specifier}`);
+      return undefined;
+    }
+
+    // Now check if we have the entity in our registry
+    const entityName = createEntityName(importName);
+    
+    // Check all entity types for this name
+    const foundInFunctions = this.entityRegistry.functions.has(importName);
+    const foundInClasses = this.entityRegistry.classes.has(importName);
+    const foundInInterfaces = this.entityRegistry.interfaces.has(importName);
+    const foundInTypes = this.entityRegistry.types.has(importName);
+    const foundInConstants = this.entityRegistry.constants.has(importName);
+
+    if (foundInFunctions || foundInClasses || foundInInterfaces || foundInTypes || foundInConstants) {
+      console.log(`    Resolved '${importName}' to entity '${entityName}'`);
+      return entityName;
+    }
+
+    // Check if it's already in our created entity names (for backward compatibility)
+    if (this.entityNames.has(entityName)) {
+      console.log(`    Found in created entities: '${entityName}'`);
+      return entityName;
     }
 
     // For type imports from ./types, they should resolve to Constants entities
-    // But don't include them in imports until they're actually created
+    // But defer until they're actually created
     if (specifier.includes('types') && this.isTypeOrConstantName(importName)) {
       console.log(`    Deferring ${importName} - will be created by types file processing`);
-      return undefined; // Don't include in imports yet
+      return undefined;
     }
 
-    // For function/class names that follow our entity naming conventions
-    if (this.isProjectEntityName(importName)) {
-      return importName;
-    }
-
+    console.log(`    Could not resolve import '${importName}' from '${specifier}'`);
     return undefined;
   }
 
@@ -810,36 +1037,6 @@ export class TypeScriptToTypedMindConverter {
     return typeAliasNames.includes(name) || constantNames.includes(name);
   }
 
-  private isProjectEntityName(name: string): boolean {
-    // Only include names that look like TypedMind entities (PascalCase classes, etc.)
-    // Exclude built-in function names like readFileSync, writeFileSync, etc.
-    if (!this.isValidEntityName(name)) {
-      return false;
-    }
-
-    // Must start with uppercase (entities are PascalCase)
-    if (name.length === 0 || name.charAt(0) !== name.charAt(0).toUpperCase()) {
-      return false;
-    }
-
-    // Exclude common Node.js built-in function names
-    const builtinFunctions = [
-      'readFileSync',
-      'writeFileSync',
-      'readFile',
-      'writeFile',
-      'resolve',
-      'join',
-      'dirname',
-      'basename',
-      'parseArgs',
-      'format',
-      'inspect',
-      'promisify',
-    ];
-
-    return !builtinFunctions.includes(name);
-  }
 
   private convertExports(module: ParsedModule, excludeName?: string): string[] {
     const exportNames: string[] = [];

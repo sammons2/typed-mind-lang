@@ -36,6 +36,10 @@ const options = {
     type: 'boolean' as const,
     description: 'Do not open browser automatically',
   },
+  'skip-orphan-check': {
+    type: 'boolean' as const,
+    description: 'Skip orphan entity validation (for documentation)',
+  },
 };
 
 function showHelp(): void {
@@ -92,7 +96,9 @@ async function main() {
   try {
     const absolutePath = resolve(filePath as string);
     const content = readFileSync(absolutePath, 'utf-8');
-    const checker = new DSLChecker();
+    const checker = new DSLChecker({
+      skipOrphanCheck: values['skip-orphan-check'] as boolean,
+    });
 
     if (values.check) {
       console.log(`Checking ${filePath}...`);

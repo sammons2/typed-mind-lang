@@ -16,9 +16,13 @@ export { GrammarDocGenerator } from './grammar-doc-generator';
 
 export class DSLChecker {
   private parser = new DSLParser();
-  private validator = new DSLValidator();
+  private validator: DSLValidator;
   private formatter = new ErrorFormatter();
   private importResolver = new ImportResolver();
+
+  constructor(options: { skipOrphanCheck?: boolean } = {}) {
+    this.validator = new DSLValidator(options);
+  }
 
   check(input: string, filePath?: string): ValidationResult {
     const parseResult = this.parser.parse(input);

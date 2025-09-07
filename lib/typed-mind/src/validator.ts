@@ -16,8 +16,13 @@ import type {
 } from './types';
 import type { ParseResult } from './parser';
 
+export interface ValidatorOptions {
+  skipOrphanCheck?: boolean;
+}
+
 export class DSLValidator {
   private errors: ValidationError[] = [];
+  private options: ValidatorOptions;
 
   // Define which entity types can be referenced by which reference types
   private static readonly VALID_REFERENCES: Record<ReferenceType, { from: EntityType[]; to: EntityType[] }> = {
@@ -87,6 +92,10 @@ export class DSLValidator {
     },
   };
 
+  constructor(options: ValidatorOptions = {}) {
+    this.options = options;
+  }
+
   validate(entities: Map<string, AnyEntity>, parseResult?: ParseResult): ValidationResult {
     this.errors = [];
 
@@ -99,7 +108,9 @@ export class DSLValidator {
     }
 
     this.checkNamingConflicts(entities);
-    this.checkOrphans(entities);
+    if (!this.options.skipOrphanCheck) {
+      this.checkOrphans(entities);
+    }
     this.checkImports(entities);
     this.checkCircularDeps(entities);
     this.checkEntryPoint(entities);
@@ -227,11 +238,9 @@ export class DSLValidator {
           }
         }
       }
-      if ('exports' in entity) {
-        for (const exp of entity.exports) {
-          referenced.add(exp);
-        }
-      }
+      // NOTE: Exports are NOT automatically considered as referenced.
+      // An entity is only referenced if it's actually imported, called, or used by another entity.
+      // Simply being exported doesn't mean it's used - that would be the definition of an orphan.
       if ('calls' in entity) {
         for (const call of entity.calls) {
           referenced.add(call);
