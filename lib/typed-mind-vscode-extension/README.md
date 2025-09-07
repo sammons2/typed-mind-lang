@@ -49,17 +49,35 @@ This extension provides the following commands accessible via the Command Palett
 3. Search for "TypedMind DSL"
 4. Click Install
 
-Or install directly from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=sammons.typed-mind-vscode-extension).
+Or install directly from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=sammons.typed-mind).
 
 ### From Command Line
 ```bash
-code --install-extension sammons.typed-mind-vscode-extension
+code --install-extension sammons.typed-mind
 ```
+
+### Manual Installation (VSIX)
+**For Cursor IDE or other VS Code-compatible editors that may not have marketplace access:**
+
+1. **Download the latest VSIX file:**
+   - [Latest Release (v0.1.4)](https://github.com/sammons2/typed-mind-lang/releases/latest) - Download `typed-mind-0.1.4.vsix`
+   - Or browse all releases: [GitHub Releases](https://github.com/sammons2/typed-mind-lang/releases)
+
+2. **Install in VS Code/Cursor:**
+   - Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac)
+   - Type "Install from VSIX"
+   - Select "Extensions: Install from VSIX..."
+   - Choose the downloaded `.vsix` file
+
+3. **Alternative method:**
+   - Open Extensions sidebar
+   - Click "..." menu → "Install from VSIX..."
+   - Select the downloaded file
 
 ### Manual Installation (Development)
 1. Build: `pnpm build`
 2. Package: `pnpm package`
-3. Install: `code --install-extension typed-mind-vscode-extension-*.vsix`
+3. Install: `code --install-extension typed-mind-*.vsix`
 4. Extension will activate automatically for .tmd files
 
 ## Usage
