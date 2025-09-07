@@ -28,11 +28,18 @@ jobs:
         with:
           node-version: '20'
           
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          
       - name: Install dependencies
-        working-directory: ./lib/typed-mind-static-website
-        run: npm install
+        run: pnpm install --frozen-lockfile
         
-      - name: Build
+      - name: Build all packages
+        run: pnpm run build
+        
+      - name: Build static website
         working-directory: ./lib/typed-mind-static-website
         run: npm run build
         
