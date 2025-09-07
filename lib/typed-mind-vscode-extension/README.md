@@ -4,9 +4,9 @@ VS Code language support for TypedMind Domain Specific Language (.tmd files).
 
 <div align="center">
   <h3>
-    <a href="https://sammons.github.io/typed-mind-lang/">🌐 Try TypedMind Online</a> • 
-    <a href="https://sammons.github.io/typed-mind-lang/#getting-started">📚 Documentation</a> • 
-    <a href="https://sammons.github.io/typed-mind-lang/#examples">🎯 Examples</a>
+    <a href="https://sammons2.github.io/typed-mind-lang/">🌐 Try TypedMind Online</a> • 
+    <a href="https://sammons2.github.io/typed-mind-lang/#getting-started">📚 Documentation</a> • 
+    <a href="https://sammons2.github.io/typed-mind-lang/#examples">🎯 Examples</a>
   </h3>
 </div>
 
@@ -18,7 +18,7 @@ TypedMind is a domain-specific language (DSL) for describing program architectur
 - Validate architectural constraints
 - Generate interactive documentation
 
-[Learn more about TypedMind →](https://sammons.github.io/typed-mind-lang/)
+[Learn more about TypedMind →](https://sammons2.github.io/typed-mind-lang/)
 
 ## Commands
 

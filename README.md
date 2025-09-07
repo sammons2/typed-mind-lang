@@ -6,9 +6,9 @@
   <p>A domain-specific language (DSL) for describing and visualizing program architecture.</p>
   
   <h3>
-    <a href="https://sammons.github.io/typed-mind-lang/">🌐 Try TypedMind Online</a> • 
-    <a href="https://sammons.github.io/typed-mind-lang/#getting-started">📚 Getting Started</a> • 
-    <a href="https://sammons.github.io/typed-mind-lang/#examples">🎯 Examples</a>
+    <a href="https://sammons2.github.io/typed-mind-lang/">🌐 Try TypedMind Online</a> • 
+    <a href="https://sammons2.github.io/typed-mind-lang/#getting-started">📚 Getting Started</a> • 
+    <a href="https://sammons2.github.io/typed-mind-lang/#examples">🎯 Examples</a>
   </h3>
 </div>
 
@@ -24,7 +24,7 @@ This monorepo contains five packages:
 
 ## Quick Start
 
-Visit [TypedMind Online](https://sammons.github.io/typed-mind-lang/) to try TypedMind in your browser, or install the CLI:
+Visit [TypedMind Online](https://sammons2.github.io/typed-mind-lang/) to try TypedMind in your browser, or install the CLI:
 
 ```bash
 npm install -g @sammons/typed-mind-cli
@@ -91,7 +91,7 @@ if (result.valid) {
 
 ## DSL Syntax
 
-> **Note**: For comprehensive grammar documentation and examples, see the [TypedMind Grammar Documentation](https://github.com/sammons/typed-mind-lang/blob/main/lib/typed-mind/generated-grammar.md). This is especially useful for LLMs learning to write TypedMind syntax.
+> **Note**: For comprehensive grammar documentation and examples, see the [TypedMind Grammar Documentation](https://github.com/sammons2/typed-mind-lang/blob/main/lib/typed-mind/generated-grammar.md). This is especially useful for LLMs learning to write TypedMind syntax.
 
 ### Short Form Example
 

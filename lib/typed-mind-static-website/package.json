@@ -6,9 +6,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sammons/typed-mind-lang"
+    "url": "https://github.com/sammons2/typed-mind-lang"
   },
-  "homepage": "https://sammons.github.io/typed-mind-playground",
+  "homepage": "https://sammons2.github.io/typed-mind-lang",
   "scripts": {
     "dev": "npx http-server dist -p 8080 -c-1",
     "build": "node build.js",
