@@ -417,27 +417,47 @@ export class DSLValidator {
   }
 
   private checkUniquePaths(entities: Map<string, AnyEntity>): void {
-    const paths = new Map<string, AnyEntity>();
+    const entityNamesByPath = new Map<string, string[]>();
 
     for (const entity of entities.values()) {
       if ('path' in entity && entity.path) {
-        const existing = paths.get(entity.path);
-        if (existing) {
-          // Allow ClassFile entities to have the same path as their component entities would
-          const isClassFileConflict = (entity.type === 'ClassFile' || existing.type === 'ClassFile') &&
-            (entity.type === 'File' || entity.type === 'Class' || existing.type === 'File' || existing.type === 'Class');
+        const path = entity.path;
+        
+        // Skip virtual paths with # fragments - they're allowed to be duplicated
+        if (path.includes('#')) {
+          continue;
+        }
+        
+        if (!entityNamesByPath.has(path)) {
+          entityNamesByPath.set(path, []);
+        }
+        
+        const entitiesAtPath = entityNamesByPath.get(path)!;
+        
+        // Multiple entities can share the same file path (like multiple constants from same file)
+        // Only error if the same ENTITY TYPE has restrictions:
+        // - Only one File entity per path
+        // - Only one ClassFile entity per path
+        // - Constants/DTOs/etc can share paths freely
+        
+        if (entity.type === 'File' || entity.type === 'ClassFile') {
+          const existingFileType = entitiesAtPath.find(name => {
+            const existing = entities.get(name);
+            return existing && (existing.type === 'File' || existing.type === 'ClassFile');
+          });
           
-          if (!isClassFileConflict) {
+          if (existingFileType) {
+            const existing = entities.get(existingFileType)!;
             this.addError({
               position: entity.position,
-              message: `Duplicate path '${entity.path}'`,
+              message: `Path '${entity.path}' already used by ${existing.type} '${existing.name}'`,
               severity: 'error',
-              suggestion: `Already used by '${existing.name}'`,
+              suggestion: `Each File/ClassFile must have a unique path. Consider using ClassFile fusion with #:`,
             });
           }
-        } else {
-          paths.set(entity.path, entity);
         }
+        
+        entitiesAtPath.push(entity.name);
       }
     }
   }

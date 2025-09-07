@@ -1,0 +1,22 @@
+TestApp -> MainFile v1.0.0
+
+MainFile @ src/main.ts:
+  -> [CONFIG_A, CONFIG_B, configA, configB]
+
+# Multiple constants can share the same path
+CONFIG_A ! src/config.ts : ConfigASchema
+CONFIG_B ! src/config.ts : ConfigBSchema
+
+# Functions that use the schemas
+configA :: () => ConfigASchema
+  -> ConfigASchema
+
+configB :: () => ConfigBSchema  
+  -> ConfigBSchema
+
+# DTOs that are referenced
+ConfigASchema %
+  - name: string
+
+ConfigBSchema %
+  - value: number

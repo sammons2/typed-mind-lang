@@ -25,8 +25,8 @@ describe('scenario-07-duplicate-paths', () => {
     const duplicatePathError = result.errors[0];
     expect(duplicatePathError.position.line).toBe(10);
     expect(duplicatePathError.position.column).toBe(1);
-    expect(duplicatePathError.message).toBe("Duplicate path 'src/shared/utils.ts'");
+    expect(duplicatePathError.message).toBe("Path 'src/shared/utils.ts' already used by File 'FileOne'");
     expect(duplicatePathError.severity).toBe('error');
-    expect(duplicatePathError.suggestion).toBe("Already used by 'FileOne'");
+    expect(duplicatePathError.suggestion).toBe("Each File/ClassFile must have a unique path. Consider using ClassFile fusion with #:");
   });
 });

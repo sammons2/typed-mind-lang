@@ -1,0 +1,58 @@
+{
+  "name": "@sammons/typed-mind-typescript",
+  "version": "0.1.0",
+  "description": "TypeScript analysis and bridge to TypedMind DSL - extract architecture from TypeScript codebases",
+  "keywords": [
+    "typescript",
+    "typedmind",
+    "ast",
+    "analyzer",
+    "architecture",
+    "extraction",
+    "tsc"
+  ],
+  "author": "sammons",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sammons/typed-mind-lang"
+  },
+  "homepage": "https://github.com/sammons/typed-mind-lang#readme",
+  "bugs": {
+    "url": "https://github.com/sammons/typed-mind-lang/issues"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "typed-mind-ts": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "build": "tsup src/cli.ts src/index.ts --format cjs --dts --clean && chmod +x dist/cli.js",
+    "dev": "tsup src/cli.ts src/index.ts --format cjs --dts --watch",
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "test": "vitest --run",
+    "test:watch": "vitest --watch",
+    "lint": "eslint src",
+    "prepublishOnly": "npm run clean && npm run build && npm test"
+  },
+  "dependencies": {
+    "@sammons/typed-mind": "workspace:*",
+    "typescript": "^5.7.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "tsup": "^8.3.5",
+    "vitest": "^2.1.8",
+    "typescript-eslint": "^8.19.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

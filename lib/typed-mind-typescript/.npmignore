@@ -1,0 +1,12 @@
+src
+tsconfig.json
+tsup.config.ts
+vitest.config.ts
+*.tsbuildinfo
+.eslintrc.js
+.prettierrc
+test
+tests
+__tests__
+*.test.ts
+*.spec.ts
