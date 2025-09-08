@@ -473,9 +473,32 @@ async function handleCheck(values: any): Promise<void> {
   } else {
     console.error(`✗ Architecture validation failed with ${validationResult.errors.length} error(s):`);
 
+    // Map entity names to their source files
+    const entityToFile = new Map<string, string>();
+    for (const entity of conversionResult.entities) {
+      if ('path' in entity && entity.path) {
+        // File, ClassFile, Constants entities have path field
+        entityToFile.set(entity.name, entity.path);
+      } else if ('container' in entity && entity.container) {
+        // Function entities may have container field with source file
+        entityToFile.set(entity.name, entity.container);
+      }
+    }
+
     for (const error of validationResult.errors) {
       const severity = error.severity === 'warning' ? 'WARNING' : 'ERROR';
-      console.error(`  ${severity}: ${error.message}`);
+      
+      // Try to extract entity name from error message
+      const entityMatch = error.message.match(/entity '([^']+)'|'([^']+)'.*is not defined/);
+      const entityName = entityMatch ? (entityMatch[1] || entityMatch[2]) : null;
+      const sourceFile = entityName ? entityToFile.get(entityName) : null;
+      
+      if (sourceFile) {
+        console.error(`  ${severity} in ${sourceFile}: ${error.message}`);
+      } else {
+        console.error(`  ${severity}: ${error.message}`);
+      }
+      
       if (error.suggestion) {
         console.error(`    Suggestion: ${error.suggestion}`);
       }

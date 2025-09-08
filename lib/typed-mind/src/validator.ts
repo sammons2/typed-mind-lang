@@ -1,6 +1,7 @@
 import type {
   AnyEntity,
   ClassEntity,
+  FileEntity,
   FunctionEntity,
   UIComponentEntity,
   AssetEntity,
@@ -31,7 +32,7 @@ export class DSLValidator {
       to: ['Function', 'Class', 'ClassFile', 'Constants', 'DTO', 'Asset', 'UIComponent', 'RunParameter', 'File', 'Dependency'],
     },
     exports: {
-      from: ['File', 'ClassFile'],
+      from: ['File', 'ClassFile', 'Program', 'Dependency'],
       to: ['Function', 'Class', 'ClassFile', 'Constants', 'DTO', 'Asset', 'UIComponent', 'File'],
     },
     calls: {
@@ -96,8 +97,20 @@ export class DSLValidator {
     this.options = options;
   }
 
-  validate(entities: Map<string, AnyEntity>, parseResult?: ParseResult): ValidationResult {
+  validate(entities: Map<string, AnyEntity>, optionsOrParseResult?: ValidatorOptions | ParseResult): ValidationResult {
     this.errors = [];
+    
+    // Handle both old signature (parseResult) and new signature (options)
+    let parseResult: ParseResult | undefined;
+    if (optionsOrParseResult && 'entities' in optionsOrParseResult) {
+      // It's a ParseResult (old signature)
+      parseResult = optionsOrParseResult as ParseResult;
+      // Don't override options if they were set in constructor
+    } else if (optionsOrParseResult) {
+      // It's ValidatorOptions (new signature) - merge with constructor options
+      this.options = { ...this.options, ...optionsOrParseResult as ValidatorOptions };
+    }
+    // If no options passed, keep constructor options
 
     // First populate referencedBy fields
     this.populateReferencedBy(entities);
@@ -253,6 +266,13 @@ export class DSLValidator {
       }
       if (entity.type === 'Program') {
         referenced.add(entity.entry);
+        // Track program exports as referenced (they're part of public API)
+        const program = entity as ProgramEntity;
+        if (program.exports) {
+          for (const exp of program.exports) {
+            referenced.add(exp);
+          }
+        }
       }
       if ('consumes' in entity) {
         for (const param of entity.consumes) {
@@ -287,17 +307,60 @@ export class DSLValidator {
       }
     }
 
-    // Check for orphans
+    // Check for orphans with improved file consumption logic
     for (const [name, entity] of entities) {
       if (!referenced.has(name) && entity.type !== 'Program' && entity.type !== 'Dependency') {
-        this.addError({
-          position: entity.position,
-          message: `Orphaned entity '${name}'`,
-          severity: 'error',
-          suggestion: 'Remove or reference this entity',
-        });
+        // Special handling for Files - they are consumed if ANY of their exports are imported
+        if (entity.type === 'File') {
+          if (!this.isFileConsumed(entity as FileEntity, entities)) {
+            this.addError({
+              position: entity.position,
+              message: `Orphaned file '${name}' - none of its exports are imported`,
+              severity: 'error',
+              suggestion: 'Remove this file or import its exports somewhere',
+            });
+          }
+        } else {
+          this.addError({
+            position: entity.position,
+            message: `Orphaned entity '${name}'`,
+            severity: 'error',
+            suggestion: 'Remove or reference this entity',
+          });
+        }
       }
     }
+  }
+
+  private isFileConsumed(fileEntity: FileEntity, allEntities: Map<string, AnyEntity>): boolean {
+    // Check if any export from this file is imported elsewhere
+    for (const exportName of fileEntity.exports || []) {
+      if (this.isEntityImported(exportName, allEntities)) {
+        return true; // File is consumed through this export
+      }
+    }
+    return false;
+  }
+
+  private isEntityImported(entityName: string, allEntities: Map<string, AnyEntity>): boolean {
+    // Check if this entity name appears in any imports
+    for (const entity of allEntities.values()) {
+      if ('imports' in entity) {
+        for (const imp of entity.imports) {
+          if (imp === entityName) {
+            return true;
+          }
+          // Handle wildcard imports
+          if (imp.includes('*')) {
+            const base = imp.split('*')[0] as string;
+            if (entityName.startsWith(base)) {
+              return true;
+            }
+          }
+        }
+      }
+    }
+    return false;
   }
 
   private checkImports(entities: Map<string, AnyEntity>): void {
@@ -1201,12 +1264,21 @@ export class DSLValidator {
         // Check if there are unresolved dependencies
         if (funcEntity._dependencies) {
           for (const dep of funcEntity._dependencies) {
-            if (!entities.has(dep)) {
+            const depEntity = entities.get(dep);
+            if (!depEntity) {
               this.addError({
                 position: entity.position,
                 message: `Function dependency '${dep}' not found`,
                 severity: 'error',
                 suggestion: `Define '${dep}' as an entity or remove it from the dependency list`,
+              });
+            } else if (depEntity.type === 'Dependency') {
+              // Check if this dependency is trying to be directly consumed
+              this.addError({
+                position: entity.position,
+                message: `Cannot directly consume dependency '${dep}' in function '${funcEntity.name}'`,
+                severity: 'error',
+                suggestion: `Import specific entities from '${dep}' instead. If '${dep}' exports entities, add them with '-> [EntityName]' and import those entities in your files.`,
               });
             }
           }

@@ -6,6 +6,7 @@ import {
   ParsedFunction,
   ParsedClass,
   ParsedInterface,
+  ParsedExport,
   ConversionResult,
   ConversionOptions,
   ConversionError,
@@ -263,6 +264,11 @@ export class TypeScriptToTypedMindConverter {
       } else {
         moduleExports.namedExports.add(exp.name);
       }
+      
+      // Handle re-exports: if export has a source, treat it as import-then-export
+      if (exp.source) {
+        this.processReExport(module, exp);
+      }
     }
 
     // Register this module under multiple keys for easier resolution
@@ -282,6 +288,54 @@ export class TypeScriptToTypedMindConverter {
     for (const specifier of specifiers) {
       this.exportRegistry[specifier] = moduleExports;
     }
+  }
+
+  private processReExport(module: ParsedModule, reExport: ParsedExport): void {
+    // Re-export: export { X } from './module' is equivalent to:
+    // 1. import { X } from './module'  
+    // 2. export { X }
+    
+    // For now, just log that we found a re-export
+    // The actual handling will be done when we process imports/dependencies
+    // during the second phase when we have full access to the analysis
+    
+    // Add a warning if the re-export source might not be included
+    if (!this.isExternalPackage(reExport.source!)) {
+      const sourceModulePath = this.resolveModulePath(reExport.source!, path.dirname(module.filePath));
+      if (!sourceModulePath || !fs.existsSync(sourceModulePath)) {
+        this.warnings.push({
+          message: `Re-export source module not found: ${reExport.source} (re-exporting ${reExport.name})`,
+          filePath: module.filePath,
+          suggestion: undefined,
+        });
+      }
+    }
+  }
+
+  private resolveModulePath(specifier: string, basePath: string): string | null {
+    // Handle relative paths
+    if (specifier.startsWith('./') || specifier.startsWith('../')) {
+      const fullPath = path.resolve(basePath, specifier);
+      
+      // Try common TypeScript extensions
+      const extensions = ['.ts', '.tsx', '.js', '.jsx'];
+      for (const ext of extensions) {
+        const withExt = fullPath + ext;
+        if (fs.existsSync(withExt)) {
+          return withExt;
+        }
+      }
+      
+      // Try as directory with index file
+      for (const ext of extensions) {
+        const indexPath = path.join(fullPath, `index${ext}`);
+        if (fs.existsSync(indexPath)) {
+          return indexPath;
+        }
+      }
+    }
+    
+    return null;
   }
 
   private collectModuleEntities(module: ParsedModule): void {
@@ -549,7 +603,7 @@ export class TypeScriptToTypedMindConverter {
       extends: primaryClass.extends[0] || undefined, // TypedMind supports single inheritance
       implements: [...primaryClass.extends.slice(1), ...primaryClass.implements],
       methods: this.convertMethods(primaryClass),
-      imports: this.convertImports(module.imports),
+      imports: this.convertImports(module.imports, module.exports),
       exports: this.convertExports(module, entityName),
     };
 
@@ -562,14 +616,14 @@ export class TypeScriptToTypedMindConverter {
     // Convert other classes as separate entities
     for (const cls of module.classes) {
       if (cls !== primaryClass) {
-        this.convertClass(cls);
+        this.convertClass(cls, this.getRelativePath(module.filePath));
       }
     }
 
     // Only convert functions that are exported
     for (const func of module.functions) {
       if (this.isFunctionExported(func, module)) {
-        this.convertFunction(func);
+        this.convertFunction(func, this.getRelativePath(module.filePath));
       }
     }
 
@@ -600,7 +654,7 @@ export class TypeScriptToTypedMindConverter {
         position: { line: 1, column: 1 },
         raw: `${fileEntityName} @ ${this.getRelativePath(module.filePath)}:`,
         path: this.getRelativePath(module.filePath),
-        imports: this.convertImports(module.imports),
+        imports: this.convertImports(module.imports, module.exports),
         exports: this.convertExports(module),
       };
 
@@ -609,13 +663,13 @@ export class TypeScriptToTypedMindConverter {
 
     // Convert other entities
     for (const cls of module.classes) {
-      this.convertClass(cls);
+      this.convertClass(cls, this.getRelativePath(module.filePath));
     }
 
     // Only convert functions that are exported
     for (const func of module.functions) {
       if (this.isFunctionExported(func, module)) {
-        this.convertFunction(func);
+        this.convertFunction(func, this.getRelativePath(module.filePath));
       }
     }
 
@@ -632,7 +686,7 @@ export class TypeScriptToTypedMindConverter {
     this.convertConstants(module);
   }
 
-  private convertClass(cls: ParsedClass): void {
+  private convertClass(cls: ParsedClass, sourceFile?: string): void {
     const entityName = createEntityName(cls.name);
 
     if (this.entityNames.has(entityName)) {
@@ -648,6 +702,7 @@ export class TypeScriptToTypedMindConverter {
       position: { line: 1, column: 1 },
       raw: `${entityName} <: ${cls.extends.join(', ')}`,
       extends: cls.extends[0] || undefined, // TypedMind supports single inheritance
+      path: sourceFile, // Store source file path
       implements: [...cls.extends.slice(1), ...cls.implements],
       methods: this.convertMethods(cls),
     };
@@ -659,7 +714,7 @@ export class TypeScriptToTypedMindConverter {
     this.entities.push(classEntity);
   }
 
-  private convertFunction(func: ParsedFunction): void {
+  private convertFunction(func: ParsedFunction, sourceFile?: string): void {
     const entityName = createEntityName(func.name);
 
     if (this.entityNames.has(entityName)) {
@@ -676,6 +731,7 @@ export class TypeScriptToTypedMindConverter {
       raw: `${entityName} :: ${func.signature}`,
       signature: func.signature,
       calls: [], // Will be populated by analyzing function bodies if needed
+      container: sourceFile, // Store source file in container field
     };
 
     if (func.description) {
@@ -874,6 +930,9 @@ export class TypeScriptToTypedMindConverter {
     // Find the actual entity that will be created for this entry file
     const entryEntityName = this.findEntryEntityName(entryFilePath);
 
+    // Extract public exports from the entry point for library support
+    const publicExports = this.extractPublicExportsFromEntrypoint(entryFilePath);
+
     const programEntity: ProgramEntity = {
       name: entityName,
       type: 'Program',
@@ -881,9 +940,43 @@ export class TypeScriptToTypedMindConverter {
       raw: `${entityName} -> ${entryEntityName} v${this.options.programVersion}`,
       entry: entryEntityName,
       version: this.options.programVersion,
+      exports: publicExports.length > 0 ? publicExports : undefined,
     };
 
     this.entities.push(programEntity);
+  }
+
+  private extractPublicExportsFromEntrypoint(entryFilePath: string): string[] {
+    const relativePath = this.getRelativePath(entryFilePath);
+    
+    // Look up exports from this entry file in our export registry
+    const moduleExports = this.exportRegistry[relativePath] ||
+                         this.exportRegistry[relativePath.replace(/\.(ts|tsx|js|jsx)$/, '')] ||
+                         this.exportRegistry[`./${relativePath}`] ||
+                         this.exportRegistry[`./${relativePath.replace(/\.(ts|tsx|js|jsx)$/, '')}`];
+    
+    if (!moduleExports) {
+      return [];
+    }
+
+    const publicExports: string[] = [];
+    
+    // Add default export if it exists
+    if (moduleExports.defaultExport) {
+      publicExports.push(moduleExports.defaultExport);
+    }
+    
+    // Add all named exports
+    for (const namedExport of moduleExports.namedExports) {
+      publicExports.push(namedExport);
+    }
+    
+    // Add namespace export if it exists
+    if (moduleExports.namespaceExport) {
+      publicExports.push(moduleExports.namespaceExport);
+    }
+    
+    return publicExports;
   }
 
   private convertMethods(cls: ParsedClass): string[] {
@@ -897,9 +990,10 @@ export class TypeScriptToTypedMindConverter {
     return methods.map((method) => method.name);
   }
 
-  private convertImports(imports: readonly any[]): string[] {
+  private convertImports(imports: readonly any[], moduleExports?: readonly ParsedExport[]): string[] {
     const importNames: string[] = [];
 
+    // Process regular imports
     for (const imp of imports) {
       
       if (this.isExternalPackage(imp.specifier)) {
@@ -920,6 +1014,8 @@ export class TypeScriptToTypedMindConverter {
         }
 
         if (imp.namespaceImport) {
+          // Create a class-like entity for the namespace import
+          this.createNamespaceEntity(imp.namespaceImport, imp.specifier);
           const entityName = this.resolveImportToEntity(imp.namespaceImport, imp.specifier);
           if (entityName) {
             importNames.push(entityName);
@@ -928,6 +1024,19 @@ export class TypeScriptToTypedMindConverter {
 
         for (const namedImport of imp.namedImports) {
           const entityName = this.resolveImportToEntity(namedImport, imp.specifier);
+          if (entityName) {
+            importNames.push(entityName);
+          }
+        }
+      }
+    }
+
+    // Process re-exports as imports (export { X } from './module' means import { X })
+    if (moduleExports) {
+      for (const reExport of moduleExports) {
+        if (reExport.source && !this.isExternalPackage(reExport.source)) {
+          // Treat re-export as an import of the entity from the source module
+          const entityName = this.resolveImportToEntity(reExport.name, reExport.source);
           if (entityName) {
             importNames.push(entityName);
           }
@@ -1248,6 +1357,9 @@ export class TypeScriptToTypedMindConverter {
       case 'Program': {
         const prog = entity as ProgramEntity;
         lines.push(`${prog.name} -> ${prog.entry}${prog.version ? ` v${prog.version}` : ''}`);
+        if (prog.exports && prog.exports.length > 0) {
+          lines.push(`  -> [${prog.exports.join(', ')}]`);
+        }
         break;
       }
 
@@ -1436,5 +1548,60 @@ export class TypeScriptToTypedMindConverter {
     // this should always find a File entity. Fallback to predictable name.
     const fileName = path.basename(entryFilePath, path.extname(entryFilePath));
     return this.sanitizeEntityName(`${fileName}File`);
+  }
+
+  private createNamespaceEntity(namespaceName: string, specifier: string): void {
+    const entityName = createEntityName(namespaceName);
+
+    // Don't create if it already exists
+    if (this.entityNames.has(entityName)) {
+      return;
+    }
+
+    this.entityNames.add(entityName);
+
+    // For external packages, check if it's a known namespace with methods
+    const methods = this.extractNamespaceMethods(namespaceName, specifier);
+
+    const namespaceEntity: ClassEntity = {
+      name: entityName,
+      type: 'Class',
+      position: { line: 1, column: 1 },
+      raw: `${entityName} <: NamespaceImport`,
+      extends: undefined,
+      implements: ['NamespaceImport'], // Mark as namespace import
+      methods: methods,
+      purpose: `Namespace import: ${namespaceName} from ${specifier}`,
+    };
+
+    this.entities.push(namespaceEntity);
+  }
+
+  private extractNamespaceMethods(_namespaceName: string, specifier: string): string[] {
+    // For external packages, we might know common methods
+    const knownNamespaceMethods: Record<string, string[]> = {
+      'path': ['join', 'resolve', 'dirname', 'basename', 'extname', 'relative'],
+      'fs': ['readFile', 'writeFile', 'exists', 'mkdir', 'readdir'],
+      'util': ['promisify', 'inspect', 'format', 'deprecate'],
+      'crypto': ['createHash', 'randomBytes', 'createCipher'],
+      'os': ['platform', 'arch', 'type', 'release', 'hostname'],
+    };
+
+    // Check if it's a known Node.js namespace
+    if (this.isExternalPackage(specifier)) {
+      const packageMethods = knownNamespaceMethods[specifier];
+      if (packageMethods) {
+        return [...packageMethods];
+      }
+    }
+
+    // For internal modules, try to extract methods from export registry
+    const moduleExports = this.exportRegistry[specifier];
+    if (moduleExports) {
+      return Array.from(moduleExports.namedExports);
+    }
+
+    // Default fallback - we'll add common methods that might be called
+    return ['default']; // Most namespaces have at least some callable methods
   }
 }

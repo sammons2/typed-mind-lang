@@ -771,6 +771,10 @@ export class DSLParser {
                   }
                   break;
                 case 'Dependency':
+                  // Dependencies cannot be directly consumed - they must be imported first
+                  // This will be caught as an error by the validator
+                  unresolvedDeps.push(dep);
+                  break;
                 case 'Asset':
                 case 'RunParameter':
                 case 'Constants':

@@ -99,6 +99,17 @@ export class TypeScriptAnalyzer {
           traverseQueue.push(resolvedPath);
         }
       }
+
+      // Add re-exported modules to the traversal queue
+      // Re-exports (export { X } from './module') should also include the source modules
+      for (const exportSpec of module.exports) {
+        if (exportSpec.source) {
+          const resolvedPath = this.resolveImportPath(currentPath, exportSpec.source);
+          if (resolvedPath && !visitedModules.has(resolvedPath)) {
+            traverseQueue.push(resolvedPath);
+          }
+        }
+      }
     }
 
     return {

@@ -54,6 +54,7 @@ export interface ProgramEntity extends Entity {
   entry: string;
   version?: string;
   purpose?: string;
+  exports?: string[]; // Programs can export public APIs for library support
 }
 
 export interface FileEntity extends Entity {

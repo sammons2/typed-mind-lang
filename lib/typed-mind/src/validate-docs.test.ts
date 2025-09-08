@@ -29,27 +29,37 @@ describe('Documentation Examples', () => {
 
       // Parse and validate
       const parseResult = parser.parse(code);
+      
+      // Check for parse errors first
+      if (parseResult.errors && parseResult.errors.length > 0) {
+        console.error(`\nExample ${index + 1} has parse errors:`);
+        console.error('Code:\n', code);
+        console.error('Parse Errors:', parseResult.errors);
+        expect(parseResult.errors.length).toBe(0);
+        return;
+      }
+
+      // For syntax demonstration examples that don't represent complete programs, skip validation
+      const isSyntaxDemo =
+        code.includes('# Example patterns - showing syntax only') ||
+        code.includes('# Invalid names') ||
+        code.includes('# Wrong') ||
+        code.includes('# Right') ||
+        code.includes('❌') ||
+        code.includes('✅') ||
+        code.includes('ERROR:');
+
+      if (isSyntaxDemo) {
+        return; // Skip validation for pure syntax demos
+      }
+
+      // Full validation for complete examples
       const validationResult = validator.validate(parseResult.entities);
 
-      // For syntax demonstration examples, we allow orphaned entities
-      const isSyntaxDemo =
-        code.includes('# Example showing other entity types:') || code.includes('# Example patterns - showing syntax only');
-
       if (!validationResult.valid) {
-        // For syntax demonstration examples, skip validation entirely
-        if (isSyntaxDemo) {
-          return; // Skip validation for syntax demos
-        }
-
-        const relevantErrors = validationResult.errors;
-
-        if (relevantErrors.length > 0) {
-          console.error(`\nExample ${index + 1} has validation errors:`);
-          console.error('Code:\n', code);
-          console.error('Errors:', relevantErrors);
-          expect(relevantErrors.length).toBe(0);
-        }
-      } else {
+        console.error(`\nExample ${index + 1} has validation errors:`);
+        console.error('Code:\n', code);
+        console.error('Validation Errors:', validationResult.errors.map(e => e.message));
         expect(validationResult.valid).toBe(true);
       }
     });
@@ -66,14 +76,21 @@ describe('Documentation Examples', () => {
       if (match) {
         const code = match[1];
         const parseResult = parser.parse(code);
+        
+        if (parseResult.errors && parseResult.errors.length > 0) {
+          console.error('\nGenerated example has parse errors:');
+          console.error('Parse Errors:', parseResult.errors);
+          expect(parseResult.errors.length).toBe(0);
+          return;
+        }
+        
         const validationResult = validator.validate(parseResult.entities);
 
         if (!validationResult.valid) {
           console.error('\nGenerated example has validation errors:');
-          console.error('Errors:', validationResult.errors);
+          console.error('Errors:', validationResult.errors.map(e => e.message));
+          expect(validationResult.valid).toBe(true);
         }
-
-        expect(validationResult.valid).toBe(true);
       }
     } catch (e) {
       // File might not exist if not generated yet

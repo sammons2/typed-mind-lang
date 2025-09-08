@@ -59,7 +59,7 @@ TypedMind supports the following entity types:
 | **Asset** | `Name ~ Description` | `Logo ~ "Company logo SVG"` | `^(\w+)\s*~\s*"([^"]+)"$` |
 | **Ui Component** | `Name & Description | Name &! Description` | `App &! "Root application component"` | `^(\w+)\s*(&!?)\s*"([^"]+)"$` |
 | **Run Parameter** | `Name $type Description [(required)]` | `DATABASE_URL $env "PostgreSQL connection" (required)` | `^(\w+)\s*\$(\w+)\s*"([^"]+)"(?:\s*\((\w+)\))?$` |
-| **Dependency** | `Name ^ Purpose [Version]` | `axios ^ "HTTP client library" v3.0.0` | `^([@\w\-/]+)\s*\^\s*"([^"]+)"(?:\s*v?([\d.\-\w]+))?$` |
+| **Dependency** | `Name ^ Purpose [Version]` | `winston ^ "Logging library" v3.0.0` | `^([@\w\-/]+)\s*\^\s*"([^"]+)"(?:\s*v?([\d.\-\w]+))?$` |
 
 **Note:** Version format - The parser strips the 'v' prefix from versions. Both `v1.0.0` and `1.0.0` are stored as `1.0.0`.
 
@@ -70,7 +70,7 @@ These patterns match continuation lines that add properties to entities:
 | Pattern | Description | Example |
 |---------|-------------|---------|
 | Imports | Entity imports | `<- [Database, UserModel]` |
-| Exports | Entity exports | `-> [createUser, getUser]` |
+| Exports | Entity/Dependency exports | `-> [createUser, getUser]` |
 | Calls | Function calls | `~> [validate, save]` |
 | Input | Function input DTO | `<- UserCreateDTO` |
 | Output | Function output DTO | `-> UserDTO` |
@@ -124,15 +124,17 @@ These patterns are used for general parsing tasks:
 ```tmd
 TodoApp -> main v1.0.0                      # Program
 main @ src/index.ts:                        # File
-  <- [UserService]
+  <- [UserService, Config, App]
   -> [startApp]
 
 UserService #: src/services/user.ts         # ClassFile (fusion)
-  <- [UserDTO]
+  <- [UserDTO, startApp]
   => [createUser, findUser]
 
 startApp :: () => void                      # Function
   ~> [createUser]
+  ~ [App]
+  $< [DATABASE_URL, Logo]
 
 createUser :: (data: UserDTO) => UserDTO    # Function
   <- UserDTO                                # Input DTO
@@ -147,43 +149,101 @@ App &! "Root component"                     # UIComponent (root)
 DATABASE_URL $env "DB connection" (required) # RunParameter
 Config ! src/config.ts                      # Constants
 Logo ~ "Company logo"                       # Asset
-react ^ "UI library" v18.0.0                # Dependency
+winston ^ "Logging library" v3.0.0             # Dependency
+  -> [Logger, createLogger]                  # Exports entities
 ```
 
 ## Comprehensive Examples
 
 ### Complete Application Example
 ```tmd
-# Program definition
+# Program definition - references the main file
 TodoApp -> main "Todo application" v1.0.0
 
 # Entry file
 main @ src/index.ts:
-  <- [TodoService, AuthService]
-  -> [startApp]
+  <- [TodoService, WinstonLogger, createWinstonLogger, ConfigDTO, BaseService, TodoAppUI]
+  -> [init, startApp, validateTodo, initializeDatabase, BaseService, TodoAppUI]
 
-# Start function with auto-distribution
+# Main initialization function that calls startApp
+init :: () => Promise<void>
+  "Main entry point that bootstraps the application"
+  ~> [startApp]
+
+# Configuration DTO for app startup
+ConfigDTO % "Application configuration"
+  - port: number "Server port"
+  - dbUrl: string "Database connection string"
+  - apiKey: string "External API key"
+
+# Start function - properly consumes parameters and affects UI
 startApp :: () => Promise<void>
   "Starts the application with all dependencies"
-  <- [ConfigDTO, initializeDatabase, AuthService, TodoApp, DATABASE_URL]
-  # Auto-distributed to:
-  # input: ConfigDTO
-  # calls: [initializeDatabase, AuthService]
-  # affects: [TodoApp]
-  # consumes: [DATABASE_URL]
+  <- ConfigDTO
+  ~> [initializeDatabase, createWinstonLogger, WinstonLogger.info]
+  ~ [TodoAppUI]
+  $< [DATABASE_URL, API_KEY]
 
-# ClassFile fusion - combines class and file
+# External dependencies that export entities
+winston ^ "Logging library" v3.0.0
+  -> [WinstonLogger, createWinstonLogger]
+
+sequelize ^ "Database ORM library" v6.0.0  
+  -> [SequelizeDataTypes, SequelizeModel]
+
+# Classes exported by winston dependency
+WinstonLogger <:
+  => [info, error, warn, debug]
+
+# Function exported by winston dependency  
+createWinstonLogger :: (options?: object) => WinstonLogger
+
+# Classes exported by sequelize dependency
+SequelizeDataTypes <:
+  => [STRING, INTEGER, DATE, BOOLEAN]
+
+SequelizeModel <:
+  => [create, findAll, findByPk, update, destroy]
+
+# Validation function - exported by main file
+validateTodo :: (data: CreateTodoDTO) => Promise<boolean>
+  <- CreateTodoDTO
+
+# Database initialization function - exported by main file
+initializeDatabase :: () => Promise<void>
+
+# Helper function result DTO
+TodoHelperResult % "Result from todo helper function"
+  - formatted: string "Formatted todo string"
+  - length: number "Length of formatted string"
+
+# Base service class (could be from a dependency or internal)
+BaseService <: 
+  => [init, destroy]
+
+# ClassFile fusion - combines class and file  
 TodoService #: src/services/todo.ts <: BaseService
-  <- [TodoDTO, CreateTodoDTO, Database, Logger]
-  => [createTodo, getTodos, updateTodo, deleteTodo]
-  -> [todoHelper]  # Additional export
+  <- [TodoDTO, CreateTodoDTO, SequelizeModel, SequelizeDataTypes, WinstonLogger, validateTodo, TodoHelperResult]
+  => [createTodo, getTodos, updateTodo, deleteTodo, todoHelper]
 
 # Function with method calls
 createTodo :: (data: CreateTodoDTO) => Promise<TodoDTO>
-  <- CreateTodoDTO  # Input DTO
-  -> TodoDTO        # Output DTO
-  ~> [validateTodo, Database.insert, Logger.info]  # Method calls
-  ~ [TodoList]      # Affects UI
+  <- CreateTodoDTO
+  -> TodoDTO
+  ~> [validateTodo, WinstonLogger.info, SequelizeModel.create]
+  ~ [TodoList]
+
+# Helper function - now part of TodoService
+todoHelper :: (data: TodoDTO) => TodoHelperResult
+  <- TodoDTO
+  -> TodoHelperResult
+
+# Additional service methods that are referenced
+getTodos :: () => Promise<TodoDTO[]>
+
+updateTodo :: (id: string, data: Partial<TodoDTO>) => Promise<TodoDTO>
+
+deleteTodo :: (id: string) => Promise<void>
 
 # DTOs with comprehensive field syntax
 CreateTodoDTO % "Data for creating a todo"
@@ -204,30 +264,47 @@ TodoDTO % "Complete todo object"
   - updatedAt: Date "Last update timestamp"
 
 # UI Components with containment
-TodoApp &! "Root todo application"
+TodoAppUI &! "Root todo application"
   > [Header, TodoList, CreateForm, Footer]
 
 TodoList & "List of todos"
-  < [TodoApp]
+  < [TodoAppUI]
   > [TodoItem]
+
+Header & "Application header component"
+
+CreateForm & "Todo creation form component"
+
+Footer & "Application footer component"
+
+TodoItem & "Individual todo item component"
 
 # Runtime parameters
 DATABASE_URL $env "PostgreSQL connection string" (required)
 API_KEY $env "External API key"
   = "default-dev-key"
 
-# External dependencies
+# Additional UI dependencies  
 react ^ "React framework" v18.0.0
-express ^ "Web framework" v4.18.0
+  -> [Component, useState, useEffect]
 ```
 
 ## Key Features
+
+### Dependency Exports (`^`)
+Dependencies represent external packages that export entities your code can import. The pattern is:
+
+1. **Define the dependency**: `winston ^ "Logging library" v3.0.0`
+2. **Declare exports**: `-> [Logger, createLogger]`
+3. **Define exported entities**: Classes and Functions that the dependency provides
+4. **Import in files**: `<- [Logger, createLogger]`
+5. **Use in functions**: `~> [createLogger, Logger.info]`
 
 ### ClassFile Fusion (`#:`)
 Combines Class and File into one entity - perfect for services/controllers:
 ```tmd
 UserService #: src/services/user.ts <: BaseService
-  <- [Database, Logger]       # File imports
+  <- [Logger, createLogger]   # File imports from dependencies
   => [create, update, delete] # Class methods
   -> [userHelper]             # Additional exports
 ```
@@ -251,7 +328,7 @@ processOrder :: (order: OrderDTO) => void
 | RunParameter | `consumes` | Function uses runtime parameter |
 | Asset | `consumes` | Function uses static asset |
 | Constants | `consumes` | Function uses configuration |
-| Dependency | `consumes` | Function uses external library |
+| **Dependency** | **ERROR** | **Dependencies must be imported first, not directly consumed** |
 | DTO (single) | `input` | Function takes DTO as parameter |
 | DTO (multiple) | ignored | Use explicit `<- DTOName` for input |
 
@@ -259,13 +336,21 @@ processOrder :: (order: OrderDTO) => void
 ```tmd
 # Mixed dependencies before auto-distribution
 processPayment :: (payment: PaymentDTO) => Receipt
-  <- [PaymentDTO, validateCard, PaymentGateway, PaymentUI, STRIPE_KEY, stripe]
+  <- [PaymentDTO, validateCard, PaymentGateway, PaymentUI, STRIPE_KEY]
 
 # After auto-distribution:
 # input: PaymentDTO
 # calls: [validateCard, PaymentGateway]
-# affects: [PaymentUI]
-# consumes: [STRIPE_KEY, stripe]
+# affects: [PaymentUI] 
+# consumes: [STRIPE_KEY]
+
+# WRONG - Dependencies cannot be directly consumed:
+badFunction :: () => void
+  <- [winston]  # ERROR: winston is a Dependency, must import its exports
+
+# CORRECT - Import what the dependency exports:
+goodFunction :: () => void
+  <- [Logger]  # Import Logger (exported by winston dependency)
 ```
 
 ### Method Call Syntax
@@ -507,7 +592,7 @@ Establish project-specific conventions in purpose fields:
 | Asset | ❌ | ❌ | ❌ | ❌ | ❌ |
 | UIComponent | ❌ | ❌ | ❌ | ❌ | ❌ |
 | RunParameter | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Dependency | ❌ | ❌ | ❌ | ❌ | ❌ |
+| **Dependency** | ❌ | **✅** | ❌ | ❌ | ❌ |
 
 ## Valid RunParameter Types
 
@@ -522,17 +607,22 @@ Example: `DATABASE_URL $env "Connection string" (required)`
 ## Export Rules
 
 ### What Files and ClassFiles Can Export
-✅ **Can Export:**
+✅ **Files and ClassFiles Can Export:**
 - Functions
 - Classes
 - Constants
 - DTOs
 
+✅ **Dependencies Can Export:**
+- Classes (external classes from packages)
+- Functions (external functions from packages)  
+- DTOs (external types from packages)
+- Constants (external constants from packages)
+
 ❌ **Cannot Export:**
 - Assets (static files, not code)
 - UIComponents (UI structure, not modules)
 - RunParameters (runtime config, not code)
-- Dependencies (external packages)
 
 ### ClassFile Auto-Export
 ClassFiles automatically export themselves. Manual export creates duplication:
@@ -541,6 +631,61 @@ UserService #: src/user.ts
   -> [helper]  # ✅ Exports helper
   # -> [UserService]  # ❌ Redundant - auto-exported
 ```
+
+## Dependency Workflow
+
+### Correct Dependency Usage Pattern
+
+The proper way to use external dependencies in TypedMind follows these steps:
+
+1. **Define the dependency and its exports**:
+   ```
+   winston ^ "Logging library" v3.0.0
+     -> [Logger, createLogger, transports]
+   ```
+
+2. **Define the entities exported by the dependency**:
+   ```
+   Logger <: 
+     => [info, error, warn]
+   createLogger :: (config?: object) => Logger
+   ```
+
+3. **Import in your files**:
+   ```
+   UserService @ src/services/user.ts:
+     <- [Logger, createLogger]     # Import from winston
+   ```
+
+4. **Use in your functions**:
+   ```
+   createUser :: (data: UserDTO) => User
+     ~> [createLogger, Logger.info]  # Call winston's exports
+   ```
+
+This pattern correctly models how real code imports and uses external dependencies.
+
+### Why Dependencies Don't Get Consumed Directly
+
+❌ **Wrong Approach:**
+```tmd
+myFunction :: () => void
+  $< [winston]  # ERROR: Can't consume dependency directly
+```
+
+✅ **Correct Approach:**
+```tmd
+winston ^ "Logging library"
+  -> [Logger]
+
+UserService @ src/service.ts:
+  <- [Logger]     # Import what winston exports
+
+myFunction :: () => void
+  ~> [Logger.info]  # Use the imported entity
+```
+
+**Rationale:** In real code, you don't "consume" npm packages directly - you import specific entities from them. TypedMind models this accurately.
 
 ## Common Pitfalls
 
