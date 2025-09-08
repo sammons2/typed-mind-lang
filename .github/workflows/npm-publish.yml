@@ -165,7 +165,7 @@ jobs:
       # Publish in dependency order: core first, then packages that depend on it
       
       - name: Publish @sammons/typed-mind (core)
-        if: ${{ !github.event.inputs.dry_run && steps.check_published.outputs.core_published == 'false' }}
+        if: ${{ github.event.inputs.dry_run != 'true' && steps.check_published.outputs.core_published == 'false' }}
         working-directory: lib/typed-mind
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -174,7 +174,7 @@ jobs:
           npm publish --access public --provenance
 
       - name: Publish @sammons/typed-mind-renderer
-        if: ${{ !github.event.inputs.dry_run && steps.check_published.outputs.renderer_published == 'false' }}
+        if: ${{ github.event.inputs.dry_run != 'true' && steps.check_published.outputs.renderer_published == 'false' }}
         working-directory: lib/typed-mind-renderer
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -183,7 +183,7 @@ jobs:
           npm publish --access public --provenance
 
       - name: Publish @sammons/typed-mind-lsp
-        if: ${{ !github.event.inputs.dry_run && steps.check_published.outputs.lsp_published == 'false' }}
+        if: ${{ github.event.inputs.dry_run != 'true' && steps.check_published.outputs.lsp_published == 'false' }}
         working-directory: lib/typed-mind-lsp
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -192,7 +192,7 @@ jobs:
           npm publish --access public --provenance
 
       - name: Publish @sammons/typed-mind-cli
-        if: ${{ !github.event.inputs.dry_run && steps.check_published.outputs.cli_published == 'false' }}
+        if: ${{ github.event.inputs.dry_run != 'true' && steps.check_published.outputs.cli_published == 'false' }}
         working-directory: lib/typed-mind-cli
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -201,7 +201,7 @@ jobs:
           npm publish --access public --provenance
 
       - name: Verify publications
-        if: ${{ !github.event.inputs.dry_run }}
+        if: ${{ github.event.inputs.dry_run != 'true' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
@@ -248,7 +248,7 @@ jobs:
           echo "All packages verified successfully!"
 
       - name: Create publication summary
-        if: ${{ !github.event.inputs.dry_run }}
+        if: ${{ github.event.inputs.dry_run != 'true' }}
         run: |
           echo "=== NPM PUBLICATION SUMMARY ===" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
