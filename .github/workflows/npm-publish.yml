@@ -70,6 +70,12 @@ jobs:
       # - name: Run tests
       #   run: pnpm run test
 
+      - name: Debug inputs
+        run: |
+          echo "github.event.inputs.dry_run: '${{ github.event.inputs.dry_run }}'"
+          echo "Type: ${{ type(github.event.inputs.dry_run) }}"
+          echo "github.event.inputs.tag: '${{ github.event.inputs.tag }}'"
+
       - name: Get package versions
         id: versions
         run: |
