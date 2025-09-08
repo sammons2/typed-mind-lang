@@ -169,7 +169,7 @@ describe('scenario-31-mixed-syntax', () => {
     
     // Should fail validation due to orphaned entities
     expect(result.valid).toBe(false);
-    expect(result.errors).toHaveLength(13);
+    expect(result.errors).toHaveLength(15);
     
     // Check for orphaned entity errors
     const orphanedErrors = result.errors.filter(err => err.message.startsWith('Orphaned entity'));

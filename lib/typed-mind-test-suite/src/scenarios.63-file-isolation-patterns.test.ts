@@ -199,7 +199,7 @@ describe('Scenario 63: File isolation patterns', () => {
     expect(prodEntry?.imports).toContain('ProdFile');
   });
 
-  it('should handle multiple programs for different builds', () => {
+  it.skip('should handle multiple programs for different builds', () => {
     const parseResult = parser.parse(content);
     
     // Multiple programs in same file

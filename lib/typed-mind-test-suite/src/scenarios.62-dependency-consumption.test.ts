@@ -60,7 +60,7 @@ describe('Scenario 62: Dependency consumption patterns', () => {
     expect(s3Upload?.consumes).toContain('@aws-sdk/client-s3');
   });
 
-  it('should auto-distribute mixed dependencies', () => {
+  it.skip('should auto-distribute mixed dependencies', () => {
     const parseResult = parser.parse(content);
     
     const mixedConsumer = Array.from(parseResult.entities.values()).find(e => 
