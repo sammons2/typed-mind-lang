@@ -1,0 +1,197 @@
+# Programs
+IndexApp -> IndexFile v1.0.0
+
+# Dependencies
+Path ^ "Path manipulation utilities"
+Fs ^ "File system operations"
+
+# Files
+IndexFile @ lib/typed-mind/src/index.ts:
+  <- [DSLParser, DSLValidator, ErrorFormatter, ImportResolver, ValidationResult, ProgramGraph, AnyEntity, ValidationError, Path]
+  -> [DSLChecker]
+
+# ClassFiles (Services/Controllers)
+DSLParser #: lib/typed-mind/src/parser.ts
+  <- [AnyEntity, ProgramEntity, FileEntity, FunctionEntity, ClassEntity, ClassFileEntity, ConstantsEntity, DTOEntity, DTOField, AssetEntity, UIComponentEntity, RunParameterEntity, DependencyEntity, Position, ImportStatement, LongformParser, ENTITY_PATTERNS, CONTINUATION_PATTERNS, GENERAL_PATTERNS, GrammarValidator]
+  => [parse]
+  -> [ParseResult]
+DSLValidator #: lib/typed-mind/src/validator.ts
+  <- [AnyEntity, ClassEntity, FunctionEntity, UIComponentEntity, AssetEntity, RunParameterEntity, ConstantsEntity, DependencyEntity, DTOEntity, ProgramEntity, ValidationError, ValidationResult, EntityType, ReferenceType, ParseResult]
+  => [validate]
+  -> [ValidatorOptions]
+ErrorFormatter #: lib/typed-mind/src/formatter.ts
+  <- [ValidationError]
+  => [format, formatAll]
+ImportResolver #: lib/typed-mind/src/import-resolver.ts
+  <- [Fs, Path, ImportStatement, AnyEntity, ValidationError, ParseResult, DSLParser]
+  => [resolveImports]
+  -> [ResolvedImport]
+LongformParser #: lib/typed-mind/src/longform-parser.ts
+  <- [AnyEntity, ProgramEntity, FileEntity, FunctionEntity, ClassEntity, ConstantsEntity, DTOEntity, DTOField, AssetEntity, UIComponentEntity, RunParameterEntity, DependencyEntity, Position]
+  => [parseLongform, getConsumedLines]
+GrammarValidator #: lib/typed-mind/src/grammar-validator.ts
+  <- [AnyEntity, EntityType, ENTITY_TYPE_NAMES, EntityTypeName]
+  => [validateEntity, validateEntities, formatErrors]
+  -> [GrammarValidationError, GrammarValidationResult]
+
+# Classes
+DSLChecker <:
+  => [check, parse]
+
+# DTOs
+ParseResult %
+  - entities: Map<string, AnyEntity>
+  - imports: ImportStatement[]
+  - namingConflicts?: Array<{
+    name: string;
+    existingEntity: AnyEntity;
+    newEntity: AnyEntity;
+  }>
+  - grammarErrors?: Array<{
+    entity: string;
+    type: string;
+    field: string;
+    message: string;
+  }>
+ValidatorOptions %
+  - skipOrphanCheck?: boolean
+ResolvedImport %
+  - import: ImportStatement
+  - entities: Map<string, AnyEntity>
+  - imports: ImportStatement[]
+  - errors?: ValidationError[]
+LongformBlock %
+  - type: string
+  - name: string
+  - properties: Map<string, any>
+  - position: Position
+  - raw: string
+GrammarValidationError %
+  - entity: string
+  - type: EntityType
+  - field: string
+  - expected: string
+  - actual: string | undefined
+  - message: string
+GrammarValidationResult %
+  - valid: boolean
+  - errors: GrammarValidationError[]
+Position %
+  - line: number
+  - column: number
+Reference %
+  - from: string
+  - type: ReferenceType
+  - fromType?: EntityType
+Entity %
+  - name: string
+  - type: EntityType
+  - position: Position
+  - raw: string
+  - comment?: string
+  - referencedBy?: Reference[]
+ProgramEntity %
+  - type: string
+  - entry: string
+  - version?: string
+  - purpose?: string
+  - exports?: string[]
+FileEntity %
+  - type: string
+  - path: string
+  - imports: string[]
+  - exports: string[]
+  - purpose?: string
+FunctionEntity %
+  - type: string
+  - container?: string
+  - signature: string
+  - description?: string
+  - calls: string[]
+  - input?: string
+  - output?: string
+  - affects?: string[]
+  - consumes?: string[]
+ClassEntity %
+  - type: string
+  - container?: string
+  - path?: string
+  - extends?: string
+  - implements: string[]
+  - methods: string[]
+  - imports?: string[]
+  - purpose?: string
+ClassFileEntity %
+  - type: string
+  - path: string
+  - extends?: string
+  - implements: string[]
+  - methods: string[]
+  - imports: string[]
+  - exports: string[]
+  - purpose?: string
+ConstantsEntity %
+  - type: string
+  - path: string
+  - schema?: string
+  - purpose?: string
+DTOField %
+  - name: string
+  - type: string
+  - description?: string
+  - optional?: boolean
+DTOEntity %
+  - type: string
+  - purpose?: string
+  - fields: DTOField[]
+AssetEntity %
+  - type: string
+  - description: string
+  - containsProgram?: string
+UIComponentEntity %
+  - type: string
+  - purpose: string
+  - root?: boolean
+  - contains?: string[]
+  - containedBy?: string[]
+  - affectedBy?: string[]
+RunParameterEntity %
+  - type: string
+  - paramType: string
+  - description: string
+  - defaultValue?: string
+  - required?: boolean
+  - consumedBy?: string[]
+DependencyEntity %
+  - type: string
+  - purpose: string
+  - version?: string
+  - importedBy?: string[]
+  - exports?: string[]
+ValidationError %
+  - position: Position
+  - message: string
+  - severity: string
+  - suggestion?: string
+ValidationResult %
+  - valid: boolean
+  - errors: ValidationError[]
+ImportStatement %
+  - path: string
+  - alias?: string
+  - position: Position
+ProgramGraph %
+  - entities: Map<string, AnyEntity>
+  - dependencies: Map<string, string[]>
+  - imports?: ImportStatement[]
+
+# Constants
+EntityType ! src/types.ts
+ReferenceType ! src/types.ts
+AnyEntity ! src/types.ts
+EntityTypeName ! src/types.ts
+ENTITY_PATTERNS ! lib/typed-mind/src/parser-patterns.ts
+CONTINUATION_PATTERNS ! lib/typed-mind/src/parser-patterns.ts
+GENERAL_PATTERNS ! lib/typed-mind/src/parser-patterns.ts
+ENTITY_TYPE_NAMES ! lib/typed-mind/src/parser-patterns.ts
+PATTERN_DESCRIPTIONS ! lib/typed-mind/src/parser-patterns.ts

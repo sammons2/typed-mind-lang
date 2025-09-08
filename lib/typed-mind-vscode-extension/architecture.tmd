@@ -1,0 +1,19 @@
+# Programs
+ExtensionApp -> ExtensionFile v1.0.0
+
+# Dependencies
+Path ^ "Path manipulation utilities"
+Vscode ^ "vscode library"
+  -> [ExtensionContext]
+VscodeLanguageclientNode ^ "vscode languageclient/node library"
+
+# Files
+ExtensionFile @ lib/typed-mind-vscode-extension/src/extension.ts:
+  <- [Path, Vscode, VscodeLanguageclientNode]
+  -> [activate, deactivate]
+
+# Functions
+activate :: activate(context: ExtensionContext) => void
+  <- ExtensionContext
+deactivate :: deactivate() => Thenable<void> | undefined
+  -> Thenable<void> | undefined

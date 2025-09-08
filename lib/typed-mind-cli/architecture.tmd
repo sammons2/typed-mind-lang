@@ -1,0 +1,13 @@
+# Programs
+CliApp -> CliFile v1.0.0
+
+# Dependencies
+Fs ^ "File system operations"
+Path ^ "Path manipulation utilities"
+Util ^ "Node.js utility functions"
+SammonsTypedMind ^ "typed mind library"
+SammonsTypedMindRenderer ^ "typed mind renderer library"
+
+# Files
+CliFile @ lib/typed-mind-cli/src/cli.ts:
+  <- [Fs, Path, Util, SammonsTypedMind, SammonsTypedMindRenderer]

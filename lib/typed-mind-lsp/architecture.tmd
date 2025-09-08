@@ -1,0 +1,23 @@
+# Programs
+CliApp -> CliFile v1.0.0
+
+# Dependencies
+VscodeLanguageserverNode ^ "vscode languageserver/node library"
+VscodeLanguageserverTextdocument ^ "vscode languageserver textdocument library"
+SammonsTypedMind ^ "typed mind library"
+
+# Files
+CliFile @ lib/typed-mind-lsp/src/cli.ts:
+  <- [startServer]
+StartServerFile @ lib/typed-mind-lsp/src/start-server.ts:
+  <- [TypedMindLanguageServer]
+  -> [startServer, test]
+
+# ClassFiles (Services/Controllers)
+TypedMindLanguageServer #: lib/typed-mind-lsp/src/server.ts
+  <- [VscodeLanguageserverNode, VscodeLanguageserverTextdocument, SammonsTypedMind, SammonsTypedMind]
+  => [start]
+
+# Functions
+startServer :: startServer() => void
+test :: test() => any

@@ -1,0 +1,9 @@
+# Programs
+Scenarios01DuplicateExportTestApp -> Scenarios01DuplicateExportTestFile v1.0.0
+
+# Dependencies
+Vitest ^ "Testing framework" v3.2.4
+Fs ^ "File system operations"
+Path ^ "Path manipulation utilities"
+Url ^ "URL parsing utilities"
+SammonsTypedMind ^ "typed mind library"

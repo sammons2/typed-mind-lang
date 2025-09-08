@@ -1,0 +1,23 @@
+# Programs
+IndexApp -> IndexFile v1.0.0
+
+# Dependencies
+Fs ^ "File system operations"
+Path ^ "Path manipulation utilities"
+Http ^ "HTTP client and server"
+SammonsTypedMind ^ "typed mind library"
+
+# Files
+IndexFile @ lib/typed-mind-renderer/src/index.ts:
+  <- [Fs, Path, Http, SammonsTypedMind]
+  -> [RendererOptions, TypedMindRenderer]
+
+# Classes
+TypedMindRenderer <:
+  => [setProgramGraph, setValidationResult, serve, generateStaticHTML]
+
+# DTOs
+RendererOptions %
+  - port?: number
+  - host?: string
+  - openBrowser?: boolean

@@ -1,0 +1,170 @@
+# Programs
+CliApp -> CliFile v1.0.0
+
+# Dependencies
+Fs ^ "File system operations"
+Path ^ "Path manipulation utilities"
+Util ^ "Node.js utility functions"
+SammonsTypedMind ^ "typed mind library"
+Typescript ^ "TypeScript compiler" v5.9.2
+
+# Files
+CliFile @ lib/typed-mind-typescript/src/cli.ts:
+  <- [Fs, Path, Util, TypeScriptAnalyzer, TypeScriptToTypedMindConverter, AssertionEngine, SammonsTypedMind, ConversionOptions]
+
+# ClassFiles (Services/Controllers)
+TypeScriptAnalyzer #: lib/typed-mind-typescript/src/typescript-analyzer.ts
+  <- [Typescript, Path, Fs, TypeScriptProjectAnalysis, ParsedModule, ParsedFunction, ParsedClass, ParsedInterface, ParsedImport, ParsedExport, ParsedTypeAlias, ParsedConstant, ParsedMethod, ParsedProperty, ParsedParameter, isFunction, isClass, isInterface, isTypeAlias, isVariableStatement, isExportDeclaration, isImportDeclaration, createFilePath]
+  => [analyze, analyzeFromEntrypoint]
+TypeScriptToTypedMindConverter #: lib/typed-mind-typescript/src/typescript-to-typedmind-converter.ts
+  <- [Path, Fs, TypeScriptProjectAnalysis, ParsedModule, ParsedFunction, ParsedClass, ParsedInterface, ConversionResult, ConversionOptions, ConversionError, ConversionWarning, createEntityName, SammonsTypedMind]
+  => [convert]
+AssertionEngine #: lib/typed-mind-typescript/src/assertion-engine.ts
+  <- [SammonsTypedMind, AssertionResult, Deviation, ConversionResult]
+  => [assert]
+
+# DTOs
+ExportRegistry %
+EntityInfo %
+  - name: string
+  - type: string
+  - sourceFile: string
+  - exported: boolean
+EntityRegistry %
+  - functions: Map<string, EntityInfo>
+  - classes: Map<string, EntityInfo>
+  - interfaces: Map<string, EntityInfo>
+  - types: Map<string, EntityInfo>
+  - constants: Map<string, EntityInfo>
+  - files: Map<string, EntityInfo>
+FilePath %
+EntityName %
+ParsedType %
+  - type: string
+  - isOptional?: boolean
+  - description?: string
+ParsedFunction %
+  - name: string
+  - signature: string
+  - parameters: readonly ParsedParameter[]
+  - returnType: string
+  - isAsync: boolean
+  - description: string | undefined
+  - decorators: readonly string[]
+ParsedParameter %
+  - name: string
+  - type: string
+  - isOptional: boolean
+  - hasDefaultValue: boolean
+ParsedClass %
+  - name: string
+  - isAbstract: boolean
+  - extends: readonly string[]
+  - implements: readonly string[]
+  - methods: readonly ParsedMethod[]
+  - properties: readonly ParsedProperty[]
+  - decorators: readonly string[]
+  - description: string | undefined
+ParsedMethod %
+  - name: string
+  - signature: string
+  - isStatic: boolean
+  - isPrivate: boolean
+  - isProtected: boolean
+  - isAbstract: boolean
+  - parameters: readonly ParsedParameter[]
+  - returnType: string
+  - isAsync: boolean
+ParsedProperty %
+  - name: string
+  - type: string
+  - isReadonly: boolean
+  - isStatic: boolean
+  - isPrivate: boolean
+  - isProtected: boolean
+  - isOptional: boolean
+ParsedInterface %
+  - name: string
+  - extends: readonly string[]
+  - properties: readonly ParsedProperty[]
+  - methods: readonly ParsedMethod[]
+  - description: string | undefined
+ParsedModule %
+  - filePath: string
+  - imports: readonly ParsedImport[]
+  - exports: readonly ParsedExport[]
+  - functions: readonly ParsedFunction[]
+  - classes: readonly ParsedClass[]
+  - interfaces: readonly ParsedInterface[]
+  - types: readonly ParsedTypeAlias[]
+  - constants: readonly ParsedConstant[]
+ParsedImport %
+  - specifier: string
+  - defaultImport: string | undefined
+  - namedImports: readonly string[]
+  - namespaceImport: string | undefined
+  - isTypeOnly: boolean
+ParsedExport %
+  - name: string
+  - isDefault: boolean
+  - type: string
+  - source: string | undefined
+ParsedTypeAlias %
+  - name: string
+  - type: string
+  - description: string | undefined
+ParsedConstant %
+  - name: string
+  - type: string
+  - value: string | undefined
+  - isEnum: boolean
+  - enumValues: readonly { name: string; value?: string }[] | undefined
+  - isConst?: boolean
+TypeScriptProjectAnalysis %
+  - modules: readonly ParsedModule[]
+  - entryPoints: readonly string[]
+  - projectConfig: ts.CompilerOptions
+ConversionOptions %
+  - preferClassFile: boolean
+  - includePrivateMembers: boolean
+  - generatePrograms: boolean
+  - programVersion: string | undefined
+  - ignorePatterns: readonly string[]
+ConversionResult %
+  - success: boolean
+  - entities: readonly AnyEntity[]
+  - tmdContent: string
+  - errors: readonly ConversionError[]
+  - warnings: readonly ConversionWarning[]
+ConversionError %
+  - message: string
+  - filePath: string | undefined
+  - line: number | undefined
+  - column: number | undefined
+ConversionWarning %
+  - message: string
+  - filePath: string | undefined
+  - suggestion: string | undefined
+AssertionResult %
+  - success: boolean
+  - deviations: readonly Deviation[]
+  - missingEntities: readonly string[]
+  - extraEntities: readonly string[]
+Deviation %
+  - entityName: string
+  - property: string
+  - expected: unknown
+  - actual: unknown
+  - severity: string
+
+# Constants
+ExportMode ! src/types.ts
+isFunction ! lib/typed-mind-typescript/src/types.ts
+isClass ! lib/typed-mind-typescript/src/types.ts
+isInterface ! lib/typed-mind-typescript/src/types.ts
+isTypeAlias ! lib/typed-mind-typescript/src/types.ts
+isVariableStatement ! lib/typed-mind-typescript/src/types.ts
+isExportDeclaration ! lib/typed-mind-typescript/src/types.ts
+isImportDeclaration ! lib/typed-mind-typescript/src/types.ts
+createFilePath ! lib/typed-mind-typescript/src/types.ts
+createEntityName ! lib/typed-mind-typescript/src/types.ts
