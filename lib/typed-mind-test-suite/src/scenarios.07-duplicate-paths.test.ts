@@ -18,15 +18,43 @@ describe('scenario-07-duplicate-paths', () => {
     // The DSL should be invalid due to duplicate paths
     expect(result.valid).toBe(false);
     
-    // Should have exactly one error
-    expect(result.errors).toHaveLength(1);
-    
+    // Should have exactly 5 errors
+    expect(result.errors).toHaveLength(5);
+
     // Check the duplicate path error details
-    const duplicatePathError = result.errors[0];
-    expect(duplicatePathError.position.line).toBe(10);
-    expect(duplicatePathError.position.column).toBe(1);
-    expect(duplicatePathError.message).toBe("Path 'src/shared/utils.ts' already used by File 'FileOne'");
-    expect(duplicatePathError.severity).toBe('error');
-    expect(duplicatePathError.suggestion).toBe("Each File/ClassFile must have a unique path. Consider using ClassFile fusion with #:");
+    const duplicatePathError = result.errors.find(err =>
+      err.message === "Path 'src/shared/utils.ts' already used by File 'FileOne'"
+    );
+    expect(duplicatePathError).toBeDefined();
+    expect(duplicatePathError?.position.line).toBe(10);
+    expect(duplicatePathError?.position.column).toBe(1);
+    expect(duplicatePathError?.severity).toBe('error');
+    expect(duplicatePathError?.suggestion).toBe("Each File/ClassFile must have a unique path. Consider using ClassFile fusion with #:");
+
+    // Check for orphaned file errors
+    const orphanedFileOneError = result.errors.find(err =>
+      err.message === "Orphaned file 'FileOne' - none of its exports are imported"
+    );
+    expect(orphanedFileOneError).toBeDefined();
+    expect(orphanedFileOneError?.position.line).toBe(7);
+
+    const orphanedFileTwoError = result.errors.find(err =>
+      err.message === "Orphaned file 'FileTwo' - none of its exports are imported"
+    );
+    expect(orphanedFileTwoError).toBeDefined();
+    expect(orphanedFileTwoError?.position.line).toBe(10);
+
+    // Check for orphaned entity errors
+    const orphanedHelperOneError = result.errors.find(err =>
+      err.message === "Orphaned entity 'helperOne'"
+    );
+    expect(orphanedHelperOneError).toBeDefined();
+    expect(orphanedHelperOneError?.position.line).toBe(13);
+
+    const orphanedHelperTwoError = result.errors.find(err =>
+      err.message === "Orphaned entity 'helperTwo'"
+    );
+    expect(orphanedHelperTwoError).toBeDefined();
+    expect(orphanedHelperTwoError?.position.line).toBe(14);
   });
 });

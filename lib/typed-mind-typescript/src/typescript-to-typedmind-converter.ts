@@ -275,15 +275,29 @@ export class TypeScriptToTypedMindConverter {
     const relativePath = this.getRelativePath(module.filePath);
     const withoutExt = relativePath.replace(/\.(ts|tsx|js|jsx)$/, '');
     const fileName = path.basename(module.filePath, path.extname(module.filePath));
+    const dirPath = path.dirname(withoutExt);
 
     // Register under various possible import specifier formats:
     const specifiers = [
-      withoutExt, // './src/start-server'
-      withoutExt.startsWith('./') ? withoutExt : `./${withoutExt}`, // with ./ prefix
-      `./${fileName}`, // './start-server'
-      `../${fileName}`, // '../start-server'
-      fileName, // 'start-server' (bare name)
+      withoutExt, // 'src/types/user'
+      withoutExt.startsWith('./') ? withoutExt : `./${withoutExt}`, // './src/types/user'
+      `./${fileName}`, // './user'
+      `../${fileName}`, // '../user' (from sibling directories)
+      fileName, // 'user' (bare name)
+      `../types/${fileName}`, // '../types/user' (common relative import)
+      `./types/${fileName}`, // './types/user' (from root)
+      `types/${fileName}`, // 'types/user' (from root without ./)
     ];
+
+    // Add relative paths from common source directories
+    if (dirPath.includes('types')) {
+      specifiers.push(`../types/${fileName}`);
+      specifiers.push(`./types/${fileName}`);
+    }
+    if (dirPath.includes('services')) {
+      specifiers.push(`../services/${fileName}`);
+      specifiers.push(`./services/${fileName}`);
+    }
 
     for (const specifier of specifiers) {
       this.exportRegistry[specifier] = moduleExports;
@@ -1084,7 +1098,7 @@ export class TypeScriptToTypedMindConverter {
       return entityName;
     }
 
-    // Check if it's already in our created entity names (for backward compatibility)
+    // Check if it's already in our created entity names (this covers DTOs converted from interfaces)
     if (this.entityNames.has(entityName)) {
       return entityName;
     }

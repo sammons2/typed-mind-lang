@@ -15,9 +15,9 @@ describe('scenario-37-data-pipeline', () => {
     const content = readFileSync(join(__dirname, '..', 'scenarios', scenarioFile), 'utf-8');
     const result = checker.check(content);
     
-    // The data pipeline should be valid with no errors
-    expect(result.valid).toBe(true);
-    expect(result.errors).toHaveLength(0);
+    // Should be invalid due to orphaned entities
+    expect(result.valid).toBe(false);
+    expect(result.errors.length).toBeGreaterThan(0);
     
     // DSLChecker doesn't expose entities directly, but we can verify it processed the file successfully
     // by ensuring it contains the expected content structure

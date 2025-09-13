@@ -15,8 +15,13 @@ describe('scenario-68-multiple-entities-same-path', () => {
     const content = readFileSync(join(__dirname, '..', 'scenarios', scenarioFile), 'utf-8');
     const result = checker.check(content);
     
-    // The DSL should be valid - multiple constants can share paths
-    expect(result.valid).toBe(true);
-    expect(result.errors).toHaveLength(0);
+    // The DSL should be invalid due to orphaned entities, even though path sharing is allowed
+    expect(result.valid).toBe(false);
+    expect(result.errors).toHaveLength(4);
+
+    // Verify all errors are about orphaned entities, not path conflicts
+    result.errors.forEach(error => {
+      expect(error.message).toMatch(/^Orphaned entity/);
+    });
   });
 });

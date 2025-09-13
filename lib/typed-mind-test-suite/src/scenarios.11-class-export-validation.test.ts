@@ -18,38 +18,47 @@ describe('scenario-11-class-export-validation', () => {
     // Should be invalid due to class export violations
     expect(result.valid).toBe(false);
     
-    // Should have exactly 4 errors
-    expect(result.errors).toHaveLength(4);
-    
-    // Sort errors by line number for consistent checking
-    const sortedErrors = result.errors.sort((a, b) => a.position.line - b.position.line);
-    
-    // Check first error: Orphaned UnexportedClass
-    expect(sortedErrors[0].position.line).toBe(7);
-    expect(sortedErrors[0].position.column).toBe(1);
-    expect(sortedErrors[0].message).toBe("Orphaned entity 'UnexportedClass'");
-    expect(sortedErrors[0].severity).toBe('error');
-    expect(sortedErrors[0].suggestion).toBe('Remove or reference this entity');
-    
-    // Check second error: UnexportedClass not exported by any file
-    expect(sortedErrors[1].position.line).toBe(7);
-    expect(sortedErrors[1].position.column).toBe(1);
-    expect(sortedErrors[1].message).toBe("Class 'UnexportedClass' is not exported by any file");
-    expect(sortedErrors[1].severity).toBe('error');
-    expect(sortedErrors[1].suggestion).toBe("Add 'UnexportedClass' to the exports of a file entity or convert to ClassFile with #: operator");
-    
-    // Check third error: Orphaned unexportedFunction
-    expect(sortedErrors[2].position.line).toBe(10);
-    expect(sortedErrors[2].position.column).toBe(1);
-    expect(sortedErrors[2].message).toBe("Orphaned entity 'unexportedFunction'");
-    expect(sortedErrors[2].severity).toBe('error');
-    expect(sortedErrors[2].suggestion).toBe('Remove or reference this entity');
-    
-    // Check fourth error: unexportedFunction not exported and not a class method
-    expect(sortedErrors[3].position.line).toBe(10);
-    expect(sortedErrors[3].position.column).toBe(1);
-    expect(sortedErrors[3].message).toBe("Function 'unexportedFunction' is not exported by any file and is not a class method");
-    expect(sortedErrors[3].severity).toBe('error');
-    expect(sortedErrors[3].suggestion).toBe("Either add 'unexportedFunction' to the exports of a file entity or define it as a method of a class");
+    // Should have exactly 6 errors (4 orphaned + 2 export validation)
+    expect(result.errors).toHaveLength(6);
+
+    // Check for all orphaned entity errors
+    const orphanedUnexportedClass = result.errors.find(err =>
+      err.message === "Orphaned entity 'UnexportedClass'"
+    );
+    expect(orphanedUnexportedClass).toBeDefined();
+    expect(orphanedUnexportedClass?.position.line).toBe(7);
+
+    const orphanedUnexportedFunction = result.errors.find(err =>
+      err.message === "Orphaned entity 'unexportedFunction'"
+    );
+    expect(orphanedUnexportedFunction).toBeDefined();
+    expect(orphanedUnexportedFunction?.position.line).toBe(10);
+
+    const orphanedExportedClass = result.errors.find(err =>
+      err.message === "Orphaned entity 'ExportedClass'"
+    );
+    expect(orphanedExportedClass).toBeDefined();
+    expect(orphanedExportedClass?.position.line).toBe(13);
+
+    const orphanedExportedFunction = result.errors.find(err =>
+      err.message === "Orphaned entity 'exportedFunction'"
+    );
+    expect(orphanedExportedFunction).toBeDefined();
+    expect(orphanedExportedFunction?.position.line).toBe(16);
+
+    // Check export validation errors
+    const classNotExportedError = result.errors.find(err =>
+      err.message === "Class 'UnexportedClass' is not exported by any file"
+    );
+    expect(classNotExportedError).toBeDefined();
+    expect(classNotExportedError?.position.line).toBe(7);
+    expect(classNotExportedError?.suggestion).toBe("Add 'UnexportedClass' to the exports of a file entity or convert to ClassFile with #: operator");
+
+    const functionNotExportedError = result.errors.find(err =>
+      err.message === "Function 'unexportedFunction' is not exported by any file and is not a class method"
+    );
+    expect(functionNotExportedError).toBeDefined();
+    expect(functionNotExportedError?.position.line).toBe(10);
+    expect(functionNotExportedError?.suggestion).toBe("Either add 'unexportedFunction' to the exports of a file entity or define it as a method of a class");
   });
 });

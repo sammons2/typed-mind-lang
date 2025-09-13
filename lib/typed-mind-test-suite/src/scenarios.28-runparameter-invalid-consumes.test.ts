@@ -17,10 +17,21 @@ describe('scenario-28-runparameter-invalid-consumes', () => {
     const result = checker.check(content, filePath);
     
     expect(result.valid).toBe(false);
-    expect(result.errors).toHaveLength(1);
-    
+    expect(result.errors).toHaveLength(3);
+
+    // Check for orphaned entities
+    const orphanedBadFunction = result.errors.find(err =>
+      err.message === "Orphaned entity 'badFunction'"
+    );
+    expect(orphanedBadFunction).toBeDefined();
+
+    const orphanedAnotherBadFunction = result.errors.find(err =>
+      err.message === "Orphaned entity 'anotherBadFunction'"
+    );
+    expect(orphanedAnotherBadFunction).toBeDefined();
+
     // Should detect consuming unknown parameter
-    const unknownParamError = result.errors.find(err => 
+    const unknownParamError = result.errors.find(err =>
       err.message === "Function 'badFunction' consumes unknown entity 'NON_EXISTENT_PARAM'"
     );
     expect(unknownParamError).toBeDefined();

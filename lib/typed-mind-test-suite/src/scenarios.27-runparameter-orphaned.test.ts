@@ -17,25 +17,34 @@ describe('scenario-27-runparameter-orphaned', () => {
     const result = checker.check(content, filePath);
     
     expect(result.valid).toBe(false);
-    expect(result.errors).toHaveLength(2);
-    
+    expect(result.errors).toHaveLength(3);
+
     // Should detect orphaned UNUSED_PARAM
-    const unusedParamError = result.errors.find(err => 
+    const unusedParamError = result.errors.find(err =>
       err.message === "Orphaned entity 'UNUSED_PARAM'"
     );
     expect(unusedParamError).toBeDefined();
     expect(unusedParamError?.position.line).toBe(12);
     expect(unusedParamError?.severity).toBe('error');
     expect(unusedParamError?.suggestion).toBe('Remove or reference this entity');
-    
+
     // Should detect orphaned SECRET_KEY
-    const secretKeyError = result.errors.find(err => 
+    const secretKeyError = result.errors.find(err =>
       err.message === "Orphaned entity 'SECRET_KEY'"
     );
     expect(secretKeyError).toBeDefined();
     expect(secretKeyError?.position.line).toBe(13);
     expect(secretKeyError?.severity).toBe('error');
     expect(secretKeyError?.suggestion).toBe('Remove or reference this entity');
+
+    // Should detect orphaned processData function
+    const processDataError = result.errors.find(err =>
+      err.message === "Orphaned entity 'processData'"
+    );
+    expect(processDataError).toBeDefined();
+    expect(processDataError?.position.line).toBe(16);
+    expect(processDataError?.severity).toBe('error');
+    expect(processDataError?.suggestion).toBe('Remove or reference this entity');
     
     // Get parsed entities using parse method  
     const parseResult = checker.parse(content, filePath);

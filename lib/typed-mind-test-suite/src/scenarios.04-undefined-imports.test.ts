@@ -18,32 +18,35 @@ describe('scenario-04-undefined-imports', () => {
     // Validation should fail due to undefined imports
     expect(result.valid).toBe(false);
     
-    // Should have exactly 3 errors for the undefined imports
-    expect(result.errors).toHaveLength(3);
-    
-    // Check first error - NonExistentService import
-    expect(result.errors[0]).toEqual({
-      position: { line: 3, column: 1 },
-      message: "Import 'NonExistentService' not found",
-      severity: 'error',
-      suggestion: undefined
-    });
-    
-    // Check second error - MissingModule import
-    expect(result.errors[1]).toEqual({
-      position: { line: 3, column: 1 },
-      message: "Import 'MissingModule' not found", 
-      severity: 'error',
-      suggestion: undefined
-    });
-    
-    // Check third error - UndefinedEntity import
-    expect(result.errors[2]).toEqual({
-      position: { line: 8, column: 1 },
-      message: "Import 'UndefinedEntity' not found",
-      severity: 'error',
-      suggestion: undefined
-    });
+    // Should have exactly 4 errors (3 undefined imports + 1 orphaned file)
+    expect(result.errors).toHaveLength(4);
+
+    // Check for orphaned file error
+    const orphanedFileError = result.errors.find(err =>
+      err.message.includes("Orphaned file 'ServiceA'")
+    );
+    expect(orphanedFileError).toBeDefined();
+    expect(orphanedFileError?.position.line).toBe(8);
+    expect(orphanedFileError?.position.column).toBe(1);
+
+    // Check import errors (order may vary, so find them instead of assuming position)
+    const nonExistentError = result.errors.find(err =>
+      err.message === "Import 'NonExistentService' not found"
+    );
+    expect(nonExistentError).toBeDefined();
+    expect(nonExistentError?.position.line).toBe(3);
+
+    const missingModuleError = result.errors.find(err =>
+      err.message === "Import 'MissingModule' not found"
+    );
+    expect(missingModuleError).toBeDefined();
+    expect(missingModuleError?.position.line).toBe(3);
+
+    const undefinedEntityError = result.errors.find(err =>
+      err.message === "Import 'UndefinedEntity' not found"
+    );
+    expect(undefinedEntityError).toBeDefined();
+    expect(undefinedEntityError?.position.line).toBe(8);
     
     // Verify all errors are about undefined imports
     const importErrors = result.errors.filter(err => err.message.includes('not found'));

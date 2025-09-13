@@ -18,31 +18,35 @@ describe('scenario-05-undefined-exports', () => {
     // Validation should fail due to undefined exports
     expect(result.valid).toBe(false);
     
-    // Should have exactly 2 errors for the undefined exports
-    expect(result.errors).toHaveLength(2);
-    
-    // Sort errors by entity name for consistent testing
-    const sortedErrors = result.errors.sort((a, b) => a.message.localeCompare(b.message));
-    
-    // First error: deleteUser is not defined
-    expect(sortedErrors[0]).toEqual({
-      position: { line: 3, column: 1 },
-      message: "Export 'deleteUser' is not defined anywhere in the codebase",
-      severity: 'error',
-      suggestion: "Define 'deleteUser' as a Function, Class, Constants, Asset, or UIComponent entity"
-    });
-    
-    // Second error: updateUser is not defined
-    expect(sortedErrors[1]).toEqual({
-      position: { line: 3, column: 1 },
-      message: "Export 'updateUser' is not defined anywhere in the codebase",
-      severity: 'error',
-      suggestion: "Define 'updateUser' as a Function, Class, Constants, Asset, or UIComponent entity"
-    });
-    
-    // Verify that createUser and UserModel are not flagged as errors
-    const errorMessages = result.errors.map(err => err.message);
-    expect(errorMessages).not.toContain("Export 'createUser' is not defined anywhere in the codebase");
-    expect(errorMessages).not.toContain("Export 'UserModel' is not defined anywhere in the codebase");
+    // Should have exactly 4 errors (2 undefined exports + 2 orphaned entities)
+    expect(result.errors).toHaveLength(4);
+
+    // Check for orphaned entities
+    const orphanedCreateUser = result.errors.find(err =>
+      err.message === "Orphaned entity 'createUser'"
+    );
+    expect(orphanedCreateUser).toBeDefined();
+    expect(orphanedCreateUser?.position.line).toBe(7);
+
+    const orphanedUserModel = result.errors.find(err =>
+      err.message === "Orphaned entity 'UserModel'"
+    );
+    expect(orphanedUserModel).toBeDefined();
+    expect(orphanedUserModel?.position.line).toBe(9);
+
+    // Check for undefined export errors
+    const deleteUserError = result.errors.find(err =>
+      err.message === "Export 'deleteUser' is not defined anywhere in the codebase"
+    );
+    expect(deleteUserError).toBeDefined();
+    expect(deleteUserError?.position.line).toBe(3);
+    expect(deleteUserError?.suggestion).toBe("Define 'deleteUser' as a Function, Class, Constants, Asset, or UIComponent entity");
+
+    const updateUserError = result.errors.find(err =>
+      err.message === "Export 'updateUser' is not defined anywhere in the codebase"
+    );
+    expect(updateUserError).toBeDefined();
+    expect(updateUserError?.position.line).toBe(3);
+    expect(updateUserError?.suggestion).toBe("Define 'updateUser' as a Function, Class, Constants, Asset, or UIComponent entity");
   });
 });

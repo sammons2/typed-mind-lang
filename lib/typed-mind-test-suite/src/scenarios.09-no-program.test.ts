@@ -18,18 +18,28 @@ describe('scenario-09-no-program', () => {
     // Should be invalid due to missing program entry point
     expect(result.valid).toBe(false);
     
-    // Should have exactly 2 errors
-    expect(result.errors).toHaveLength(2);
-    
-    // Should have an orphaned entity error for MainFile
-    const orphanedError = result.errors.find(err => 
-      err.message === "Orphaned entity 'MainFile'"
+    // Should have exactly 3 errors (1 no program + 1 orphaned file + 1 orphaned entity)
+    expect(result.errors).toHaveLength(3);
+
+    // Should have an orphaned file error for MainFile
+    const orphanedFileError = result.errors.find(err =>
+      err.message === "Orphaned file 'MainFile' - none of its exports are imported"
     );
-    expect(orphanedError).toBeDefined();
-    expect(orphanedError!.position.line).toBe(3);
-    expect(orphanedError!.position.column).toBe(1);
-    expect(orphanedError!.severity).toBe('error');
-    expect(orphanedError!.suggestion).toBe('Remove or reference this entity');
+    expect(orphanedFileError).toBeDefined();
+    expect(orphanedFileError!.position.line).toBe(3);
+    expect(orphanedFileError!.position.column).toBe(1);
+    expect(orphanedFileError!.severity).toBe('error');
+    expect(orphanedFileError!.suggestion).toBe('Remove this file or import its exports somewhere');
+
+    // Should have an orphaned entity error for doSomething
+    const orphanedEntityError = result.errors.find(err =>
+      err.message === "Orphaned entity 'doSomething'"
+    );
+    expect(orphanedEntityError).toBeDefined();
+    expect(orphanedEntityError!.position.line).toBe(6);
+    expect(orphanedEntityError!.position.column).toBe(1);
+    expect(orphanedEntityError!.severity).toBe('error');
+    expect(orphanedEntityError!.suggestion).toBe('Remove or reference this entity');
     
     // Should have a no program entry point error
     const noProgramError = result.errors.find(err => 

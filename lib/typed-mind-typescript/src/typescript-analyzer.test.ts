@@ -10,6 +10,8 @@ describe('TypeScriptAnalyzer', () => {
     // Create test project structure
     mkdirSync(testProjectDir, { recursive: true });
     mkdirSync(join(testProjectDir, 'src'), { recursive: true });
+    mkdirSync(join(testProjectDir, 'src', 'services'), { recursive: true });
+    mkdirSync(join(testProjectDir, 'src', 'types'), { recursive: true });
 
     // Create tsconfig.json
     writeFileSync(

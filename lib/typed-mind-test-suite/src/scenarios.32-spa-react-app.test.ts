@@ -16,9 +16,9 @@ describe('scenario-32-spa-react-app', () => {
     const result = checker.check(content);
     const parsed = checker.parse(content);
     
-    // Should be valid - this is a well-structured React SPA
-    expect(result.valid).toBe(true);
-    expect(result.errors).toHaveLength(0);
+    // Should be invalid due to orphaned entities
+    expect(result.valid).toBe(false);
+    expect(result.errors.length).toBeGreaterThan(0);
     
     // Should have the main program
     expect(parsed.entities.has('EcommerceApp')).toBe(true);

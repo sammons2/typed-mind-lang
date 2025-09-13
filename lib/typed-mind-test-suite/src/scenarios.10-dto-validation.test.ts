@@ -18,15 +18,46 @@ describe('scenario-10-dto-validation', () => {
     // Should be invalid due to validation errors
     expect(result.valid).toBe(false);
     
-    // Should have exactly 1 error
-    expect(result.errors).toHaveLength(1);
-    
-    // Check the specific error about orphaned UserFile entity
-    const orphanedError = result.errors[0];
-    expect(orphanedError.position.line).toBe(19);
-    expect(orphanedError.position.column).toBe(1);
-    expect(orphanedError.message).toBe("Orphaned entity 'UserFile'");
-    expect(orphanedError.severity).toBe('error');
-    expect(orphanedError.suggestion).toBe('Remove or reference this entity');
+    // Should have exactly 6 errors (2 orphaned + 4 validation)
+    expect(result.errors).toHaveLength(6);
+
+    // Check for orphaned entities
+    const orphanedCreateUser = result.errors.find(err =>
+      err.message === "Orphaned entity 'createUser'"
+    );
+    expect(orphanedCreateUser).toBeDefined();
+    expect(orphanedCreateUser?.position.line).toBe(6);
+
+    const orphanedUpdateUser = result.errors.find(err =>
+      err.message === "Orphaned entity 'updateUser'"
+    );
+    expect(orphanedUpdateUser).toBeDefined();
+    expect(orphanedUpdateUser?.position.line).toBe(10);
+
+    // Check for validation errors
+    const cannotUseInputError = result.errors.find(err =>
+      err.message === "Cannot use 'input' to reference File 'UserFile'"
+    );
+    expect(cannotUseInputError).toBeDefined();
+    expect(cannotUseInputError?.position.line).toBe(10);
+    expect(cannotUseInputError?.suggestion).toBe("'input' can only reference: DTO");
+
+    const nonExistentDTOError = result.errors.find(err =>
+      err.message === "Function input DTO 'NonExistentDTO' not found"
+    );
+    expect(nonExistentDTOError).toBeDefined();
+    expect(nonExistentDTOError?.position.line).toBe(6);
+
+    const userFileNotDTOError = result.errors.find(err =>
+      err.message === "Function input 'UserFile' is not a DTO (it's a File)"
+    );
+    expect(userFileNotDTOError).toBeDefined();
+    expect(userFileNotDTOError?.position.line).toBe(10);
+
+    const notADTOError = result.errors.find(err =>
+      err.message === "Function output DTO 'NotADTO' not found"
+    );
+    expect(notADTOError).toBeDefined();
+    expect(notADTOError?.position.line).toBe(10);
   });
 });

@@ -24,12 +24,12 @@ describe('scenario-03-circular-dependency', () => {
     const error = result.errors[0];
     
     // Check error properties
-    expect(error.position.line).toBe(1);
+    expect(error.position.line).toBe(3);
     expect(error.position.column).toBe(1);
     expect(error.severity).toBe('error');
-    expect(error.suggestion).toBeUndefined();
-    
+    expect(error.suggestion).toBeDefined();
+
     // Check that the error message describes the circular dependency
-    expect(error.message).toBe('Circular dependency detected: TestApp -> ServiceA -> ServiceB -> ServiceC -> ServiceA');
+    expect(error.message).toBe('Circular import detected: ServiceA -> ServiceB -> ServiceC -> ServiceA');
   });
 });

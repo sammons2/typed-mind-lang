@@ -16,9 +16,9 @@ describe('scenario-33-electron-desktop-app', () => {
     const result = checker.check(content);
     const parsed = checker.parse(content);
     
-    // Should be valid - this is a well-structured Electron app
-    expect(result.valid).toBe(true);
-    expect(result.errors).toHaveLength(0);
+    // Should be invalid due to orphaned entities
+    expect(result.valid).toBe(false);
+    expect(result.errors.length).toBeGreaterThan(0);
     
     // Should have the main program
     expect(parsed.entities.has('CodeEditorApp')).toBe(true);

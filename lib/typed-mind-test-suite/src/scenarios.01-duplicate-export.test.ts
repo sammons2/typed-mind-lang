@@ -18,8 +18,8 @@ describe('scenario-01-duplicate-export', () => {
     // Validate that the file is invalid due to errors
     expect(result.valid).toBe(false);
     
-    // Should have exactly 4 errors
-    expect(result.errors).toHaveLength(4);
+    // Should have exactly 5 errors
+    expect(result.errors).toHaveLength(5);
     
     // Check for the main duplicate export error
     const duplicateExportError = result.errors.find(err => 
@@ -32,14 +32,24 @@ describe('scenario-01-duplicate-export', () => {
     expect(duplicateExportError?.suggestion).toBe('Each entity should be exported by exactly one file. Remove the duplicate exports.');
     
     // Check for orphaned SecondFile error
-    const orphanedSecondFileError = result.errors.find(err => 
-      err.message === "Orphaned entity 'SecondFile'"
+    const orphanedSecondFileError = result.errors.find(err =>
+      err.message === "Orphaned file 'SecondFile' - none of its exports are imported"
     );
     expect(orphanedSecondFileError).toBeDefined();
     expect(orphanedSecondFileError?.position.line).toBe(6);
     expect(orphanedSecondFileError?.position.column).toBe(1);
     expect(orphanedSecondFileError?.severity).toBe('error');
-    expect(orphanedSecondFileError?.suggestion).toBe('Remove or reference this entity');
+    expect(orphanedSecondFileError?.suggestion).toBe('Remove this file or import its exports somewhere');
+
+    // Check for orphaned UserService error
+    const orphanedUserServiceError = result.errors.find(err =>
+      err.message === "Orphaned entity 'UserService'"
+    );
+    expect(orphanedUserServiceError).toBeDefined();
+    expect(orphanedUserServiceError?.position.line).toBe(10);
+    expect(orphanedUserServiceError?.position.column).toBe(1);
+    expect(orphanedUserServiceError?.severity).toBe('error');
+    expect(orphanedUserServiceError?.suggestion).toBe('Remove or reference this entity');
     
     // Check for orphaned BaseService error
     const orphanedBaseServiceError = result.errors.find(err => 

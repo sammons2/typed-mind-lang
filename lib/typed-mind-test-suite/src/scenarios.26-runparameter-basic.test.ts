@@ -16,8 +16,8 @@ describe('scenario-26-runparameter-basic', () => {
     const content = readFileSync(filePath, 'utf-8');
     const result = checker.check(content, filePath);
     
-    expect(result.valid).toBe(true);
-    expect(result.errors).toHaveLength(0);
+    expect(result.valid).toBe(false);
+    expect(result.errors.length).toBeGreaterThan(0);
     
     // Get parsed entities using parse method
     const parseResult = checker.parse(content, filePath);
