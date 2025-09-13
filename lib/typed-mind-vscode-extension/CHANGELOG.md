@@ -57,7 +57,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Enhanced Bundling** - All dependencies properly bundled (extension: 783KB, LSP: 631KB)
 - **Cleaner Logging** - Reduced verbose logging in production, added debug mode for troubleshooting
 
-## [Unreleased]
+## [0.1.8] - 2025-09-13
 
 ### Added
 - **ClassFile entity support** (`#:` operator) - Fusion syntax for combined class and file entities
@@ -73,11 +73,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Better operator precedence** - Fixed operator matching conflicts
 
 ### Fixed
-- Missing ClassFile entity type in grammar
-- Incorrect regex patterns for entity name validation
-- Method calls not being properly highlighted in function calls
-- Import statements not being recognized
-- Complex DTO field types not being parsed correctly
+- **GitHub Actions Publishing** - Fixed inverted dry run conditional logic in VSCode publishing workflow
+- **Missing ClassFile entity type** - Added ClassFile entity type support in grammar
+- **Incorrect regex patterns** - Fixed entity name validation patterns
+- **Method calls highlighting** - Method calls now properly highlighted in function calls
+- **Import statements recognition** - Import statements now properly recognized and highlighted
+- **Complex DTO field types** - Fixed parsing for complex DTO field types
+
+### Changed
+- **Improved workflow reliability** - Enhanced GitHub Actions workflow conditional logic for better publishing reliability
+- **Better LSP integration** - Continued improvements to Language Server Protocol integration
+
+## [Unreleased]
 
 ### Planned
 - Additional theme variants

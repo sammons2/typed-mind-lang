@@ -156,7 +156,7 @@ jobs:
           path: ./artifacts
 
       - name: Publish extension
-        if: ${{ github.event.inputs.dry_run != 'true' }}
+        if: ${{ github.event.inputs.dry_run != 'true' || github.event.inputs.dry_run == '' || github.event.inputs.dry_run == null }}
         run: |
           VSIX_FILE=$(find ./artifacts -name "*.vsix" | head -1)
           
@@ -183,7 +183,7 @@ jobs:
           unzip -l "$VSIX_FILE" | head -20
 
       - name: Verify publication
-        if: ${{ github.event.inputs.dry_run != 'true' }}
+        if: ${{ github.event.inputs.dry_run != 'true' || github.event.inputs.dry_run == '' || github.event.inputs.dry_run == null }}
         run: |
           VERSION="${{ needs.validate.outputs.version }}"
           EXTENSION_ID="sammons.typed-mind"
