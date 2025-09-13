@@ -3,6 +3,7 @@ import type {
   ProgramEntity,
   FileEntity,
   FunctionEntity,
+  FunctionEntityWithDependencies,
   ClassEntity,
   ClassFileEntity,
   ConstantsEntity,
@@ -19,6 +20,14 @@ import { LongformParser } from './longform-parser';
 import { ENTITY_PATTERNS, CONTINUATION_PATTERNS, GENERAL_PATTERNS } from './parser-patterns';
 import { GrammarValidator } from './grammar-validator';
 
+export interface ParseError {
+  line: number;
+  column: number;
+  message: string;
+  context?: string;
+  recoverable: boolean;
+}
+
 export interface ParseResult {
   entities: Map<string, AnyEntity>;
   imports: ImportStatement[];
@@ -33,6 +42,7 @@ export interface ParseResult {
     field: string;
     message: string;
   }>;
+  parseErrors?: ParseError[];
 }
 
 export class DSLParser {
@@ -43,13 +53,17 @@ export class DSLParser {
   private longformParser = new LongformParser();
   private grammarValidator = new GrammarValidator();
   private validateGrammar = false;
+  private parseErrors: ParseError[] = [];
+  private errorRecoveryMode = true; // Enable error recovery by default
 
-  parse(input: string, options?: { validateGrammar?: boolean }): ParseResult {
+  parse(input: string, options?: { validateGrammar?: boolean; errorRecovery?: boolean }): ParseResult {
     this.validateGrammar = options?.validateGrammar ?? false;
+    this.errorRecoveryMode = options?.errorRecovery ?? true;
     this.lines = input.split('\n');
     this.entities.clear();
     this.imports = [];
     this.namingConflicts = [];
+    this.parseErrors = [];
 
     let currentEntity: AnyEntity | null = null;
     const entityStack: AnyEntity[] = [];
@@ -87,7 +101,13 @@ export class DSLParser {
 
       // Detect entity declarations
       if (this.isEntityDeclaration(trimmed)) {
-        currentEntity = this.parseEntity(trimmed, lineNum + 1);
+        try {
+          currentEntity = this.parseEntity(trimmed, lineNum + 1);
+        } catch (error) {
+          this.handleParseError(trimmed, lineNum + 1, error as Error);
+          currentEntity = null;
+          continue;
+        }
         if (currentEntity) {
           // Check for naming conflicts before setting
           const existingEntity = this.entities.get(currentEntity.name);
@@ -103,6 +123,10 @@ export class DSLParser {
           entityStack.push(currentEntity);
         }
       } else {
+        // Check if this looks like a malformed entity declaration
+        if (this.looksLikeEntity(trimmed)) {
+          this.handleParseError(trimmed, lineNum + 1, new Error('Malformed entity declaration'));
+        }
         // If we hit a non-entity line that's not a continuation, clear current entity
         currentEntity = null;
       }
@@ -118,6 +142,11 @@ export class DSLParser {
       entities: this.entities,
       imports: this.imports,
     };
+
+    // Add parse errors if any occurred
+    if (this.parseErrors.length > 0) {
+      result.parseErrors = this.parseErrors;
+    }
 
     // Add naming conflicts if any were detected
     if (this.namingConflicts.length > 0) {
@@ -418,6 +447,10 @@ export class DSLParser {
       }
     }
 
+    // No pattern matched - this is a malformed entity
+    if (!this.errorRecoveryMode) {
+      throw new Error(`Unable to parse entity declaration: ${line}`);
+    }
     return null;
   }
 
@@ -430,7 +463,7 @@ export class DSLParser {
     if (importMatch) {
       // Special handling for Functions - distribute by entity type
       if (entity.type === 'Function') {
-        const funcEntity = entity as FunctionEntity;
+        const funcEntity = entity as FunctionEntityWithDependencies;
         const items = this.parseList(importMatch[1] as string);
 
         // We'll need access to entities to check types, so for now just store them
@@ -439,8 +472,8 @@ export class DSLParser {
         if (!funcEntity.affects) funcEntity.affects = [];
         if (!funcEntity.consumes) funcEntity.consumes = [];
 
-        // For now, store all in a temporary field that validator can process
-        (funcEntity as any)._dependencies = items;
+        // Store all in a temporary field that validator can process
+        funcEntity._dependencies = items;
         return;
       }
       // For other entities with imports field
@@ -732,7 +765,7 @@ export class DSLParser {
     // Process functions with _dependencies field
     for (const entity of this.entities.values()) {
       if (entity.type === 'Function') {
-        const funcEntity = entity as FunctionEntity & { _dependencies?: string[] };
+        const funcEntity = entity as FunctionEntityWithDependencies;
         if (funcEntity._dependencies) {
           const unresolvedDeps: string[] = [];
           const dtos: string[] = [];
@@ -832,5 +865,63 @@ export class DSLParser {
         }
       }
     }
+  }
+
+  // Error recovery helper methods
+  private handleParseError(line: string, lineNum: number, error: Error): void {
+    if (!this.errorRecoveryMode) {
+      throw error; // In strict mode, propagate errors
+    }
+
+    const parseError: ParseError = {
+      line: lineNum,
+      column: 1,
+      message: error.message || 'Parse error',
+      context: line,
+      recoverable: true,
+    };
+
+    this.parseErrors.push(parseError);
+  }
+
+  private looksLikeEntity(line: string): boolean {
+    // Check if a line looks like it was trying to be an entity declaration
+    // but doesn't match any valid pattern
+    const entityIndicators = [
+      '->', // Program
+      '@', // File
+      '::', // Function
+      '<:', // Class
+      '#:', // ClassFile
+      '!', // Constants
+      '%', // DTO
+      '~', // Asset (but check for proper format)
+      '&', // UIComponent
+      '$', // RunParameter
+      '^', // Dependency
+    ];
+
+    // Check if line contains any entity indicators
+    for (const indicator of entityIndicators) {
+      if (line.includes(indicator)) {
+        // Special case: '~' can be valid in other contexts
+        if (indicator === '~') {
+          // Check if it's likely an asset declaration (word ~ "description")
+          return /^\w+\s*~\s*[^"]/.test(line) || /^\w+\s*~\s*$/.test(line);
+        }
+        return true;
+      }
+    }
+
+    // Also check for common typos or malformed patterns
+    if (/^[A-Za-z]\w*\s+[->@:!%~&$^]/.test(line)) {
+      return true; // Space before operator (common mistake)
+    }
+
+    if (/^[A-Za-z]\w*[->@:!%~&$^]{2,}/.test(line)) {
+      return true; // Double operators (typo)
+    }
+
+    return false;
   }
 }

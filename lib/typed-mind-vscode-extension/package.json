@@ -29,7 +29,7 @@
     "theme": "dark"
   },
   "engines": {
-    "vscode": "^1.103.0"
+    "vscode": "^1.99.0"
   },
   "activationEvents": [
     "onLanguage:typedmind"
@@ -92,11 +92,12 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "pnpm run build",
+    "vscode:prepublish": "pnpm run build && pnpm run bundle-lsp",
     "build": "tsup",
+    "bundle-lsp": "cd ../typed-mind-lsp && pnpm run build:bundled && cd - && rm -rf ./lsp-bundled && cp -r ../typed-mind-lsp/dist-bundled ./lsp-bundled",
     "dev": "tsup --watch",
     "package": "vsce package --no-dependencies",
-    "clean": "rm -rf dist node_modules *.vsix"
+    "clean": "rm -rf dist lsp-dist lsp-bundled node_modules *.vsix"
   },
   "dependencies": {
     "@sammons/typed-mind-lsp": "workspace:*",
@@ -104,7 +105,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.3.1",
-    "@types/vscode": "^1.103.0",
+    "@types/vscode": "^1.99.0",
     "@vscode/vsce": "^3.2.1",
     "tsup": "^8.3.5",
     "typescript": "^5.9.2"

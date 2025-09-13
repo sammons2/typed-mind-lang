@@ -1,0 +1,207 @@
+# VS Code Extension Syntax Test File
+# This file tests all TypedMind language features for proper highlighting
+
+# ============================================================================
+# Core Entity Types
+# ============================================================================
+
+# Program
+TodoApp -> main v1.0.0
+TodoApp -> main "Main application" v2.0.0-beta.1
+
+# File
+UserService @ src/services/user.ts:
+  <- [Database, Logger, UserDTO]
+  -> [createUser, updateUser]
+
+# Function
+createUser :: (data: UserDTO) => Promise<User>
+  <- UserDTO
+  -> UserDTO
+  ~> [validateUser, Database.insert, Logger.info]
+  ~ [UserList, UserForm]
+  $< [DATABASE_URL, API_KEY]
+
+# Class
+UserController <: BaseController, IAuthenticatable
+  => [index, create, update, delete]
+
+# ClassFile (Fusion syntax) - NEW FEATURE
+UserService #: src/services/user.ts <: BaseService
+  <- [Logger, Database]
+  => [createUser, findUser, updateUser, deleteUser]
+  -> [userHelper, formatUser]
+
+# Constants
+AppConfig ! src/config.ts : ConfigSchema
+AppSettings ! config/settings.json
+
+# DTO with various field types
+UserDTO % "User data transfer object"
+  - id: string "Unique identifier"
+  - name: string "User full name"
+  - email?: string "Optional email"
+  - age: number "Age in years" (optional)
+  - tags: string[] "User tags"
+  - metadata: object "Additional data"
+  - status: "active" | "inactive" | "pending" "Status"
+  - coordinates: [number, number] "Lat/lng tuple"
+  - profile: ProfileDTO "User profile reference"
+
+SimpleDTO %
+  - field: string
+
+# Asset
+Logo ~ "Company logo SVG"
+  >> ClientApp
+
+# UIComponent
+App &! "Root application component"
+  > [Header, MainContent, Footer]
+
+UserList & "User list component"
+  < [MainContent]
+  > [UserItem]
+
+# RunParameter
+DATABASE_URL $env "PostgreSQL connection string" (required)
+  = "postgresql://localhost:5432/mydb"
+
+API_KEY $runtime "API key for external service"
+
+AWS_ROLE $iam "AWS IAM role"
+
+FEATURE_FLAGS $config "Feature configuration"
+
+# Dependency
+winston ^ "Logging library" v3.11.0
+  -> [Logger, createLogger, transports]
+
+@types/node ^ "Node.js type definitions" v18.0.0
+
+# ============================================================================
+# Import Statements
+# ============================================================================
+
+@import "./shared/auth.tmd" as Auth
+import "../common/types.tmd"
+
+# ============================================================================
+# Method Calls (Class.method syntax)
+# ============================================================================
+
+processOrder :: (order: OrderDTO) => void
+  ~> [OrderService.validate, PaymentGateway.charge, Logger.info, EmailService.sendConfirmation]
+
+# Recursive calls
+fibonacci :: (n: number) => number
+  ~> [fibonacci]
+
+# ============================================================================
+# Complex DTO Field Types
+# ============================================================================
+
+ComplexDTO % "Advanced field types demonstration"
+  - simple: string
+  - optional?: number
+  - array: string[]
+  - matrix: number[][]
+  - union: string | number | boolean
+  - literal: "draft" | "published" | "archived"
+  - tuple: [string, number, boolean]
+  - nested: { key: string, value: number }
+  - generic: Record<string, any>
+  - promise: Promise<UserDTO>
+  - map: Map<string, UserDTO>
+  - nullable: string | null
+  - undefinable: number | undefined
+
+# ============================================================================
+# Longform Syntax
+# ============================================================================
+
+program TodoApp {
+  entry: main
+  version: "1.0.0"
+  purpose: "Todo list application"
+}
+
+file MainFile {
+  path: "src/main.ts"
+  imports: [Database, Logger]
+  exports: [init, startApp]
+}
+
+function processData {
+  signature: "(data: any) => void"
+  calls: [validate, transform, save]
+  affects: [DataView]
+}
+
+# ============================================================================
+# Inline Comments
+# ============================================================================
+
+UserService @ src/service.ts:  # This is a service file
+  <- [Logger]  # Import the logger
+  -> [createUser]  # Export the create function
+
+# ============================================================================
+# Edge Cases and Special Characters
+# ============================================================================
+
+# Unicode in names
+名前Service @ src/japanese.ts:
+  => [作成, 更新]
+
+# Underscores in names
+_privateHelper :: () => void
+user_service @ src/user_service.ts:
+
+# Numbers in names (not first character)
+Service2 @ src/service2.ts:
+Logger3 <: BaseLogger
+
+# ============================================================================
+# All Operators Quick Reference
+# ============================================================================
+
+Program -> Entry              # Entry point
+File @ path/to/file:          # File location
+Function :: signature          # Function signature
+Class <: Base                  # Class inheritance
+ClassFile #: path <: Base      # ClassFile fusion
+Constants ! path : Schema      # Constants with schema
+DTO %                         # DTO marker
+Asset ~ "description"         # Asset description
+Component & "description"     # UI Component
+Component &! "root"           # Root UI Component
+PARAM $env "description"      # Environment parameter
+dependency ^ "purpose"        # External dependency
+<- [imports]                  # Imports
+-> [exports]                  # Exports
+~> [calls]                    # Function calls
+=> [methods]                  # Class methods
+~ [affects]                   # Affects UI
+> [contains]                  # UI contains
+< [containedBy]              # UI contained by
+>> Program                    # Asset contains program
+$< [consumes]                # Consumes parameters
+= "default"                   # Default value
+
+# ============================================================================
+# Mixed Shortform and Longform
+# ============================================================================
+
+MixedExample @ src/mixed.ts:
+  <- [Logger]
+
+function helperFunction {
+  signature: "() => void"
+  calls: [Logger.info]
+}
+
+AnotherClass <: BaseClass
+  => [method1, method2]
+
+# End of test file

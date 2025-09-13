@@ -1,229 +1,245 @@
-name: VS Code Extension Publish
+name: Publish VS Code Extension
 
 on:
   release:
     types: [published]
   workflow_dispatch:
     inputs:
-      tag:
-        description: 'Git tag to publish (leave empty for latest commit)'
-        required: false
-        type: string
       dry_run:
-        description: 'Dry run (do not actually publish)'
+        description: 'Dry run (no actual publishing)'
         required: false
-        default: false
-        type: boolean
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      prerelease:
+        description: 'Publish as pre-release'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
 
-# Required secrets:
-# VSCE_TOKEN - Visual Studio Code Marketplace publisher access token
+# Prevent concurrent publishing
+concurrency:
+  group: vscode-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
 
 jobs:
-  publish-extension:
+  validate:
+    name: Validate Extension
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    
+    timeout-minutes: 10
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      should_publish: ${{ steps.check.outputs.should_publish }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.inputs.tag || github.sha }}
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
+      - name: Setup Node and pnpm
+        uses: ./.github/actions/setup-node-pnpm
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-          run_install: false
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build all packages
-        run: pnpm run build
-
-      - name: Get extension version
+      - name: Get version
         id: version
-        working-directory: lib/typed-mind-vscode-extension
         run: |
-          version=$(jq -r '.version' package.json)
-          echo "version=${version}" >> $GITHUB_OUTPUT
-          echo "Extension version: ${version}"
+          VERSION=$(jq -r '.version' lib/typed-mind-vscode-extension/package.json)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extension version: $VERSION"
 
-      - name: Build VS Code extension
-        working-directory: lib/typed-mind-vscode-extension
+      - name: Check if should publish
+        id: check
         run: |
-          echo "Building VS Code extension..."
-          pnpm run build
+          VERSION="${{ steps.version.outputs.version }}"
+          EXTENSION_ID="sammons.typed-mind"
           
-          # Verify dist directory exists
-          if [ ! -d "dist" ]; then
-            echo "Error: dist directory not found after build"
-            exit 1
-          fi
+          echo "Checking if $EXTENSION_ID@$VERSION exists on marketplace..."
           
-          # Verify main entry point exists
-          if [ ! -f "dist/extension.js" ]; then
-            echo "Error: dist/extension.js not found after build"
-            exit 1
-          fi
-          
-          echo "Build completed successfully"
-
-      - name: Package VS Code extension
-        working-directory: lib/typed-mind-vscode-extension
-        run: |
-          echo "Packaging VS Code extension..."
-          # Use --yarn flag to better handle pnpm structure and skip dependency checks
-          npx @vscode/vsce package --yarn --no-dependencies --skip-license
-          
-          # Verify the package was created
-          if [ ! -f "typed-mind-${{ steps.version.outputs.version }}.vsix" ]; then
-            echo "Error: Extension package not found"
-            exit 1
-          fi
-          
-          # Show package info
-          echo "Package created: typed-mind-${{ steps.version.outputs.version }}.vsix"
-          ls -la *.vsix
-
-      - name: Validate extension package
-        working-directory: lib/typed-mind-vscode-extension
-        run: |
-          echo "Validating extension package..."
-          
-          # Simple validation - just check the package can be read
-          # Skip npm list validation which fails with pnpm
-          if [ -f "typed-mind-${{ steps.version.outputs.version }}.vsix" ]; then
-            echo "✓ Package file exists"
-            unzip -l "typed-mind-${{ steps.version.outputs.version }}.vsix" | head -20
-            echo "✓ Package is valid zip file"
+          # Check if version already exists
+          if npx @vscode/vsce show "$EXTENSION_ID" --json 2>/dev/null | jq -e ".versions[] | select(.version == \"$VERSION\")" > /dev/null 2>&1; then
+            echo "Version $VERSION already exists on marketplace"
+            echo "should_publish=false" >> $GITHUB_OUTPUT
           else
-            echo "✗ Package file not found"
-            exit 1
-          fi
-          
-          echo "Package validation completed"
-
-      - name: Check if version already published
-        id: check_published
-        env:
-          VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
-        run: |
-          # Check if this version is already published
-          if npx @vscode/vsce show sammons.typed-mind --json 2>/dev/null | jq -e --arg version "${{ steps.version.outputs.version }}" '.versions[] | select(.version == $version)' > /dev/null; then
-            echo "Version ${{ steps.version.outputs.version }} already published"
-            echo "already_published=true" >> $GITHUB_OUTPUT
-          else
-            echo "Version ${{ steps.version.outputs.version }} not yet published"
-            echo "already_published=false" >> $GITHUB_OUTPUT
+            echo "Version $VERSION not found on marketplace, will publish"
+            echo "should_publish=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Dry run summary
-        if: ${{ github.event.inputs.dry_run }}
-        working-directory: lib/typed-mind-vscode-extension
+      - name: Validate extension
         run: |
-          echo "=== DRY RUN MODE ==="
-          echo "VS Code extension package details:"
-          echo "  - Name: typed-mind"
-          echo "  - Version: ${{ steps.version.outputs.version }}"
-          echo "  - Publisher: sammons"
-          echo "  - Package file: typed-mind-${{ steps.version.outputs.version }}.vsix"
-          echo ""
+          cd lib/typed-mind-vscode-extension
           
-          if [ "${{ steps.check_published.outputs.already_published }}" == "true" ]; then
-            echo "⚠️  This version is already published on the marketplace"
-          else
-            echo "✅ This version is ready to be published"
-          fi
-          
-          echo ""
-          echo "Package contents:"
-          npx @vscode/vsce ls typed-mind-${{ steps.version.outputs.version }}.vsix
-          echo "=== END DRY RUN ==="
-
-      - name: Publish to VS Code Marketplace
-        if: ${{ github.event.inputs.dry_run != 'true' && steps.check_published.outputs.already_published == 'false' }}
-        working-directory: lib/typed-mind-vscode-extension
-        env:
-          VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
-        run: |
-          echo "Publishing typed-mind@${{ steps.version.outputs.version }} to VS Code Marketplace..."
-          npx @vscode/vsce publish --packagePath typed-mind-${{ steps.version.outputs.version }}.vsix
-          echo "Extension published successfully!"
-
-      - name: Verify publication
-        if: ${{ github.event.inputs.dry_run != 'true' && steps.check_published.outputs.already_published == 'false' }}
-        env:
-          VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
-        run: |
-          echo "Verifying extension publication..."
-          
-          # Wait a bit for the marketplace to update
-          sleep 30
-          
-          max_attempts=10
-          attempt=1
-          
-          while [ $attempt -le $max_attempts ]; do
-            if npx @vscode/vsce show sammons.typed-mind --json 2>/dev/null | jq -e --arg version "${{ steps.version.outputs.version }}" '.versions[] | select(.version == $version)' > /dev/null; then
-              echo "✅ Extension typed-mind@${{ steps.version.outputs.version }} is now available on the marketplace!"
-              break
-            else
-              echo "⏳ Waiting for extension to be available on marketplace (attempt $attempt/$max_attempts)"
-              sleep 30
-              attempt=$((attempt + 1))
+          # Check required files exist
+          for file in package.json README.md CHANGELOG.md; do
+            if [ ! -f "$file" ]; then
+              echo "Error: Required file $file not found"
+              exit 1
             fi
           done
           
-          if [ $attempt -gt $max_attempts ]; then
-            echo "❌ Extension not found on marketplace after $max_attempts attempts"
-            echo "This might be normal - it can take time for the marketplace to update"
+          # Validate package.json
+          npx @vscode/vsce ls
+          
+          cd ../..
+
+  build:
+    name: Build Extension
+    needs: validate
+    if: needs.validate.outputs.should_publish == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - name: Setup Node and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Build TypedMind packages
+        run: |
+          # Extension might depend on core packages
+          pnpm build
+
+      - name: Package extension
+        run: |
+          cd lib/typed-mind-vscode-extension
+          
+          # Install vsce locally if needed
+          npm install --save-dev @vscode/vsce
+          
+          # Package the extension
+          npx @vscode/vsce package --no-dependencies
+          
+          # Verify VSIX was created
+          VSIX_FILE=$(ls *.vsix | head -1)
+          if [ -z "$VSIX_FILE" ]; then
+            echo "Error: No VSIX file created"
+            exit 1
           fi
+          
+          echo "Created $VSIX_FILE"
+          echo "VSIX_FILE=$VSIX_FILE" >> $GITHUB_ENV
+          
+          cd ../..
 
-      - name: Upload extension artifact
-        if: ${{ !github.event.inputs.dry_run }}
-        uses: actions/upload-artifact@v4
+      - name: Upload VSIX artifact
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
-          name: vscode-extension
-          path: lib/typed-mind-vscode-extension/typed-mind-${{ steps.version.outputs.version }}.vsix
-          retention-days: 90
+          name: vscode-extension-vsix
+          path: lib/typed-mind-vscode-extension/*.vsix
+          retention-days: 7
 
-      - name: Create publication summary
+  publish:
+    name: Publish to Marketplace
+    needs: [validate, build]
+    if: needs.validate.outputs.should_publish == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: vscode-marketplace
+      url: https://marketplace.visualstudio.com/items?itemName=sammons.typed-mind
+    steps:
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - name: Setup Node and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Download VSIX
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: vscode-extension-vsix
+          path: ./artifacts
+
+      - name: Publish extension
         if: ${{ github.event.inputs.dry_run != 'true' }}
         run: |
-          echo "=== VS CODE EXTENSION PUBLICATION SUMMARY ===" >> $GITHUB_STEP_SUMMARY
+          VSIX_FILE=$(find ./artifacts -name "*.vsix" | head -1)
+          
+          if [ -z "$VSIX_FILE" ]; then
+            echo "Error: No VSIX file found"
+            exit 1
+          fi
+          
+          echo "Publishing $VSIX_FILE..."
+          
+          if [[ "${{ github.event.inputs.prerelease }}" == "true" ]]; then
+            npx @vscode/vsce publish --pre-release --pat "${{ secrets.VSCE_PAT }}" --packagePath "$VSIX_FILE"
+          else
+            npx @vscode/vsce publish --pat "${{ secrets.VSCE_PAT }}" --packagePath "$VSIX_FILE"
+          fi
+
+      - name: Dry run summary
+        if: ${{ github.event.inputs.dry_run == 'true' }}
+        run: |
+          VSIX_FILE=$(find ./artifacts -name "*.vsix" | head -1)
+          echo "Dry run mode - would have published: $VSIX_FILE"
+          
+          # Show package details
+          unzip -l "$VSIX_FILE" | head -20
+
+      - name: Verify publication
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          VERSION="${{ needs.validate.outputs.version }}"
+          EXTENSION_ID="sammons.typed-mind"
+          
+          echo "Waiting for extension to be available on marketplace..."
+          
+          # Wait for extension to be available
+          MAX_RETRIES=30
+          RETRY_COUNT=0
+          
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            if npx @vscode/vsce show "$EXTENSION_ID" --json 2>/dev/null | jq -e ".versions[] | select(.version == \"$VERSION\")" > /dev/null 2>&1; then
+              echo "✓ Extension $EXTENSION_ID@$VERSION is now available on marketplace"
+              break
+            fi
+            
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            echo "Waiting... (attempt $RETRY_COUNT/$MAX_RETRIES)"
+            sleep 10
+          done
+          
+          if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+            echo "Warning: Timeout waiting for extension to be available"
+            exit 1
+          fi
+
+  summary:
+    name: Publishing Summary
+    needs: [validate, build, publish]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Generate summary
+        run: |
+          echo "## VS Code Extension Publishing Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          if [ "${{ steps.check_published.outputs.already_published }}" == "false" ]; then
-            echo "✅ **Extension Published Successfully!**" >> $GITHUB_STEP_SUMMARY
+          echo "### Version Information" >> $GITHUB_STEP_SUMMARY
+          echo "- Version: ${{ needs.validate.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Extension ID: sammons.typed-mind" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ needs.validate.outputs.should_publish }}" != "true" ]]; then
+            echo "ℹ️ Extension version already exists on marketplace - skipped publishing" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ github.event.inputs.dry_run }}" == "true" ]]; then
+            echo "ℹ️ Dry run completed - no actual publishing performed" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ needs.publish.result }}" == "success" ]]; then
+            echo "✅ Successfully published extension to VS Code Marketplace" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "- **Name**: typed-mind" >> $GITHUB_STEP_SUMMARY
-            echo "- **Version**: ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-            echo "- **Publisher**: sammons" >> $GITHUB_STEP_SUMMARY
-            echo "- **Marketplace**: [View Extension](https://marketplace.visualstudio.com/items?itemName=sammons.typed-mind)" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "The extension is now available for installation in VS Code! 🎉" >> $GITHUB_STEP_SUMMARY
+            echo "[View on Marketplace](https://marketplace.visualstudio.com/items?itemName=sammons.typed-mind)" >> $GITHUB_STEP_SUMMARY
           else
-            echo "⚠️ **Extension Already Published**" >> $GITHUB_STEP_SUMMARY
+            echo "❌ Publishing failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [[ "${{ github.event.inputs.prerelease }}" == "true" ]]; then
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "Version ${{ steps.version.outputs.version }} was already available on the marketplace." >> $GITHUB_STEP_SUMMARY
+            echo "ℹ️ Published as pre-release version" >> $GITHUB_STEP_SUMMARY
           fi

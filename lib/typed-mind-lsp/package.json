@@ -31,15 +31,16 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=18.0.0"
   },
   "scripts": {
     "build": "tsc --build",
+    "build:bundled": "tsup --config tsup.bundled.config.ts",
     "dev": "tsc --build --watch",
     "test": "vitest --run",
     "test:watch": "vitest --watch",
     "lint": "eslint src",
-    "clean": "rm -rf dist *.tsbuildinfo",
+    "clean": "rm -rf dist dist-bundled *.tsbuildinfo",
     "prepublishOnly": "npm run clean && npm run build && npm test"
   },
   "dependencies": {

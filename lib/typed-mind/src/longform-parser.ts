@@ -22,6 +22,18 @@ interface LongformBlock {
   raw: string;
 }
 
+// Type-safe interface for DTO field definitions
+interface DTOFieldDefinition {
+  type?: string;
+  description?: string;
+  optional?: boolean;
+}
+
+// Type guard for DTO field definitions
+const isDTOFieldDefinition = (value: unknown): value is DTOFieldDefinition => {
+  return typeof value === 'object' && value !== null;
+};
+
 export class LongformParser {
   private lines: string[] = [];
   private currentLine = 0;
@@ -231,13 +243,22 @@ export class LongformParser {
         const fieldsObj = properties.get('fields') || {};
 
         for (const [fieldName, fieldDef] of Object.entries(fieldsObj)) {
-          const def = fieldDef as any;
-          fields.push({
-            name: fieldName,
-            type: def.type || 'any',
-            description: def.description,
-            optional: def.optional || false,
-          });
+          if (isDTOFieldDefinition(fieldDef)) {
+            const field: DTOField = {
+              name: fieldName,
+              type: fieldDef.type || 'any',
+              optional: fieldDef.optional || false,
+              ...(fieldDef.description && { description: fieldDef.description }),
+            };
+            fields.push(field);
+          } else {
+            // Fallback for malformed field definitions
+            fields.push({
+              name: fieldName,
+              type: 'any',
+              optional: false,
+            });
+          }
         }
 
         return {

@@ -3,10 +3,59 @@ import { DSLValidator } from './validator';
 import { ErrorFormatter } from './formatter';
 import { ImportResolver } from './import-resolver';
 import type { ValidationResult, ProgramGraph, AnyEntity, ValidationError } from './types';
+import type { Result } from './result';
+import type { FilePath } from './branded-types';
 import { dirname } from 'path';
 
-export * from './types';
-export { DSLParser, type ParseResult } from './parser';
+// Export all types explicitly for better TypeScript experience
+export type {
+  // Core types
+  EntityType,
+  Position,
+  ReferenceType,
+  Reference,
+  Entity,
+  
+  // Entity types
+  ProgramEntity,
+  FileEntity,
+  FunctionEntity,
+  FunctionEntityWithDependencies,
+  ClassEntity,
+  ClassFileEntity,
+  ConstantsEntity,
+  DTOEntity,
+  DTOField,
+  AssetEntity,
+  UIComponentEntity,
+  RunParameterEntity,
+  DependencyEntity,
+  AnyEntity,
+  
+  // Validation types
+  ValidationError,
+  ValidationResult,
+  
+  // Import/Graph types
+  ImportStatement,
+  ProgramGraph,
+} from './types';
+
+// Export branded types
+export * from './branded-types';
+
+// Export Result types
+export * from './result';
+
+// Export error types
+export * from './error-types';
+
+// Export EntityMap
+export * from './entity-map';
+
+// Export EntityBuilder
+export * from './entity-builder';
+export { DSLParser, type ParseResult, type ParseError } from './parser';
 export { DSLValidator } from './validator';
 export { ErrorFormatter } from './formatter';
 export { LongformParser } from './longform-parser';
@@ -14,17 +63,43 @@ export { GrammarValidator, type GrammarValidationResult, type GrammarValidationE
 export { ENTITY_PATTERNS, CONTINUATION_PATTERNS, GENERAL_PATTERNS, PATTERN_DESCRIPTIONS } from './parser-patterns';
 export { GrammarDocGenerator } from './grammar-doc-generator';
 
-export class DSLChecker {
-  private parser = new DSLParser();
-  private validator: DSLValidator;
-  private formatter = new ErrorFormatter();
-  private importResolver = new ImportResolver();
+// Enhanced DSLChecker with better type safety
+export interface DSLCheckerOptions {
+  readonly skipOrphanCheck?: boolean;
+  readonly validateGrammar?: boolean;
+  readonly strictMode?: boolean;
+}
 
-  constructor(options: { skipOrphanCheck?: boolean } = {}) {
+// Generic constraints for DSLChecker operations
+export type CheckerInput = string;
+export type CheckerFilePath = string | FilePath;
+
+export class DSLChecker<TOptions extends DSLCheckerOptions = DSLCheckerOptions> {
+  private readonly parser = new DSLParser();
+  private readonly validator: DSLValidator;
+  private readonly formatter = new ErrorFormatter();
+  private readonly importResolver = new ImportResolver();
+  private readonly options: TOptions;
+
+  constructor(options: TOptions = {} as TOptions) {
+    this.options = options;
     this.validator = new DSLValidator(options);
   }
 
-  check(input: string, filePath?: string): ValidationResult {
+  /**
+   * Get the current options
+   */
+  getOptions(): TOptions {
+    return this.options;
+  }
+
+  /**
+   * Type-safe check method with branded types support
+   */
+  check<TInput extends CheckerInput>(
+    input: TInput, 
+    filePath?: CheckerFilePath
+  ): ValidationResult {
     const parseResult = this.parser.parse(input);
     const allEntities = new Map(parseResult.entities);
     const allErrors: ValidationError[] = [];
@@ -64,7 +139,30 @@ export class DSLChecker {
     return result;
   }
 
-  parse(input: string, filePath?: string): ProgramGraph {
+  /**
+   * Enhanced check method that returns Result type for functional error handling
+   */
+  checkSafe<TInput extends CheckerInput>(
+    input: TInput,
+    filePath?: CheckerFilePath
+  ): Result<ProgramGraph, ValidationError[]> {
+    const result = this.check(input, typeof filePath === 'string' ? filePath : undefined);
+    
+    if (result.valid) {
+      const graph = this.parse(input, typeof filePath === 'string' ? filePath : undefined);
+      return { _tag: 'success', value: graph };
+    } else {
+      return { _tag: 'failure', error: result.errors };
+    }
+  }
+
+  /**
+   * Type-safe parse method with branded types support
+   */
+  parse<TInput extends CheckerInput>(
+    input: TInput, 
+    filePath?: CheckerFilePath
+  ): ProgramGraph {
     const parseResult = this.parser.parse(input);
     const allEntities = new Map(parseResult.entities);
 

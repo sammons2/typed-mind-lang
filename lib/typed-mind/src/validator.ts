@@ -3,6 +3,7 @@ import type {
   ClassEntity,
   FileEntity,
   FunctionEntity,
+  FunctionEntityWithDependencies,
   UIComponentEntity,
   AssetEntity,
   RunParameterEntity,
@@ -1259,7 +1260,7 @@ export class DSLValidator {
     // Check that all function dependencies (from <- [...]) exist
     for (const entity of entities.values()) {
       if (entity.type === 'Function') {
-        const funcEntity = entity as FunctionEntity & { _dependencies?: string[] };
+        const funcEntity = entity as FunctionEntityWithDependencies;
 
         // Check if there are unresolved dependencies
         if (funcEntity._dependencies) {

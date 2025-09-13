@@ -77,6 +77,11 @@ export interface FunctionEntity extends Entity {
   consumes?: string[]; // RunParameters this function consumes
 }
 
+// Extended FunctionEntity with temporary fields for parsing
+export interface FunctionEntityWithDependencies extends FunctionEntity {
+  _dependencies?: string[]; // Temporary field for parser to store unresolved dependencies
+}
+
 export interface ClassEntity extends Entity {
   type: 'Class';
   container?: string;

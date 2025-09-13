@@ -127,6 +127,43 @@ export const ENTITY_TYPE_NAMES = [
 
 export type EntityTypeName = (typeof ENTITY_TYPE_NAMES)[number];
 
+// Extract pattern keys for type safety
+export type EntityPatternKey = keyof typeof ENTITY_PATTERNS;
+export type ContinuationPatternKey = keyof typeof CONTINUATION_PATTERNS;
+export type GeneralPatternKey = keyof typeof GENERAL_PATTERNS;
+export type PatternDescriptionKey = keyof typeof PATTERN_DESCRIPTIONS;
+
+// Create a union of all pattern keys for comprehensive type checking
+export type AllPatternKeys = EntityPatternKey | ContinuationPatternKey | GeneralPatternKey;
+
+// Type-safe pattern retrieval helpers
+export const getEntityPattern = <T extends EntityPatternKey>(key: T): (typeof ENTITY_PATTERNS)[T] => {
+  return ENTITY_PATTERNS[key];
+};
+
+export const getContinuationPattern = <T extends ContinuationPatternKey>(key: T): (typeof CONTINUATION_PATTERNS)[T] => {
+  return CONTINUATION_PATTERNS[key];
+};
+
+export const getGeneralPattern = <T extends GeneralPatternKey>(key: T): (typeof GENERAL_PATTERNS)[T] => {
+  return GENERAL_PATTERNS[key];
+};
+
+// Type-safe pattern testing
+export const testEntityPattern = <T extends EntityPatternKey>(
+  key: T, 
+  input: string
+): input is string & { __patternMatch: T } => {
+  return ENTITY_PATTERNS[key].test(input);
+};
+
+export const testContinuationPattern = <T extends ContinuationPatternKey>(
+  key: T,
+  input: string  
+): input is string & { __patternMatch: T } => {
+  return CONTINUATION_PATTERNS[key].test(input);
+};
+
 // Pattern descriptions for documentation generation
 export const PATTERN_DESCRIPTIONS = {
   PROGRAM: {

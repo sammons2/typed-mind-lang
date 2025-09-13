@@ -37,8 +37,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **ClassFile entity support** (`#:` operator) - Fusion syntax for combined class and file entities
+- **Method call syntax highlighting** - Proper highlighting for `ClassName.methodName` patterns
+- **Import statement support** - Full support for `@import` and `import` with aliasing
+- **Enhanced DTO field types** - Support for complex types including unions, tuples, arrays, and nested objects
+- **Optional field syntax** - Support for both `?` suffix and `(optional)` annotation in DTO fields
+- **Parameter consumption operator** (`$<`) - Highlighting for function parameter consumption
+- **Asset contains program** (`>>`) operator support
+- **Improved entity name patterns** - Support for underscores and Unicode characters in entity names
+- **Scoped package dependencies** - Support for `@org/package` dependency syntax
+- **Enhanced type highlighting** - Added more TypeScript/JavaScript types (Promise, Record, Map, Set, etc.)
+- **Better operator precedence** - Fixed operator matching conflicts
+
+### Fixed
+- Missing ClassFile entity type in grammar
+- Incorrect regex patterns for entity name validation
+- Method calls not being properly highlighted in function calls
+- Import statements not being recognized
+- Complex DTO field types not being parsed correctly
+
 ### Planned
 - Additional theme variants
 - Enhanced autocomplete functionality
 - Code snippets for common patterns
 - Improved error messages and diagnostics
+- Support for longform syntax highlighting

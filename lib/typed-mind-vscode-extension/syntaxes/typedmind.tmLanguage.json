@@ -5,11 +5,13 @@
     { "include": "#comments" },
     { "include": "#strings" },
     { "include": "#dto-fields" },
+    { "include": "#method-calls" },
     { "include": "#referenced-entities" },
     { "include": "#entities" },
     { "include": "#operators" },
     { "include": "#keywords" },
-    { "include": "#wildcards" }
+    { "include": "#wildcards" },
+    { "include": "#imports" }
   ],
   "repository": {
     "comments": {
@@ -23,7 +25,7 @@
     "dto-fields": {
       "patterns": [
         {
-          "match": "^\\s*-\\s*([a-zA-Z][a-zA-Z0-9]*):\\s*([a-zA-Z][a-zA-Z0-9\\[\\]<>]*)\\s*(.*)$",
+          "match": "^\\s*-\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\??:\\s*([^\"]+?)(?:\\s+(\"[^\"]+\"))?(?:\\s+\\((optional|required)\\))?\\s*$",
           "captures": {
             "1": {
               "name": "variable.other.property.typedmind"
@@ -32,10 +34,26 @@
               "name": "support.type.typedmind"
             },
             "3": {
-              "patterns": [
-                { "include": "#strings" },
-                { "include": "#keywords" }
-              ]
+              "name": "string.quoted.double.typedmind"
+            },
+            "4": {
+              "name": "keyword.other.optional.typedmind"
+            }
+          }
+        }
+      ]
+    },
+    "method-calls": {
+      "patterns": [
+        {
+          "comment": "Class method calls like UserService.create or Logger.info",
+          "match": "\\b([A-Za-z][A-Za-z0-9_]*)\\.([a-zA-Z][a-zA-Z0-9_]*)\\b",
+          "captures": {
+            "1": {
+              "name": "entity.name.class.typedmind"
+            },
+            "2": {
+              "name": "entity.name.function.method.typedmind"
             }
           }
         }
@@ -45,39 +63,43 @@
       "patterns": [
         {
           "name": "entity.name.type.typedmind",
-          "match": "\\b(Program|File|Function|Class|Constants|Asset|UIComponent|DTO|RunParameter|Dependency)\\b"
+          "match": "\\b(Program|File|Function|Class|ClassFile|Constants|Asset|UIComponent|DTO|RunParameter|Dependency)\\b"
         },
         {
           "name": "entity.name.namespace.program.typedmind",
-          "match": "\\b[A-Za-z][A-Za-z0-9]*\\b(?=\\s*->\\s*\\w+\\s*v)"
+          "match": "\\b[A-Za-z][A-Za-z0-9_]*\\b(?=\\s*->\\s*\\w+)"
         },
         {
           "name": "entity.name.type.file.typedmind",
-          "match": "\\b[A-Za-z][A-Za-z0-9]*\\b(?=\\s*@)"
+          "match": "\\b[A-Za-z][A-Za-z0-9_]*\\b(?=\\s*@)"
         },
         {
           "name": "entity.name.function.typedmind",
-          "match": "\\b[A-Za-z][A-Za-z0-9]*\\b(?=\\s*::)"
+          "match": "\\b[A-Za-z][A-Za-z0-9_]*\\b(?=\\s*::)"
         },
         {
           "name": "entity.name.class.typedmind",
-          "match": "\\b[A-Za-z][A-Za-z0-9]*\\b(?=\\s*<:)"
+          "match": "\\b[A-Za-z][A-Za-z0-9_]*\\b(?=\\s*<:)"
+        },
+        {
+          "name": "entity.name.class.classfile.typedmind",
+          "match": "\\b[A-Za-z][A-Za-z0-9_]*\\b(?=\\s*#:)"
         },
         {
           "name": "entity.name.constant.typedmind",
-          "match": "\\b[A-Za-z][A-Za-z0-9]*\\b(?=\\s*!)"
+          "match": "\\b[A-Za-z][A-Za-z0-9_]*\\b(?=\\s*!)"
         },
         {
           "name": "entity.name.dto.typedmind",
-          "match": "\\b[A-Za-z][A-Za-z0-9]*\\b(?=\\s*%)"
+          "match": "\\b[A-Za-z][A-Za-z0-9_]*\\b(?=\\s*%)"
         },
         {
           "name": "entity.name.asset.typedmind",
-          "match": "\\b[A-Za-z][A-Za-z0-9]*\\b(?=\\s*~)"
+          "match": "\\b[A-Za-z][A-Za-z0-9_]*\\b(?=\\s*~)"
         },
         {
           "name": "entity.name.component.typedmind",
-          "match": "\\b[A-Za-z][A-Za-z0-9]*\\b(?=\\s*&)"
+          "match": "\\b[A-Za-z][A-Za-z0-9_]*\\b(?=\\s*&!?)"
         },
         {
           "name": "entity.name.parameter.typedmind",
@@ -85,7 +107,7 @@
         },
         {
           "name": "entity.name.dependency.typedmind",
-          "match": "\\b[A-Za-z][A-Za-z0-9@/_-]*\\b(?=\\s*\\^)"
+          "match": "[@\\w\\-/]+(?=\\s*\\^)"
         }
       ]
     },
@@ -98,24 +120,52 @@
             "1": { "name": "keyword.operator.calls.typedmind" },
             "2": {
               "patterns": [
+                { "include": "#method-calls" },
                 {
-                  "match": "\\b([A-Za-z][A-Za-z0-9]*)\\b",
-                  "name": "entity.name.function.typedmind"
+                  "match": "\\b[A-Za-z][A-Za-z0-9_]*\\b",
+                  "name": "entity.name.function.reference.typedmind"
+                },
+                {
+                  "match": ",",
+                  "name": "punctuation.separator.comma.typedmind"
                 }
               ]
             }
           }
         },
         {
-          "comment": "Function affects UIComponents",
-          "match": "(~)\\s*\\[([^\\]]+)\\]",
+          "comment": "Imports",
+          "match": "(<-)\\s*\\[([^\\]]+)\\]",
           "captures": {
-            "1": { "name": "keyword.operator.asset.typedmind" },
+            "1": { "name": "keyword.operator.imports.typedmind" },
             "2": {
               "patterns": [
                 {
-                  "match": "\\b([A-Za-z][A-Za-z0-9]*)\\b",
-                  "name": "entity.name.component.typedmind"
+                  "match": "\\b[A-Za-z][A-Za-z0-9_]*\\b",
+                  "name": "entity.name.reference.typedmind"
+                },
+                {
+                  "match": ",",
+                  "name": "punctuation.separator.comma.typedmind"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "comment": "Exports",
+          "match": "(->)\\s*\\[([^\\]]+)\\]",
+          "captures": {
+            "1": { "name": "keyword.operator.exports.typedmind" },
+            "2": {
+              "patterns": [
+                {
+                  "match": "\\b[A-Za-z][A-Za-z0-9_]*\\b",
+                  "name": "entity.name.reference.typedmind"
+                },
+                {
+                  "match": ",",
+                  "name": "punctuation.separator.comma.typedmind"
                 }
               ]
             }
@@ -129,109 +179,99 @@
             "2": {
               "patterns": [
                 {
-                  "match": "\\b([A-Za-z][A-Za-z0-9]*)\\b",
-                  "name": "entity.name.function.typedmind"
+                  "match": "\\b[a-z][A-Za-z0-9_]*\\b",
+                  "name": "entity.name.function.method.typedmind"
+                },
+                {
+                  "match": ",",
+                  "name": "punctuation.separator.comma.typedmind"
                 }
               ]
             }
           }
         },
         {
-          "comment": "UIComponent contains",
+          "comment": "UI affects",
+          "match": "(~)\\s*\\[([^\\]]+)\\]",
+          "captures": {
+            "1": { "name": "keyword.operator.affects.typedmind" },
+            "2": {
+              "patterns": [
+                {
+                  "match": "\\b[A-Za-z][A-Za-z0-9_]*\\b",
+                  "name": "entity.name.component.reference.typedmind"
+                },
+                {
+                  "match": ",",
+                  "name": "punctuation.separator.comma.typedmind"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "comment": "UI contains",
           "match": "(>)\\s*\\[([^\\]]+)\\]",
           "captures": {
             "1": { "name": "keyword.operator.contains.typedmind" },
             "2": {
               "patterns": [
                 {
-                  "match": "\\b([A-Za-z][A-Za-z0-9]*)\\b",
-                  "name": "entity.name.component.typedmind"
+                  "match": "\\b[A-Za-z][A-Za-z0-9_]*\\b",
+                  "name": "entity.name.component.reference.typedmind"
+                },
+                {
+                  "match": ",",
+                  "name": "punctuation.separator.comma.typedmind"
                 }
               ]
             }
           }
         },
         {
-          "comment": "UIComponent containedBy",
+          "comment": "UI contained by",
           "match": "(<)\\s*\\[([^\\]]+)\\]",
           "captures": {
-            "1": { "name": "keyword.operator.containedBy.typedmind" },
+            "1": { "name": "keyword.operator.containedby.typedmind" },
             "2": {
               "patterns": [
                 {
-                  "match": "\\b([A-Za-z][A-Za-z0-9]*)\\b",
-                  "name": "entity.name.component.typedmind"
+                  "match": "\\b[A-Za-z][A-Za-z0-9_]*\\b",
+                  "name": "entity.name.component.reference.typedmind"
+                },
+                {
+                  "match": ",",
+                  "name": "punctuation.separator.comma.typedmind"
                 }
               ]
             }
           }
         },
         {
-          "comment": "Function consumes RunParameters",
+          "comment": "Parameter consumption",
           "match": "(\\$<)\\s*\\[([^\\]]+)\\]",
           "captures": {
             "1": { "name": "keyword.operator.consumes.typedmind" },
             "2": {
               "patterns": [
                 {
-                  "match": "\\b([A-Z][A-Z0-9_]*)\\b",
-                  "name": "entity.name.parameter.typedmind"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "comment": "Generic imports/exports (mixed types)",
-          "match": "(->|<-)\\s*\\[([^\\]]+)\\]",
-          "captures": {
-            "1": { "name": "keyword.operator.arrow.typedmind" },
-            "2": {
-              "patterns": [
+                  "match": "\\b[A-Z][A-Z0-9_]*\\b",
+                  "name": "entity.name.parameter.reference.typedmind"
+                },
                 {
-                  "match": "\\b([A-Za-z][A-Za-z0-9@/_-]*)\\b",
-                  "name": "variable.other.typedmind"
+                  "match": ",",
+                  "name": "punctuation.separator.comma.typedmind"
                 }
               ]
             }
-          }
-        },
-        {
-          "comment": "Other bracketed lists",
-          "match": "\\[([^\\]]+)\\]",
-          "captures": {
-            "1": {
-              "patterns": [
-                {
-                  "match": "\\b([A-Za-z][A-Za-z0-9@/_-]*)\\b",
-                  "name": "variable.other.typedmind"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "comment": "Program entry (single File reference)",
-          "match": "(->)\\s+(\\w+)\\s*(?=v|$)",
-          "captures": {
-            "1": { "name": "keyword.operator.arrow.typedmind" },
-            "2": { "name": "entity.name.function.typedmind" }
-          }
-        },
-        {
-          "comment": "Function input/output (single DTO reference)",
-          "match": "^\\s*(<-|->)\\s+(\\w+)$",
-          "captures": {
-            "1": { "name": "keyword.operator.arrow.typedmind" },
-            "2": { "name": "entity.name.dto.typedmind" }
           }
         },
         {
           "comment": "Asset contains program",
-          "match": "(>>)\\s+(\\w+)",
+          "match": "(>>)\\s*(\\w+)",
           "captures": {
-            "1": { "name": "keyword.operator.contains-program.typedmind" },
-            "2": { "name": "entity.name.type.typedmind" }
+            "1": { "name": "keyword.operator.containsprogram.typedmind" },
+            "2": { "name": "entity.name.namespace.program.typedmind" }
           }
         }
       ]
@@ -251,12 +291,12 @@
           "match": "@"
         },
         {
-          "name": "keyword.operator.signature.typedmind",
-          "match": "::"
+          "name": "keyword.operator.classfile.typedmind",
+          "match": "#:"
         },
         {
-          "name": "keyword.operator.calls.typedmind",
-          "match": "~>"
+          "name": "keyword.operator.signature.typedmind",
+          "match": "::"
         },
         {
           "name": "keyword.operator.extends.typedmind",
@@ -265,10 +305,6 @@
         {
           "name": "keyword.operator.constants.typedmind",
           "match": "!"
-        },
-        {
-          "name": "keyword.operator.methods.typedmind",
-          "match": "=>"
         },
         {
           "name": "keyword.operator.dto.typedmind",
@@ -280,35 +316,43 @@
         },
         {
           "name": "keyword.operator.component.typedmind",
-          "match": "&"
+          "match": "&!?"
         },
         {
-          "name": "keyword.operator.contains.typedmind",
-          "match": ">"
-        },
-        {
-          "name": "keyword.operator.containedBy.typedmind",
-          "match": "<"
+          "name": "keyword.operator.runparam.typedmind",
+          "match": "\\$(env|iam|runtime|config)"
         },
         {
           "name": "keyword.operator.dependency.typedmind",
           "match": "\\^"
         },
         {
-          "name": "keyword.operator.parameter.typedmind",
-          "match": "\\$(env|iam|runtime|config)"
+          "name": "keyword.operator.calls.typedmind",
+          "match": "~>"
+        },
+        {
+          "name": "keyword.operator.methods.typedmind",
+          "match": "=>"
+        },
+        {
+          "name": "keyword.operator.containsprogram.typedmind",
+          "match": ">>"
+        },
+        {
+          "name": "keyword.operator.contains.typedmind",
+          "match": ">"
+        },
+        {
+          "name": "keyword.operator.containedby.typedmind",
+          "match": "<"
         },
         {
           "name": "keyword.operator.consumes.typedmind",
           "match": "\\$<"
         },
         {
-          "name": "keyword.operator.contains-program.typedmind",
-          "match": ">>"
-        },
-        {
-          "name": "keyword.operator.root-component.typedmind",
-          "match": "&!"
+          "name": "keyword.operator.schema.typedmind",
+          "match": ":"
         },
         {
           "name": "keyword.operator.default.typedmind",
@@ -316,42 +360,63 @@
         }
       ]
     },
-    "strings": {
-      "name": "string.quoted.double.typedmind",
-      "begin": "\"",
-      "end": "\"",
-      "patterns": [
-        {
-          "name": "constant.character.escape.typedmind",
-          "match": "\\\\."
-        }
-      ]
-    },
     "keywords": {
       "patterns": [
-        {
-          "name": "keyword.other.version.typedmind",
-          "match": "\\bv?[0-9]+\\.[0-9]+(?:\\.[0-9]+)?(?:-[a-zA-Z0-9.-]+)?\\b"
-        },
-        {
-          "name": "keyword.control.optional.typedmind",
-          "match": "\\b(optional|required)\\b"
-        },
         {
           "name": "keyword.control.import.typedmind",
           "match": "\\b(@import|import)\\b"
         },
         {
           "name": "keyword.control.as.typedmind",
-          "match": "\\bas\\b"
+          "match": "\\b(as)\\b"
+        },
+        {
+          "name": "keyword.other.optional.typedmind",
+          "match": "\\b(optional|required)\\b"
         },
         {
           "name": "storage.type.typedmind",
-          "match": "\\b(program|file|function|class|dto|component|asset|constants|parameter|dependency)\\b"
+          "match": "\\b(string|number|boolean|object|any|void|null|undefined|Date|Promise|Array|Record|Map|Set)\\b"
         },
         {
-          "name": "storage.modifier.typedmind",
-          "match": "\\b(type|description|path|entry|version|signature|input|output|calls|affects|consumes|imports|exports|extends|implements|methods|contains|containedBy|affectedBy|fields|purpose|root|paramType|required|default|importedBy)\\b:"
+          "name": "keyword.other.version.typedmind",
+          "match": "\\bv[0-9]+\\.[0-9]+\\.[0-9]+(-[a-zA-Z0-9\\.]+)?\\b"
+        }
+      ]
+    },
+    "imports": {
+      "patterns": [
+        {
+          "match": "^\\s*(@import|import)\\s+\"([^\"]+)\"(?:\\s+(as)\\s+(\\w+))?",
+          "captures": {
+            "1": {
+              "name": "keyword.control.import.typedmind"
+            },
+            "2": {
+              "name": "string.quoted.double.typedmind"
+            },
+            "3": {
+              "name": "keyword.control.as.typedmind"
+            },
+            "4": {
+              "name": "entity.name.namespace.typedmind"
+            }
+          }
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.typedmind",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.typedmind",
+              "match": "\\\\."
+            }
+          ]
         }
       ]
     },

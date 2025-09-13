@@ -184,7 +184,7 @@ export class GrammarValidator {
       return;
     }
 
-    const value = (entity as any)[field];
+    const value = this.getEntityFieldValue(entity, field);
     const actualType = Array.isArray(value) ? 'array' : typeof value;
 
     if (actualType !== expectedType) {
@@ -202,7 +202,7 @@ export class GrammarValidator {
       return; // Optional field is missing, which is fine
     }
 
-    const value = (entity as any)[field];
+    const value = this.getEntityFieldValue(entity, field);
     if (value === undefined || value === null) {
       return; // Optional field can be undefined/null
     }
@@ -260,5 +260,14 @@ export class GrammarValidator {
     const errorMessages = errors.map((error) => `  - ${error.entity} (${error.type}): ${error.message}`);
 
     return `Grammar validation errors found:\n${errorMessages.join('\n')}`;
+  }
+
+  /**
+   * Type-safe field access helper to replace (entity as any)[field]
+   */
+  private getEntityFieldValue(entity: AnyEntity, field: string): unknown {
+    // Use index signature access with proper type checking
+    const entityRecord = entity as unknown as Record<string, unknown>;
+    return entityRecord[field];
   }
 }
