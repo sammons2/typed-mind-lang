@@ -1533,11 +1533,11 @@ export class DSLValidator {
     const types: string[] = [];
 
     // Handle array types (e.g., "string[]", "UserDTO[][]")
-    let baseType = fieldType.replace(/\[\]/g, '');
+    const baseType = fieldType.replace(/\[\]/g, '');
 
     // Handle union types (e.g., "string | number | UserDTO")
     if (baseType.includes('|')) {
-      const unionParts = baseType.split('|').map(part => part.trim());
+      const unionParts = baseType.split('|').map((part) => part.trim());
       for (const part of unionParts) {
         if (!this.isPrimitiveType(part) && this.isCustomTypeName(part)) {
           types.push(part);
@@ -1555,8 +1555,24 @@ export class DSLValidator {
 
   private isPrimitiveType(typeName: string): boolean {
     const primitives = [
-      'string', 'number', 'boolean', 'object', 'any', 'void', 'null', 'undefined', 'Date',
-      'Array', 'Promise', 'Map', 'Set', 'Record', 'Partial', 'Required', 'Pick', 'Omit'
+      'string',
+      'number',
+      'boolean',
+      'object',
+      'any',
+      'void',
+      'null',
+      'undefined',
+      'Date',
+      'Array',
+      'Promise',
+      'Map',
+      'Set',
+      'Record',
+      'Partial',
+      'Required',
+      'Pick',
+      'Omit',
     ];
     return primitives.includes(typeName);
   }

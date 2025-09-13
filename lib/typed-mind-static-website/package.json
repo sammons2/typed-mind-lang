@@ -1,6 +1,7 @@
 {
   "name": "@sammons/typed-mind-static-website",
   "version": "0.1.8",
+  "private": true,
   "description": "Static website for TypedMind DSL",
   "author": "sammons",
   "license": "MIT",

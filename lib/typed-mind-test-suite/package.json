@@ -1,6 +1,7 @@
 {
   "name": "@sammons/typed-mind-test-suite",
   "version": "0.1.8",
+  "private": true,
   "type": "module",
   "scripts": {
     "test": "vitest --run",
