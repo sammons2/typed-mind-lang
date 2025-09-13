@@ -55,8 +55,14 @@ jobs:
         if: ${{ github.event.inputs.skip_tests != 'true' }}
         run: pnpm test
 
-      - name: Build all packages
-        run: pnpm build
+      - name: Build publishable packages only
+        run: |
+          # Build only the packages that will be published to NPM
+          pnpm --filter "@sammons/typed-mind" \
+               --filter "@sammons/typed-mind-renderer" \
+               --filter "@sammons/typed-mind-cli" \
+               --filter "@sammons/typed-mind-lsp" \
+               build
 
       - name: Check packages to publish
         id: check
@@ -88,8 +94,14 @@ jobs:
       - name: Setup Node and pnpm
         uses: ./.github/actions/setup-node-pnpm
 
-      - name: Build packages
-        run: pnpm build
+      - name: Build publishable packages only
+        run: |
+          # Build only the packages that will be published to NPM
+          pnpm --filter "@sammons/typed-mind" \
+               --filter "@sammons/typed-mind-renderer" \
+               --filter "@sammons/typed-mind-cli" \
+               --filter "@sammons/typed-mind-lsp" \
+               build
 
       - name: Configure npm authentication
         run: |
