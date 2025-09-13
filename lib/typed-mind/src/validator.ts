@@ -127,6 +127,8 @@ export class DSLValidator {
     }
     this.checkImports(entities);
     this.checkCircularDeps(entities);
+    this.checkCircularUIComponentContainment(entities);
+    this.checkInheritanceChains(entities);
     this.checkEntryPoint(entities);
     this.checkUniquePaths(entities);
     this.checkClassAndFunctionExports(entities);
@@ -462,6 +464,186 @@ export class DSLValidator {
                 message: `Circular import detected: ${cycle.join(' -> ')}`,
                 severity: 'error',
                 suggestion: 'Break the circular dependency by refactoring shared code into a separate module',
+              });
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private checkCircularUIComponentContainment(entities: Map<string, AnyEntity>): void {
+    // Check for circular containment in UIComponents specifically
+    const containmentGraph = new Map<string, string[]>();
+
+    // Build containment graph (only UIComponents can contain other UIComponents)
+    for (const [name, entity] of entities) {
+      if (entity.type === 'UIComponent' && 'contains' in entity) {
+        const uiEntity = entity as UIComponentEntity;
+        if (uiEntity.contains) {
+          containmentGraph.set(name, uiEntity.contains);
+        }
+      }
+    }
+
+    const visited = new Set<string>();
+    const recursionStack = new Set<string>();
+    const reportedCycles = new Set<string>();
+
+    const hasCycle = (node: string, path: string[] = []): string[] | null => {
+      if (!containmentGraph.has(node)) {
+        return null;
+      }
+
+      visited.add(node);
+      recursionStack.add(node);
+      path.push(node);
+
+      const containedComponents = containmentGraph.get(node) || [];
+      for (const contained of containedComponents) {
+        // Check for self-containment
+        if (contained === node) {
+          const entity = entities.get(node);
+          if (entity) {
+            this.addError({
+              position: entity.position,
+              message: `UIComponent '${node}' contains itself`,
+              severity: 'error',
+              suggestion: 'Remove self-reference from the contains list',
+            });
+          }
+          continue;
+        }
+
+        if (!visited.has(contained)) {
+          const cycle = hasCycle(contained, [...path]);
+          if (cycle) return cycle;
+        } else if (recursionStack.has(contained)) {
+          return [...path, contained];
+        }
+      }
+
+      recursionStack.delete(node);
+      return null;
+    };
+
+    for (const name of containmentGraph.keys()) {
+      if (!visited.has(name)) {
+        const cycle = hasCycle(name);
+        if (cycle) {
+          // Normalize cycle to avoid reporting same cycle multiple times
+          const cycleKey = [...cycle].sort().join('->');
+          if (!reportedCycles.has(cycleKey)) {
+            reportedCycles.add(cycleKey);
+
+            const entity = entities.get(name);
+            if (entity) {
+              this.addError({
+                position: entity.position,
+                message: `UIComponent '${name}' has circular containment: ${cycle.join(' -> ')}`,
+                severity: 'error',
+                suggestion: 'Break the circular containment by removing one of the contains relationships',
+              });
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private checkInheritanceChains(entities: Map<string, AnyEntity>): void {
+    // Check for circular inheritance and invalid inheritance chains
+    const inheritanceGraph = new Map<string, string>();
+
+    // Build inheritance graph (single inheritance only)
+    for (const [name, entity] of entities) {
+      if ((entity.type === 'Class' || entity.type === 'ClassFile') && 'extends' in entity) {
+        const classEntity = entity as ClassEntity;
+        if (classEntity.extends) {
+          inheritanceGraph.set(name, classEntity.extends);
+
+          // Check for self-inheritance
+          if (classEntity.extends === name) {
+            this.addError({
+              position: entity.position,
+              message: `Class '${name}' inherits from itself`,
+              severity: 'error',
+              suggestion: 'Remove the self-inheritance or choose a different base class',
+            });
+            continue;
+          }
+
+          // Check if base class exists
+          if (!entities.has(classEntity.extends)) {
+            this.addError({
+              position: entity.position,
+              message: `Class '${name}' extends '${classEntity.extends}' which does not exist`,
+              severity: 'error',
+              suggestion: `Define '${classEntity.extends}' as a Class or ClassFile entity`,
+            });
+          }
+        }
+
+        // Check implements array for interface existence
+        if (classEntity.implements) {
+          for (const intf of classEntity.implements) {
+            if (!entities.has(intf)) {
+              this.addError({
+                position: entity.position,
+                message: `Class '${name}' implements '${intf}' which does not exist`,
+                severity: 'error',
+                suggestion: `Define '${intf}' as a Class or ClassFile entity`,
+              });
+            }
+          }
+        }
+      }
+    }
+
+    // Check for circular inheritance using graph traversal
+    const visited = new Set<string>();
+    const recursionStack = new Set<string>();
+    const reportedCycles = new Set<string>();
+
+    const hasCycle = (node: string, path: string[] = []): string[] | null => {
+      if (!inheritanceGraph.has(node)) {
+        return null;
+      }
+
+      visited.add(node);
+      recursionStack.add(node);
+      path.push(node);
+
+      const parent = inheritanceGraph.get(node);
+      if (parent) {
+        if (!visited.has(parent)) {
+          const cycle = hasCycle(parent, [...path]);
+          if (cycle) return cycle;
+        } else if (recursionStack.has(parent)) {
+          return [...path, parent];
+        }
+      }
+
+      recursionStack.delete(node);
+      return null;
+    };
+
+    for (const name of inheritanceGraph.keys()) {
+      if (!visited.has(name)) {
+        const cycle = hasCycle(name);
+        if (cycle) {
+          // Normalize cycle to avoid reporting same cycle multiple times
+          const cycleKey = [...cycle].sort().join('->');
+          if (!reportedCycles.has(cycleKey)) {
+            reportedCycles.add(cycleKey);
+
+            const entity = entities.get(name);
+            if (entity) {
+              this.addError({
+                position: entity.position,
+                message: `Class '${name}' has circular inheritance: ${cycle.join(' -> ')}`,
+                severity: 'error',
+                suggestion: 'Break the circular inheritance by removing one of the extends relationships',
               });
             }
           }
@@ -1289,25 +1471,107 @@ export class DSLValidator {
   }
 
   private checkDTOFieldTypes(entities: Map<string, AnyEntity>): void {
-    // Check that DTO fields don't have Function type
+    // Check that DTO fields don't have Function type and validate field type references
     for (const entity of entities.values()) {
       if (entity.type === 'DTO') {
         const dtoEntity = entity as DTOEntity;
 
         if (dtoEntity.fields) {
           for (const field of dtoEntity.fields) {
+            if (!field.type) continue;
+
             // Check if field type is exactly 'Function' or contains 'Function' as a word
-            if (field.type && (field.type === 'Function' || /\bFunction\b/.test(field.type))) {
+            if (field.type === 'Function' || /\bFunction\b/.test(field.type)) {
               this.addError({
                 position: entity.position,
                 message: `DTO '${entity.name}' field '${field.name}' cannot have Function type`,
                 severity: 'error',
                 suggestion: `DTOs should only contain data fields. Use string, number, boolean, object, array, or other data types instead`,
               });
+              continue;
             }
+
+            // Validate field type references exist
+            this.validateFieldTypeReferences(field.type, entity, field.name, entities);
           }
         }
       }
     }
+  }
+
+  private validateFieldTypeReferences(fieldType: string, entity: AnyEntity, fieldName: string, entities: Map<string, AnyEntity>): void {
+    // Parse field type to extract base types that need validation
+    const typesToCheck = this.extractTypesFromFieldType(fieldType);
+
+    for (const typeName of typesToCheck) {
+      // Skip primitive types
+      if (this.isPrimitiveType(typeName)) {
+        continue;
+      }
+
+      // Check if custom type exists as DTO or Class
+      const referencedEntity = entities.get(typeName);
+      if (!referencedEntity) {
+        this.addError({
+          position: entity.position,
+          message: `DTO '${entity.name}' field '${fieldName}' references undefined type '${typeName}'`,
+          severity: 'error',
+          suggestion: `Define '${typeName}' as a DTO or Class entity`,
+        });
+      } else if (referencedEntity.type !== 'DTO' && referencedEntity.type !== 'Class') {
+        this.addError({
+          position: entity.position,
+          message: `DTO '${entity.name}' field '${fieldName}' references '${typeName}' which is a ${referencedEntity.type}, not a DTO or Class`,
+          severity: 'error',
+          suggestion: `Field types should reference DTO or Class entities for complex types`,
+        });
+      }
+    }
+  }
+
+  private extractTypesFromFieldType(fieldType: string): string[] {
+    const types: string[] = [];
+
+    // Handle array types (e.g., "string[]", "UserDTO[][]")
+    let baseType = fieldType.replace(/\[\]/g, '');
+
+    // Handle union types (e.g., "string | number | UserDTO")
+    if (baseType.includes('|')) {
+      const unionParts = baseType.split('|').map(part => part.trim());
+      for (const part of unionParts) {
+        if (!this.isPrimitiveType(part) && this.isCustomTypeName(part)) {
+          types.push(part);
+        }
+      }
+    } else {
+      // Single type
+      if (!this.isPrimitiveType(baseType) && this.isCustomTypeName(baseType)) {
+        types.push(baseType);
+      }
+    }
+
+    return types;
+  }
+
+  private isPrimitiveType(typeName: string): boolean {
+    const primitives = [
+      'string', 'number', 'boolean', 'object', 'any', 'void', 'null', 'undefined', 'Date',
+      'Array', 'Promise', 'Map', 'Set', 'Record', 'Partial', 'Required', 'Pick', 'Omit'
+    ];
+    return primitives.includes(typeName);
+  }
+
+  private isCustomTypeName(typeName: string): boolean {
+    // Custom types typically start with uppercase letter
+    // Also handle generic syntax like "Promise<UserDTO>" by extracting the inner type
+    if (typeName.includes('<') && typeName.includes('>')) {
+      // Extract generic inner type (simplified, could be more robust)
+      const match = typeName.match(/<([^>]+)>/);
+      if (match) {
+        return this.isCustomTypeName(match[1]);
+      }
+    }
+
+    return /^[A-Z]/.test(typeName) && /^[A-Za-z][A-Za-z0-9_]*$/.test(typeName);
   }
 }

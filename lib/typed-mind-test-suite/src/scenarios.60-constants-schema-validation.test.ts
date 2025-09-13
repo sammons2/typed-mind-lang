@@ -50,7 +50,7 @@ describe('Scenario 60: Constants schema validation', () => {
     // InvalidSchema references undefined types
     expect(errors.some(e =>
       e.includes('UndefinedType') || e.includes('UnknownProcessor')
-    )).toBe(false); // Validator doesn't validate DTO field type references yet
+    )).toBe(true); // Validator now validates DTO field type references
   });
 
   it('should handle circular schema references', () => {

@@ -36,14 +36,14 @@ describe('Scenario 53: ClassFile Inheritance Edge Cases', () => {
       e.message.includes('NonExistentBase') &&
       (e.message.includes('not found') || e.message.includes('does not exist'))
     );
-    expect(nonExistentBaseError).toBeUndefined(); // Validator doesn't implement inheritance validation yet
+    expect(nonExistentBaseError).toBeDefined(); // Missing base class should be detected
     
     // Self-inheriting class should error
     const selfInheritingError = result.errors.find(e =>
       e.message.includes('SelfInheriting') &&
       (e.message.includes('itself') || e.message.includes('circular'))
     );
-    expect(selfInheritingError).toBeUndefined(); // Validator doesn't implement circular inheritance detection yet
+    expect(selfInheritingError).toBeDefined(); // Self-inheritance should be detected
     
     // Valid inheritance should not error
     const validChildError = result.errors.find(e => 

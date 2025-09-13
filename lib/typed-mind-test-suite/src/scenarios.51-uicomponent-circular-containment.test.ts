@@ -36,14 +36,14 @@ describe('Scenario 51: UIComponent Circular Containment', () => {
       e.message.includes('SelfContainer') &&
       (e.message.includes('itself') || e.message.includes('circular'))
     );
-    expect(selfContainError).toBeUndefined(); // Validator doesn't implement circular containment detection yet
+    expect(selfContainError).toBeDefined(); // Self-containment should be detected
     
     // Direct circular containment (A contains B, B contains A)
     const directCircularError = result.errors.find(e =>
       (e.message.includes('CircularA') || e.message.includes('CircularB')) &&
       e.message.includes('circular')
     );
-    expect(directCircularError).toBeUndefined(); // Validator doesn't implement circular containment detection yet
+    expect(directCircularError).toBeDefined(); // Circular containment should be detected
     
     // Three-way circular containment
     const threeWayError = result.errors.find(e =>
@@ -52,7 +52,7 @@ describe('Scenario 51: UIComponent Circular Containment', () => {
        e.message.includes('ThreeWayC')) &&
       e.message.includes('circular')
     );
-    expect(threeWayError).toBeUndefined(); // Validator doesn't implement circular containment detection yet
+    expect(threeWayError).toBeDefined(); // Three-way circular containment should be detected
     
     // Complex circular patterns
     const complexCircularError = result.errors.find(e =>
@@ -60,7 +60,7 @@ describe('Scenario 51: UIComponent Circular Containment', () => {
        e.message.includes('ComplexCircle2')) &&
       e.message.includes('circular')
     );
-    expect(complexCircularError).toBeUndefined(); // Validator doesn't implement circular containment detection yet
+    expect(complexCircularError).toBeDefined(); // Complex circular containment should be detected
     
     // Valid components should not have errors (but validator flags orphaned entities)
     const validRootError = result.errors.find(e =>
