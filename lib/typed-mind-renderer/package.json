@@ -38,6 +38,8 @@
     "test": "vitest --run --passWithNoTests",
     "test:watch": "vitest --watch",
     "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run clean && npm run build && npm test"
   },
   "dependencies": {

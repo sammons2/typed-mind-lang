@@ -61,7 +61,7 @@ export class TypeScriptToTypedMindConverter {
   private readonly dependencies = new Map<string, DependencyEntity>();
   private readonly externalTypeToPackage = new Map<string, string>(); // Maps external types to their package
   private entryPoints = new Set<string>();
-  
+
   // Two-pass architecture registries
   private readonly exportRegistry: ExportRegistry = {};
   private readonly entityRegistry: EntityRegistry = {
@@ -133,9 +133,9 @@ export class TypeScriptToTypedMindConverter {
     this.dependencies.clear();
     this.externalTypeToPackage.clear();
     this.entryPoints.clear();
-    
+
     // Clear two-pass registries
-    Object.keys(this.exportRegistry).forEach(key => delete this.exportRegistry[key]);
+    Object.keys(this.exportRegistry).forEach((key) => delete this.exportRegistry[key]);
     this.entityRegistry.functions.clear();
     this.entityRegistry.classes.clear();
     this.entityRegistry.interfaces.clear();
@@ -164,7 +164,7 @@ export class TypeScriptToTypedMindConverter {
 
   private convertModules(modules: ParsedModule[]): void {
     // PHASE 1: Collection and Export Registration
-    
+
     // 1.1: Extract all dependencies first
     for (const module of modules) {
       this.extractDependencies(module);
@@ -213,7 +213,7 @@ export class TypeScriptToTypedMindConverter {
       // Only create dependency entities for external packages (not internal imports)
       if (this.isExternalPackage(imp.specifier)) {
         this.createDependencyEntity(imp.specifier);
-        
+
         // Track which types come from this external package
         if (imp.namedImports) {
           for (const namedImport of imp.namedImports) {
@@ -250,7 +250,7 @@ export class TypeScriptToTypedMindConverter {
   }
 
   // PHASE 1 METHODS: Collection and Export Registration
-  
+
   private registerModuleExports(module: ParsedModule): void {
     const moduleExports = {
       namedExports: new Set<string>(),
@@ -264,7 +264,7 @@ export class TypeScriptToTypedMindConverter {
       } else {
         moduleExports.namedExports.add(exp.name);
       }
-      
+
       // Handle re-exports: if export has a source, treat it as import-then-export
       if (exp.source) {
         this.processReExport(module, exp);
@@ -275,14 +275,14 @@ export class TypeScriptToTypedMindConverter {
     const relativePath = this.getRelativePath(module.filePath);
     const withoutExt = relativePath.replace(/\.(ts|tsx|js|jsx)$/, '');
     const fileName = path.basename(module.filePath, path.extname(module.filePath));
-    
+
     // Register under various possible import specifier formats:
     const specifiers = [
-      withoutExt,                              // './src/start-server'
-      withoutExt.startsWith('./') ? withoutExt : `./${withoutExt}`,  // with ./ prefix
-      `./${fileName}`,                         // './start-server' 
-      `../${fileName}`,                       // '../start-server'
-      fileName,                               // 'start-server' (bare name)
+      withoutExt, // './src/start-server'
+      withoutExt.startsWith('./') ? withoutExt : `./${withoutExt}`, // with ./ prefix
+      `./${fileName}`, // './start-server'
+      `../${fileName}`, // '../start-server'
+      fileName, // 'start-server' (bare name)
     ];
 
     for (const specifier of specifiers) {
@@ -292,13 +292,13 @@ export class TypeScriptToTypedMindConverter {
 
   private processReExport(module: ParsedModule, reExport: ParsedExport): void {
     // Re-export: export { X } from './module' is equivalent to:
-    // 1. import { X } from './module'  
+    // 1. import { X } from './module'
     // 2. export { X }
-    
+
     // For now, just log that we found a re-export
     // The actual handling will be done when we process imports/dependencies
     // during the second phase when we have full access to the analysis
-    
+
     // Add a warning if the re-export source might not be included
     if (!this.isExternalPackage(reExport.source!)) {
       const sourceModulePath = this.resolveModulePath(reExport.source!, path.dirname(module.filePath));
@@ -316,7 +316,7 @@ export class TypeScriptToTypedMindConverter {
     // Handle relative paths
     if (specifier.startsWith('./') || specifier.startsWith('../')) {
       const fullPath = path.resolve(basePath, specifier);
-      
+
       // Try common TypeScript extensions
       const extensions = ['.ts', '.tsx', '.js', '.jsx'];
       for (const ext of extensions) {
@@ -325,7 +325,7 @@ export class TypeScriptToTypedMindConverter {
           return withExt;
         }
       }
-      
+
       // Try as directory with index file
       for (const ext of extensions) {
         const indexPath = path.join(fullPath, `index${ext}`);
@@ -334,13 +334,13 @@ export class TypeScriptToTypedMindConverter {
         }
       }
     }
-    
+
     return null;
   }
 
   private collectModuleEntities(module: ParsedModule): void {
     const sourceFile = module.filePath;
-    
+
     // Collect all functions
     for (const func of module.functions) {
       const entityInfo: EntityInfo = {
@@ -358,7 +358,7 @@ export class TypeScriptToTypedMindConverter {
         name: cls.name,
         type: 'class',
         sourceFile,
-        exported: module.exports.some(exp => exp.name === cls.name),
+        exported: module.exports.some((exp) => exp.name === cls.name),
       };
       this.entityRegistry.classes.set(cls.name, entityInfo);
     }
@@ -369,7 +369,7 @@ export class TypeScriptToTypedMindConverter {
         name: iface.name,
         type: 'interface',
         sourceFile,
-        exported: module.exports.some(exp => exp.name === iface.name),
+        exported: module.exports.some((exp) => exp.name === iface.name),
       };
       this.entityRegistry.interfaces.set(iface.name, entityInfo);
     }
@@ -380,7 +380,7 @@ export class TypeScriptToTypedMindConverter {
         name: type.name,
         type: 'type',
         sourceFile,
-        exported: module.exports.some(exp => exp.name === type.name),
+        exported: module.exports.some((exp) => exp.name === type.name),
       };
       this.entityRegistry.types.set(type.name, entityInfo);
     }
@@ -395,9 +395,7 @@ export class TypeScriptToTypedMindConverter {
       };
       this.entityRegistry.constants.set(constant.name, entityInfo);
     }
-
   }
-
 
   // PHASE 2 METHODS: Processing with Complete Knowledge
 
@@ -462,7 +460,7 @@ export class TypeScriptToTypedMindConverter {
         // Clean version string (remove ^ ~ etc.)
         return version.replace(/^[\^~>=<]+/, '');
       }
-    } catch (error) {
+    } catch {
       // Ignore errors - version is optional
     }
     return undefined;
@@ -533,7 +531,6 @@ export class TypeScriptToTypedMindConverter {
     // Fallback
     return `${specifier.replace(/-/g, ' ')} library`;
   }
-
 
   private isPureTypesFile(module: ParsedModule): boolean {
     // A file is considered "pure types" if it only exports types, interfaces, and constants
@@ -948,34 +945,35 @@ export class TypeScriptToTypedMindConverter {
 
   private extractPublicExportsFromEntrypoint(entryFilePath: string): string[] {
     const relativePath = this.getRelativePath(entryFilePath);
-    
+
     // Look up exports from this entry file in our export registry
-    const moduleExports = this.exportRegistry[relativePath] ||
-                         this.exportRegistry[relativePath.replace(/\.(ts|tsx|js|jsx)$/, '')] ||
-                         this.exportRegistry[`./${relativePath}`] ||
-                         this.exportRegistry[`./${relativePath.replace(/\.(ts|tsx|js|jsx)$/, '')}`];
-    
+    const moduleExports =
+      this.exportRegistry[relativePath] ||
+      this.exportRegistry[relativePath.replace(/\.(ts|tsx|js|jsx)$/, '')] ||
+      this.exportRegistry[`./${relativePath}`] ||
+      this.exportRegistry[`./${relativePath.replace(/\.(ts|tsx|js|jsx)$/, '')}`];
+
     if (!moduleExports) {
       return [];
     }
 
     const publicExports: string[] = [];
-    
+
     // Add default export if it exists
     if (moduleExports.defaultExport) {
       publicExports.push(moduleExports.defaultExport);
     }
-    
+
     // Add all named exports
     for (const namedExport of moduleExports.namedExports) {
       publicExports.push(namedExport);
     }
-    
+
     // Add namespace export if it exists
     if (moduleExports.namespaceExport) {
       publicExports.push(moduleExports.namespaceExport);
     }
-    
+
     return publicExports;
   }
 
@@ -995,7 +993,6 @@ export class TypeScriptToTypedMindConverter {
 
     // Process regular imports
     for (const imp of imports) {
-      
       if (this.isExternalPackage(imp.specifier)) {
         // For external packages, add the dependency entity name
         const dependencyName = this.createDependencyName(imp.specifier);
@@ -1048,7 +1045,6 @@ export class TypeScriptToTypedMindConverter {
   }
 
   private resolveImportToEntity(importName: string, specifier: string): string | undefined {
-    
     // Handle external packages
     if (this.isExternalPackage(specifier)) {
       const dependencyName = this.createDependencyName(specifier);
@@ -1065,9 +1061,10 @@ export class TypeScriptToTypedMindConverter {
     }
 
     // Check if this import name is actually exported by the target module
-    const isExported = moduleExports.defaultExport === importName || 
-                      moduleExports.namedExports.has(importName) ||
-                      moduleExports.namespaceExport === importName;
+    const isExported =
+      moduleExports.defaultExport === importName ||
+      moduleExports.namedExports.has(importName) ||
+      moduleExports.namespaceExport === importName;
 
     if (!isExported) {
       return undefined;
@@ -1075,7 +1072,7 @@ export class TypeScriptToTypedMindConverter {
 
     // Now check if we have the entity in our registry
     const entityName = createEntityName(importName);
-    
+
     // Check all entity types for this name
     const foundInFunctions = this.entityRegistry.functions.has(importName);
     const foundInClasses = this.entityRegistry.classes.has(importName);
@@ -1108,7 +1105,6 @@ export class TypeScriptToTypedMindConverter {
 
     return typeAliasNames.includes(name) || constantNames.includes(name);
   }
-
 
   private convertExports(module: ParsedModule, excludeName?: string): string[] {
     const exportNames: string[] = [];
@@ -1170,7 +1166,7 @@ export class TypeScriptToTypedMindConverter {
   private addExternalTypeToDepExports(typeName: string): void {
     // Clean the type name (remove array suffixes, Promise wrapper, etc.)
     const cleanedType = typeName.replace(/\[\]$/, '').replace(/^Promise<(.+)>$/, '$1');
-    
+
     // Check if this type is from an external package
     const packageName = this.externalTypeToPackage.get(cleanedType);
     if (packageName) {
@@ -1580,11 +1576,11 @@ export class TypeScriptToTypedMindConverter {
   private extractNamespaceMethods(_namespaceName: string, specifier: string): string[] {
     // For external packages, we might know common methods
     const knownNamespaceMethods: Record<string, string[]> = {
-      'path': ['join', 'resolve', 'dirname', 'basename', 'extname', 'relative'],
-      'fs': ['readFile', 'writeFile', 'exists', 'mkdir', 'readdir'],
-      'util': ['promisify', 'inspect', 'format', 'deprecate'],
-      'crypto': ['createHash', 'randomBytes', 'createCipher'],
-      'os': ['platform', 'arch', 'type', 'release', 'hostname'],
+      path: ['join', 'resolve', 'dirname', 'basename', 'extname', 'relative'],
+      fs: ['readFile', 'writeFile', 'exists', 'mkdir', 'readdir'],
+      util: ['promisify', 'inspect', 'format', 'deprecate'],
+      crypto: ['createHash', 'randomBytes', 'createCipher'],
+      os: ['platform', 'arch', 'type', 'release', 'hostname'],
     };
 
     // Check if it's a known Node.js namespace

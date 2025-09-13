@@ -98,7 +98,7 @@ describe('Documentation Examples', () => {
           expect(validationResult.valid).toBe(true);
         }
       }
-    } catch (e) {
+    } catch {
       // File might not exist if not generated yet
       console.log('Skipping generated-grammar.md test - file not found');
     }

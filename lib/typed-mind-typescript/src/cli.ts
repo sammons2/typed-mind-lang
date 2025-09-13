@@ -487,18 +487,18 @@ async function handleCheck(values: any): Promise<void> {
 
     for (const error of validationResult.errors) {
       const severity = error.severity === 'warning' ? 'WARNING' : 'ERROR';
-      
+
       // Try to extract entity name from error message
       const entityMatch = error.message.match(/entity '([^']+)'|'([^']+)'.*is not defined/);
-      const entityName = entityMatch ? (entityMatch[1] || entityMatch[2]) : null;
+      const entityName = entityMatch ? entityMatch[1] || entityMatch[2] : null;
       const sourceFile = entityName ? entityToFile.get(entityName) : null;
-      
+
       if (sourceFile) {
         console.error(`  ${severity} in ${sourceFile}: ${error.message}`);
       } else {
         console.error(`  ${severity}: ${error.message}`);
       }
-      
+
       if (error.suggestion) {
         console.error(`    Suggestion: ${error.suggestion}`);
       }

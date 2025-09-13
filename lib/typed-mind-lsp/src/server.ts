@@ -655,10 +655,13 @@ export class TypedMindLanguageServer {
   /**
    * Handle format toggle request from VS Code extension
    */
-  private async handleToggleFormat(params: { uri: string; range?: { start: number; end: number } }): Promise<{ newText: string; error?: string }> {
+  private async handleToggleFormat(params: {
+    uri: string;
+    range?: { start: number; end: number };
+  }): Promise<{ newText: string; error?: string }> {
     try {
       this.connection.console.log(`Toggle format request received for ${params.uri}`);
-      
+
       const document = this.documents.get(params.uri);
       if (!document) {
         this.connection.console.log('Document not found');
@@ -667,15 +670,15 @@ export class TypedMindLanguageServer {
 
       const fullText = document.getText();
       let textToProcess = fullText;
-      
+
       this.connection.console.log(`Original text length: ${fullText.length}`);
-      
+
       // Handle selection range if provided
       if (params.range) {
         const lines = fullText.split('\n');
         const startLineIndex = Math.max(0, params.range.start);
         const endLineIndex = Math.min(lines.length - 1, params.range.end);
-        
+
         if (startLineIndex <= endLineIndex) {
           textToProcess = lines.slice(startLineIndex, endLineIndex + 1).join('\n');
         }
@@ -691,27 +694,27 @@ export class TypedMindLanguageServer {
       // Use DSL checker for proper parsing
       const checker = new DSLChecker();
       const result = checker.toggleFormat(textToProcess);
-      
+
       this.connection.console.log(`Toggle result success: ${result._tag === 'success'}`);
-      
+
       if (result._tag === 'success') {
         this.connection.console.log(`New text length: ${result.value.length}`);
         this.connection.console.log(`Content changed: ${result.value !== textToProcess}`);
         return { newText: result.value };
       } else {
         this.connection.console.log(`Toggle error: ${result.error.message}`);
-        return { 
+        return {
           newText: textToProcess, // Return original on error
-          error: result.error.message 
+          error: result.error.message,
         };
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error during format toggle';
       this.connection.console.error(`Format toggle error: ${errorMessage}`);
-      
-      return { 
-        newText: '', 
-        error: errorMessage 
+
+      return {
+        newText: '',
+        error: errorMessage,
       };
     }
   }

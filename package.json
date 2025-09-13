@@ -14,8 +14,14 @@
     "build": "pnpm run -r build",
     "test": "pnpm run -r test",
     "lint": "pnpm run -r lint",
+    "lint:fix": "pnpm run -r lint:fix",
+    "typecheck": "pnpm run -r typecheck",
     "clean": "pnpm run -r clean && rm -rf node_modules",
-    "dev": "pnpm run -r --parallel dev"
+    "dev": "pnpm run -r --parallel dev",
+    "validate": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build",
+    "validate:fix": "pnpm run lint:fix && pnpm run typecheck && pnpm run test && pnpm run build",
+    "ci": "pnpm run validate",
+    "precommit": "pnpm run validate:fix"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",

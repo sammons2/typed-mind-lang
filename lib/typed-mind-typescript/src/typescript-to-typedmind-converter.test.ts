@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { TypeScriptToTypedMindConverter } from './typescript-to-typedmind-converter';
-import type { TypeScriptProjectAnalysis, ParsedModule, ParsedFunction, ParsedClass, ParsedInterface, ConversionOptions } from './types';
+import type { TypeScriptProjectAnalysis, ParsedModule } from './types';
 import { createFilePath } from './types';
 
 const createMockAnalysis = (): TypeScriptProjectAnalysis => ({

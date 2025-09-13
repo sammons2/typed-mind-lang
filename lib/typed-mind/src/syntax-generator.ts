@@ -910,7 +910,7 @@ export class SyntaxGenerator {
     if (entity.fields.length > 0) {
       lines.push(`  fields: {`);
       for (const field of entity.fields) {
-        let fieldLine = `    ${field.name}: {`;
+        const fieldLine = `    ${field.name}: {`;
         lines.push(fieldLine);
         lines.push(`      type: ${field.type}`);
         if (field.description) {
