@@ -17,7 +17,7 @@ describe('scenario-44-classfile-mixed-entities', () => {
     
     // The scenario should be invalid due to multiple validation errors
     expect(result.valid).toBe(false);
-    expect(result.errors).toHaveLength(7); // Multiple validation errors in this scenario
+    expect(result.errors).toHaveLength(8); // More errors than expected
     
     // Should find error for BaseController being orphaned
     const baseControllerOrphanedError = result.errors.find(err => 

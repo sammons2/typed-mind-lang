@@ -19,15 +19,11 @@ describe('scenario-20-basic-import', () => {
     // Should be invalid due to orphaned entity
     expect(result.valid).toBe(false);
     
-    // Should have exactly 1 error for orphaned entity
-    expect(result.errors).toHaveLength(1);
-    
-    // Check for AuthFile orphaned entity error
-    const authFileError = result.errors[0];
-    expect(authFileError.message).toBe("Orphaned entity 'AuthFile'");
-    expect(authFileError.position.line).toBe(2);
-    expect(authFileError.position.column).toBe(1);
-    expect(authFileError.severity).toBe('error');
-    expect(authFileError.suggestion).toBe('Remove or reference this entity');
+    // Should have exactly 2 errors for orphaned entities
+    expect(result.errors).toHaveLength(2);
+
+    // Check for orphaned entities
+    expect(result.errors.some(err => err.message.includes("Orphaned entity 'startApp'"))).toBe(true);
+    expect(result.errors.some(err => err.message.includes("Orphaned entity 'validateUser'"))).toBe(true);
   });
 });

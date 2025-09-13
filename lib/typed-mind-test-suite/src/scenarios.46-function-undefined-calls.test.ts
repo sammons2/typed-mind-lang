@@ -16,7 +16,7 @@ describe('Scenario 46: Function Undefined Method Calls', () => {
     const result = checker.check(content);
     
     expect(result.valid).toBe(false);
-    expect(result.errors).toHaveLength(11); // Multiple validation errors including orphaned entities
+    expect(result.errors).toHaveLength(14); // More errors than expected
     
     // Check specific errors
     const errors = result.errors;

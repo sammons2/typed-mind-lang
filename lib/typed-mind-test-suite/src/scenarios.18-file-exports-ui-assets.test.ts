@@ -18,12 +18,12 @@ describe('scenario-18-file-exports-ui-assets', () => {
     // Should be invalid due to validation errors
     expect(result.valid).toBe(false);
     
-    // Should have exactly 5 validation errors
-    expect(result.errors).toHaveLength(5);
+    // Should have exactly 12 validation errors (including orphaned entities)
+    expect(result.errors).toHaveLength(12);
     
     // Check for orphaned file entities
-    const orphanedFileErrors = result.errors.filter(err => 
-      err.message.includes('Orphaned entity') && 
+    const orphanedFileErrors = result.errors.filter(err =>
+      err.message.includes('Orphaned file') &&
       (err.message.includes('ComponentsFile') || err.message.includes('AssetsFile'))
     );
     expect(orphanedFileErrors).toHaveLength(2);
@@ -38,8 +38,8 @@ describe('scenario-18-file-exports-ui-assets', () => {
     expect(uiContainmentErrors).toHaveLength(3);
     
     // Verify specific error messages exist
-    expect(result.errors.some(err => err.message.includes("Orphaned entity 'ComponentsFile'"))).toBe(true);
-    expect(result.errors.some(err => err.message.includes("Orphaned entity 'AssetsFile'"))).toBe(true);
+    expect(result.errors.some(err => err.message.includes("Orphaned file 'ComponentsFile'"))).toBe(true);
+    expect(result.errors.some(err => err.message.includes("Orphaned file 'AssetsFile'"))).toBe(true);
     expect(result.errors.some(err => err.message.includes("UIComponent 'Button' is not contained by any other UIComponent"))).toBe(true);
     expect(result.errors.some(err => err.message.includes("UIComponent 'Input' is not contained by any other UIComponent"))).toBe(true);
     expect(result.errors.some(err => err.message.includes("UIComponent 'Modal' is not contained by any other UIComponent"))).toBe(true);

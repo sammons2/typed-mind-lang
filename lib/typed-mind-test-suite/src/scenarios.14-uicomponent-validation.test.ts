@@ -18,18 +18,18 @@ describe('scenario-14-uicomponent-validation', () => {
     // Should be invalid due to orphaned entities and missing containment
     expect(result.valid).toBe(false);
     
-    // Should have exactly 4 errors
-    expect(result.errors).toHaveLength(4);
+    // Should have exactly 5 errors (including orphaned entity)
+    expect(result.errors).toHaveLength(5);
     
     // Check for orphaned ComponentsFile error
-    const orphanedComponentsFileError = result.errors.find(err => 
-      err.message === "Orphaned entity 'ComponentsFile'" &&
+    const orphanedComponentsFileError = result.errors.find(err =>
+      err.message === "Orphaned file 'ComponentsFile' - none of its exports are imported" &&
       err.position.line === 6 &&
       err.position.column === 1
     );
     expect(orphanedComponentsFileError).toBeDefined();
     expect(orphanedComponentsFileError?.severity).toBe('error');
-    expect(orphanedComponentsFileError?.suggestion).toBe('Remove or reference this entity');
+    expect(orphanedComponentsFileError?.suggestion).toBe('Remove this file or import its exports somewhere');
     
     // Check for orphaned UnexportedComponent error
     const orphanedUnexportedComponentError = result.errors.find(err => 

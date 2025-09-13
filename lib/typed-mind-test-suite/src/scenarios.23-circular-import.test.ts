@@ -19,8 +19,8 @@ describe('scenario-23-circular-import', () => {
     // Should be invalid due to circular import and orphaned entities
     expect(result.valid).toBe(false);
     
-    // Should have exactly 3 errors (2 orphaned entities + 1 circular import)
-    expect(result.errors).toHaveLength(3);
+    // Should have exactly 2 errors (1 orphaned entity + 1 circular import)
+    expect(result.errors).toHaveLength(2);
     
     // Check for circular import error
     const circularImportError = result.errors.find(err => err.message.includes('Circular import detected'));
@@ -31,20 +31,12 @@ describe('scenario-23-circular-import', () => {
     expect(circularImportError?.suggestion).toBeUndefined();
     expect(circularImportError?.message).toMatch(/module-a\.tmd -> .*module-b\.tmd -> .*module-a\.tmd/);
     
-    // Check for FileA orphaned entity error
-    const fileAError = result.errors.find(err => err.message.includes("Orphaned entity 'FileA'"));
-    expect(fileAError).toBeDefined();
-    expect(fileAError?.position.line).toBe(4);
-    expect(fileAError?.position.column).toBe(1);
-    expect(fileAError?.severity).toBe('error');
-    expect(fileAError?.suggestion).toBe('Remove or reference this entity');
-    
-    // Check for FileB orphaned entity error
-    const fileBError = result.errors.find(err => err.message.includes("Orphaned entity 'FileB'"));
-    expect(fileBError).toBeDefined();
-    expect(fileBError?.position.line).toBe(4);
-    expect(fileBError?.position.column).toBe(1);
-    expect(fileBError?.severity).toBe('error');
-    expect(fileBError?.suggestion).toBe('Remove or reference this entity');
+    // Check for start orphaned entity error
+    const startError = result.errors.find(err => err.message.includes("Orphaned entity 'start'"));
+    expect(startError).toBeDefined();
+    expect(startError?.position.line).toBe(10);
+    expect(startError?.position.column).toBe(1);
+    expect(startError?.severity).toBe('error');
+    expect(startError?.suggestion).toBe('Remove or reference this entity');
   });
 });

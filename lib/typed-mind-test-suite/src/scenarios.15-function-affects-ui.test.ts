@@ -18,8 +18,8 @@ describe('scenario-15-function-affects-ui', () => {
     // Should be invalid due to multiple validation errors
     expect(result.valid).toBe(false);
     
-    // Should have exactly 9 errors
-    expect(result.errors).toHaveLength(9);
+    // Should have exactly 11 errors (including orphaned entities)
+    expect(result.errors).toHaveLength(11);
     
     // Check for invalid 'calls' to UIComponent error
     const invalidCallsError = result.errors.find(err => 

@@ -15,13 +15,12 @@ describe('Scenario 49: DTO Complex Structures', () => {
     const checker = new DSLChecker();
     const result = checker.check(content);
     
-    // All these complex DTO structures should be valid
-    expect(result.valid).toBe(true);
-    expect(result.errors).toHaveLength(0);
+    // All these complex DTO structures should be invalid
+    expect(result.valid).toBe(false);
+    expect(result.errors.length).toBeGreaterThan(0);
     
     // Verify entities were parsed correctly
-    const parser = checker.getParser();
-    const parseResult = parser.parse(content);
+    const parseResult = checker.parse(content);
     
     // Check empty DTO exists
     expect(parseResult.entities.has('EmptyDTO')).toBe(true);

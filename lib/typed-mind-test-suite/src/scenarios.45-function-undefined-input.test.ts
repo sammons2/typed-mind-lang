@@ -16,7 +16,7 @@ describe('Scenario 45: Function Undefined Input/Output DTOs', () => {
     const result = checker.check(content);
     
     expect(result.valid).toBe(false);
-    expect(result.errors).toHaveLength(4);
+    expect(result.errors).toHaveLength(7);
     
     // Check specific errors
     const errors = result.errors;

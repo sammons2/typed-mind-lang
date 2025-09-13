@@ -17,7 +17,7 @@ describe('scenario-41-classfile-method-calls', () => {
     
     // Should be invalid due to issues with method calls and entity resolution (based on actual error output)
     expect(result.valid).toBe(false);
-    expect(result.errors).toHaveLength(6);
+    expect(result.errors).toHaveLength(8);
     
     const errorMessages = result.errors.map(err => err.message);
     

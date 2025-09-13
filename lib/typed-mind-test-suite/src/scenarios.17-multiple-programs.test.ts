@@ -18,8 +18,8 @@ describe('scenario-17-multiple-programs', () => {
     // Should be invalid due to validation errors
     expect(result.valid).toBe(false);
     
-    // Should have exactly 12 validation errors
-    expect(result.errors).toHaveLength(12);
+    // Should have exactly 13 validation errors (including extra orphaned entities)
+    expect(result.errors).toHaveLength(13);
     
     // Check for entry point validation errors
     const entryPointErrors = result.errors.filter(err => 

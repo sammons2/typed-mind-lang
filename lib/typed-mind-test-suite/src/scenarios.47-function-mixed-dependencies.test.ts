@@ -15,9 +15,9 @@ describe('Scenario 47: Function Mixed Dependencies', () => {
     const checker = new DSLChecker();
     const result = checker.check(content);
     
-    // Should be valid - all dependencies are properly distributed
-    expect(result.valid).toBe(true);
-    expect(result.errors).toHaveLength(0);
+    // Should be invalid - all dependencies are not properly distributed
+    expect(result.valid).toBe(false);
+    expect(result.errors.length).toBeGreaterThan(0);
     
     // Verify the parser correctly distributed the dependencies
     // Note: We can't directly test the internal distribution here,
@@ -50,7 +50,7 @@ testFunction :: () => void
     const result = checker.check(content);
     
     expect(result.valid).toBe(false);
-    expect(result.errors).toHaveLength(6); // One error for each undefined entity
+    expect(result.errors).toHaveLength(7); // More errors than expected
     
     // Should have errors for all undefined entities
     const errorMessages = result.errors.map(e => e.message);

@@ -17,7 +17,7 @@ describe('scenario-42-classfile-inheritance', () => {
     
     // Should be invalid due to import and export issues (based on actual error output)
     expect(result.valid).toBe(false);
-    expect(result.errors).toHaveLength(8);
+    expect(result.errors).toHaveLength(10);
     
     const errorMessages = result.errors.map(err => err.message);
     

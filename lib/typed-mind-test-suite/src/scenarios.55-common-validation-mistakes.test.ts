@@ -35,8 +35,8 @@ describe('Scenario 55: Common validation mistakes', () => {
     // Mistake 6: Class not exported
     expect(errors.some(e => e.includes("Class 'MyService' is not exported"))).toBe(true);
     
-    // Mistake 7: Circular dependency
-    expect(errors.some(e => e.includes("Circular dependency detected"))).toBe(true);
+    // Mistake 7: Circular import
+    expect(errors.some(e => e.includes("Circular import detected"))).toBe(true);
     
     // Mistake 8: Invalid RunParameter type - parser might accept any $type
     // The validator doesn't check parameter types currently

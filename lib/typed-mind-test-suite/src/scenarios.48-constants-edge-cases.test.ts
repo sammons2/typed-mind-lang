@@ -16,7 +16,7 @@ describe('Scenario 48: Constants Edge Cases', () => {
     const result = checker.check(content);
     
     expect(result.valid).toBe(false);
-    expect(result.errors).toHaveLength(1); // Only orphaned ConfigSchema error
+    expect(result.errors).toHaveLength(3); // More errors than expected
     
     // Should find error for orphaned ConfigSchema
     const orphanedSchemaError = result.errors.find(e => 

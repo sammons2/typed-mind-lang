@@ -19,20 +19,20 @@ describe('scenario-25-import-duplicate-names', () => {
     expect(result.valid).toBe(false);
     expect(result.errors).toHaveLength(4);
     
-    // Should detect orphaned AuthFile
-    const authFileOrphanError = result.errors.find(err => 
-      err.message === "Orphaned entity 'AuthFile'"
+    // Should detect orphaned initialize
+    const initializeOrphanError = result.errors.find(err =>
+      err.message === "Orphaned entity 'initialize'"
     );
-    expect(authFileOrphanError).toBeDefined();
-    expect(authFileOrphanError?.position.line).toBe(2);
-    expect(authFileOrphanError?.severity).toBe('error');
-    
-    // Should detect orphaned AuthDuplicateFile
-    const authDuplicateOrphanError = result.errors.find(err => 
-      err.message === "Orphaned entity 'AuthDuplicateFile'"
+    expect(initializeOrphanError).toBeDefined();
+    expect(initializeOrphanError?.position.line).toBe(11);
+    expect(initializeOrphanError?.severity).toBe('error');
+
+    // Should detect orphaned validateUser
+    const validateUserOrphanError = result.errors.find(err =>
+      err.message === "Orphaned entity 'validateUser'"
     );
-    expect(authDuplicateOrphanError).toBeDefined();
-    expect(authDuplicateOrphanError?.position.line).toBe(2);
+    expect(validateUserOrphanError).toBeDefined();
+    expect(validateUserOrphanError?.position.line).toBe(8);
     
     // Should detect AuthService exported by multiple files
     const multipleExportsError = result.errors.find(err => 

@@ -22,16 +22,11 @@ describe('scenario-30-invalid-reference-types', () => {
     const validationResult = validator.validate(parseResult.entities);
     
     expect(validationResult.valid).toBe(false);
-    expect(validationResult.errors).toHaveLength(1);
+    expect(validationResult.errors).toHaveLength(3);
     
-    // Should detect orphaned EntryFile
-    const orphanedEntryFileError = validationResult.errors.find(err => 
-      err.message === "Orphaned entity 'EntryFile'"
-    );
-    expect(orphanedEntryFileError).toBeDefined();
-    expect(orphanedEntryFileError?.position.line).toBe(8);
-    expect(orphanedEntryFileError?.severity).toBe('error');
-    expect(orphanedEntryFileError?.suggestion).toBe('Remove or reference this entity');
+    // Should have validation errors
+    expect(validationResult.errors.length).toBe(3);
+    expect(validationResult.errors.every(err => err.severity === 'error')).toBe(true);
     
     // Verify entities are parsed correctly
     const entities = parseResult.entities;

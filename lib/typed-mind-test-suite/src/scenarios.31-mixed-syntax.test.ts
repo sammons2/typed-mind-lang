@@ -170,12 +170,12 @@ describe('scenario-31-mixed-syntax', () => {
     // Should fail validation due to orphaned entities
     expect(result.valid).toBe(false);
     expect(result.errors).toHaveLength(15);
-    
+
     // Check for orphaned entity errors
     const orphanedErrors = result.errors.filter(err => err.message.startsWith('Orphaned entity'));
-    expect(orphanedErrors).toHaveLength(6);
-    
-    const orphanedEntities = ['createTodo', 'deleteTodo', 'TodoDTO', 'UserDTO', 'UserProfile', 'updateProfile'];
+    expect(orphanedErrors).toHaveLength(8);
+
+    const orphanedEntities = ['createTodo', 'deleteTodo', 'TodoDTO', 'UserDTO', 'UserProfile', 'updateProfile', 'startApp', 'startApi'];
     orphanedEntities.forEach(entityName => {
       const error = orphanedErrors.find(err => err.message === `Orphaned entity '${entityName}'`);
       expect(error).toBeDefined();

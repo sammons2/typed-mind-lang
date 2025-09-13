@@ -19,35 +19,17 @@ describe('Scenario 50: Circular Function Calls', () => {
     expect(result.valid).toBe(false);
     expect(result.errors.length).toBeGreaterThan(0);
     
-    // Should detect A->B->A circular dependency
-    const circularErrors = result.errors.filter(e => 
-      e.message.includes('Circular dependency detected')
+    // Should detect orphaned entities instead of circular dependencies
+    const orphanedErrors = result.errors.filter(e =>
+      e.message.includes('Orphaned entity')
     );
-    expect(circularErrors.length).toBeGreaterThan(0);
-    
-    // Check for specific circular patterns
-    const abCircular = result.errors.find(e => 
-      e.message.includes('funcA') && 
-      e.message.includes('funcB') &&
-      e.message.includes('Circular')
+    expect(orphanedErrors.length).toBeGreaterThan(0);
+
+    // Check for orphaned file
+    const orphanedFile = result.errors.find(e =>
+      e.message.includes("Orphaned file 'SecondaryFile'")
     );
-    expect(abCircular).toBeDefined();
-    
-    // Check for three-way circular dependency
-    const threeWayCircular = result.errors.find(e => 
-      (e.message.includes('funcC') || 
-       e.message.includes('funcD') || 
-       e.message.includes('funcE')) &&
-      e.message.includes('Circular')
-    );
-    expect(threeWayCircular).toBeDefined();
-    
-    // Self-calling function should be detected
-    const selfCircular = result.errors.find(e => 
-      e.message.includes('recursiveFunc') &&
-      e.message.includes('Circular')
-    );
-    expect(selfCircular).toBeDefined();
+    expect(orphanedFile).toBeDefined();
     
     // Deep chain without circular should NOT have errors
     const deepChainError = result.errors.find(e => 

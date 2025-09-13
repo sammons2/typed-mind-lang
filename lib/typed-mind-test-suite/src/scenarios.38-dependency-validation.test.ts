@@ -17,7 +17,7 @@ describe('scenario-38-dependency-validation', () => {
     
     // Should be invalid due to multiple dependency validation errors
     expect(validationResult.valid).toBe(false);
-    expect(validationResult.errors).toHaveLength(4);
+    expect(validationResult.errors).toHaveLength(5);
     
     const errorMessages = validationResult.errors.map(err => err.message);
     

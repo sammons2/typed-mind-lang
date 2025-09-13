@@ -27,8 +27,8 @@ describe('scenario-21-aliased-import', () => {
     expect(orphanedErrors.length).toBeGreaterThan(0);
     
     // Should have orphaned ComponentsFile and DatabaseFile
-    expect(result.errors.some(err => err.message.includes("Orphaned entity 'UI.ComponentsFile'"))).toBe(true);
-    expect(result.errors.some(err => err.message.includes("Orphaned entity 'DB.DatabaseFile'"))).toBe(true);
+    expect(result.errors.some(err => err.message.includes("Orphaned file 'UI.ComponentsFile'"))).toBe(true);
+    expect(result.errors.some(err => err.message.includes("Orphaned file 'DB.DatabaseFile'"))).toBe(true);
     
     // Check for undefined exports
     const exportErrors = result.errors.filter(err => err.message.includes('is not defined anywhere in the codebase'));
