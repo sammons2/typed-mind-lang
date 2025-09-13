@@ -1,6 +1,6 @@
 {
   "name": "@sammons/typed-mind-lsp",
-  "version": "0.1.5",
+  "version": "0.1.8",
   "description": "Language Server Protocol implementation for TypedMind DSL - providing IDE support with syntax highlighting, validation, and intellisense",
   "keywords": [
     "typedmind",

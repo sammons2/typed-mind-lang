@@ -1,6 +1,6 @@
 {
   "name": "@sammons/typed-mind-renderer",
-  "version": "0.1.5",
+  "version": "0.1.8",
   "description": "Interactive HTML/D3.js renderer for TypedMind DSL - generates beautiful visualizations of software architectures",
   "keywords": [
     "typedmind",
