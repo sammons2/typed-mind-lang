@@ -29,7 +29,7 @@ describe('Documentation Examples', () => {
 
       // Parse and validate
       const parseResult = parser.parse(code);
-      
+
       // Check for parse errors first
       if (parseResult.errors && parseResult.errors.length > 0) {
         console.error(`\nExample ${index + 1} has parse errors:`);
@@ -59,7 +59,10 @@ describe('Documentation Examples', () => {
       if (!validationResult.valid) {
         console.error(`\nExample ${index + 1} has validation errors:`);
         console.error('Code:\n', code);
-        console.error('Validation Errors:', validationResult.errors.map(e => e.message));
+        console.error(
+          'Validation Errors:',
+          validationResult.errors.map((e) => e.message),
+        );
         expect(validationResult.valid).toBe(true);
       }
     });
@@ -76,19 +79,22 @@ describe('Documentation Examples', () => {
       if (match) {
         const code = match[1];
         const parseResult = parser.parse(code);
-        
+
         if (parseResult.errors && parseResult.errors.length > 0) {
           console.error('\nGenerated example has parse errors:');
           console.error('Parse Errors:', parseResult.errors);
           expect(parseResult.errors.length).toBe(0);
           return;
         }
-        
+
         const validationResult = validator.validate(parseResult.entities);
 
         if (!validationResult.valid) {
           console.error('\nGenerated example has validation errors:');
-          console.error('Errors:', validationResult.errors.map(e => e.message));
+          console.error(
+            'Errors:',
+            validationResult.errors.map((e) => e.message),
+          );
           expect(validationResult.valid).toBe(true);
         }
       }

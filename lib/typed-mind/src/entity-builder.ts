@@ -1,20 +1,11 @@
 /**
  * Builder pattern for TypedMind entities
- * 
+ *
  * Provides a fluent API for creating complex entities with validation,
  * better type safety, and reduced boilerplate compared to direct object construction.
  */
 
-import type {
-  AnyEntity,
-  Position,
-  ProgramEntity,
-  FileEntity,
-  FunctionEntity,
-  ClassFileEntity,
-  DTOEntity,
-  DTOField,
-} from './types';
+import type { AnyEntity, Position, ProgramEntity, FileEntity, FunctionEntity, ClassFileEntity, DTOEntity, DTOField } from './types';
 import type { EntityName, FilePath, FunctionSignature, Version, Description } from './branded-types';
 import type { Result } from './result';
 
@@ -86,8 +77,8 @@ export class ProgramEntityBuilder implements BaseBuilder<ProgramEntity> {
       return { _tag: 'failure', error: 'Program entry point is required' };
     }
 
-    return { 
-      _tag: 'success', 
+    return {
+      _tag: 'success',
       value: {
         type: 'Program',
         name: this.data.name,
@@ -98,7 +89,7 @@ export class ProgramEntityBuilder implements BaseBuilder<ProgramEntity> {
         ...(this.data.purpose && { purpose: this.data.purpose }),
         ...(this.data.exports && { exports: this.data.exports }),
         ...(this.data.comment && { comment: this.data.comment }),
-      }
+      },
     };
   }
 }
@@ -189,7 +180,7 @@ export class FileEntityBuilder implements BaseBuilder<FileEntity> {
         raw: this.data.raw || '',
         ...(this.data.purpose && { purpose: this.data.purpose }),
         ...(this.data.comment && { comment: this.data.comment }),
-      }
+      },
     };
   }
 }
@@ -311,12 +302,12 @@ export class FunctionEntityBuilder implements BaseBuilder<FunctionEntity> {
         ...(this.data.input && { input: this.data.input }),
         ...(this.data.output && { output: this.data.output }),
         ...(this.data.comment && { comment: this.data.comment }),
-      }
+      },
     };
   }
 }
 
-// DTO Entity Builder  
+// DTO Entity Builder
 export class DTOEntityBuilder implements BaseBuilder<DTOEntity> {
   private data: Partial<DTOEntity> = {
     type: 'DTO',
@@ -350,14 +341,9 @@ export class DTOEntityBuilder implements BaseBuilder<DTOEntity> {
     return this;
   }
 
-  addFieldFromParts(
-    name: string, 
-    type: string, 
-    description?: string, 
-    optional?: boolean
-  ): this {
+  addFieldFromParts(name: string, type: string, description?: string, optional?: boolean): this {
     const field: DTOField = {
-      name, 
+      name,
       type,
       ...(description && { description }),
       ...(optional && { optional }),
@@ -395,7 +381,7 @@ export class DTOEntityBuilder implements BaseBuilder<DTOEntity> {
         raw: this.data.raw || '',
         ...(this.data.purpose && { purpose: this.data.purpose }),
         ...(this.data.comment && { comment: this.data.comment }),
-      }
+      },
     };
   }
 }
@@ -518,7 +504,7 @@ export class ClassFileEntityBuilder implements BaseBuilder<ClassFileEntity> {
         ...(this.data.extends && { extends: this.data.extends }),
         ...(this.data.purpose && { purpose: this.data.purpose }),
         ...(this.data.comment && { comment: this.data.comment }),
-      }
+      },
     };
   }
 }
@@ -547,13 +533,18 @@ export class EntityBuilder {
 
   // Convenience method to create any builder
   static create<T extends AnyEntity['type']>(
-    type: T
-  ): T extends 'Program' ? ProgramEntityBuilder
-    : T extends 'File' ? FileEntityBuilder
-    : T extends 'Function' ? FunctionEntityBuilder
-    : T extends 'DTO' ? DTOEntityBuilder
-    : T extends 'ClassFile' ? ClassFileEntityBuilder
-    : never {
+    type: T,
+  ): T extends 'Program'
+    ? ProgramEntityBuilder
+    : T extends 'File'
+      ? FileEntityBuilder
+      : T extends 'Function'
+        ? FunctionEntityBuilder
+        : T extends 'DTO'
+          ? DTOEntityBuilder
+          : T extends 'ClassFile'
+            ? ClassFileEntityBuilder
+            : never {
     switch (type) {
       case 'Program':
         return EntityBuilder.program() as any;

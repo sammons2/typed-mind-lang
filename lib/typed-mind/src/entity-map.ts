@@ -1,16 +1,16 @@
 /**
  * Type-safe EntityMap wrapper for managing TypedMind entities
- * 
+ *
  * This provides better type safety than raw Map<string, AnyEntity> usage
  * and includes validation and utility methods for entity management.
  */
 
-import type { 
-  AnyEntity, 
-  EntityType, 
-  ProgramEntity, 
-  FileEntity, 
-  FunctionEntity, 
+import type {
+  AnyEntity,
+  EntityType,
+  ProgramEntity,
+  FileEntity,
+  FunctionEntity,
   ClassEntity,
   ClassFileEntity,
   ConstantsEntity,
@@ -18,7 +18,7 @@ import type {
   AssetEntity,
   UIComponentEntity,
   RunParameterEntity,
-  DependencyEntity
+  DependencyEntity,
 } from './types';
 import { EntityName } from './branded-types';
 import type { Result } from './result';
@@ -74,7 +74,7 @@ export class EntityMap {
    */
   set(entity: AnyEntity): Result<void, EntityMapError> {
     const entityName = entity.name;
-    
+
     // Check for duplicate names
     if (this.entities.has(entityName)) {
       return {
@@ -90,7 +90,7 @@ export class EntityMap {
 
     // Add to main map
     this.entities.set(entityName, entity);
-    
+
     // Update type index
     const typeSet = this.typeIndex.get(entity.type) ?? new Set();
     typeSet.add(entityName);
@@ -104,7 +104,7 @@ export class EntityMap {
    */
   get<T extends EntityType>(
     name: EntityName | string,
-    expectedType?: T
+    expectedType?: T,
   ): Result<T extends EntityType ? EntityTypeMap[T] : AnyEntity, EntityMapError> {
     const entityName = typeof name === 'string' ? name : name;
     const entity = this.entities.get(entityName);
@@ -153,10 +153,7 @@ export class EntityMap {
   /**
    * Get a typed entity unsafely
    */
-  getTypedUnsafe<T extends EntityType>(
-    name: EntityName | string,
-    expectedType: T
-  ): EntityTypeMap[T] {
+  getTypedUnsafe<T extends EntityType>(name: EntityName | string, expectedType: T): EntityTypeMap[T] {
     const entity = this.getUnsafe(name);
     if (entity.type !== expectedType) {
       throw new Error(`Expected entity '${name}' to be of type '${expectedType}', but got '${entity.type}'`);
@@ -186,14 +183,14 @@ export class EntityMap {
   delete(name: EntityName | string): boolean {
     const entityName = typeof name === 'string' ? name : name;
     const entity = this.entities.get(entityName);
-    
+
     if (!entity) {
       return false;
     }
 
     // Remove from main map
     this.entities.delete(entityName);
-    
+
     // Remove from type index
     const typeSet = this.typeIndex.get(entity.type);
     if (typeSet) {
@@ -212,8 +209,8 @@ export class EntityMap {
   getByType<T extends EntityType>(type: T): EntityTypeMap[T][] {
     const names = this.typeIndex.get(type) ?? new Set();
     return Array.from(names)
-      .map(name => this.entities.get(name)!)
-      .filter(entity => entity.type === type) as EntityTypeMap[T][];
+      .map((name) => this.entities.get(name)!)
+      .filter((entity) => entity.type === type) as EntityTypeMap[T][];
   }
 
   /**
@@ -221,7 +218,7 @@ export class EntityMap {
    */
   getNamesOfType(type: EntityType): EntityName[] {
     const names = this.typeIndex.get(type) ?? new Set();
-    return Array.from(names).map(name => EntityName.unsafe(name));
+    return Array.from(names).map((name) => EntityName.unsafe(name));
   }
 
   /**
@@ -235,7 +232,7 @@ export class EntityMap {
    * Get all entity names
    */
   getAllNames(): EntityName[] {
-    return Array.from(this.entities.keys()).map(name => EntityName.unsafe(name));
+    return Array.from(this.entities.keys()).map((name) => EntityName.unsafe(name));
   }
 
   /**
@@ -338,7 +335,7 @@ export class EntityMap {
     for (const entity of this.entities.values()) {
       // Check various reference fields
       const checkArrayField = (field: string[]) => field.includes(target);
-      
+
       if ('imports' in entity && entity.imports && checkArrayField(entity.imports)) {
         referencing.push(entity);
       }

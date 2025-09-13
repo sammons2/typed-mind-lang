@@ -1,7 +1,7 @@
 /**
  * Branded types for TypedMind - provides compile-time type safety for strings
  * that should not be interchangeable even if they have the same runtime type.
- * 
+ *
  * This prevents bugs like passing a file path where an entity name is expected.
  */
 
@@ -23,15 +23,17 @@ export const EntityName = {
       throw new Error('Entity name cannot be empty');
     }
     if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name)) {
-      throw new Error(`Invalid entity name: ${name}. Must start with letter or underscore, followed by alphanumeric characters or underscores.`);
+      throw new Error(
+        `Invalid entity name: ${name}. Must start with letter or underscore, followed by alphanumeric characters or underscores.`,
+      );
     }
     return name as EntityName;
   },
-  
+
   isValid: (name: string): name is EntityName => {
     return name.trim().length > 0 && /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name);
   },
-  
+
   unsafe: (name: string): EntityName => name as EntityName,
 };
 
@@ -42,11 +44,11 @@ export const FilePath = {
     }
     return path as FilePath;
   },
-  
+
   isValid: (path: string): path is FilePath => {
     return path.trim().length > 0;
   },
-  
+
   unsafe: (path: string): FilePath => path as FilePath,
 };
 
@@ -57,7 +59,7 @@ export const FunctionSignature = {
     }
     return signature as FunctionSignature;
   },
-  
+
   unsafe: (signature: string): FunctionSignature => signature as FunctionSignature,
 };
 
@@ -70,7 +72,7 @@ export const Version = {
     }
     return normalizedVersion as Version;
   },
-  
+
   unsafe: (version: string): Version => version as Version,
 };
 
@@ -78,22 +80,31 @@ export const Description = {
   create: (description: string): Description => {
     return description as Description;
   },
-  
+
   unsafe: (description: string): Description => description as Description,
 };
 
 export const EntityTypeName = {
   create: (typeName: string): EntityTypeName => {
     const validTypes = [
-      'Program', 'File', 'Function', 'Class', 'ClassFile', 
-      'Constants', 'DTO', 'Asset', 'UIComponent', 'RunParameter', 'Dependency'
+      'Program',
+      'File',
+      'Function',
+      'Class',
+      'ClassFile',
+      'Constants',
+      'DTO',
+      'Asset',
+      'UIComponent',
+      'RunParameter',
+      'Dependency',
     ];
     if (!validTypes.includes(typeName)) {
       throw new Error(`Invalid entity type: ${typeName}. Must be one of: ${validTypes.join(', ')}`);
     }
     return typeName as EntityTypeName;
   },
-  
+
   unsafe: (typeName: string): EntityTypeName => typeName as EntityTypeName,
 };
 

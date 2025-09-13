@@ -75,7 +75,7 @@ export class SyntaxGenerator {
 
     for (const line of lines) {
       const trimmed = line.trim();
-      
+
       // Skip empty lines and comments
       if (!trimmed || trimmed.startsWith('#')) {
         continue;
@@ -146,10 +146,10 @@ export class SyntaxGenerator {
    */
   toggleFormat(content: string): Result<string, SyntaxGenerationError> {
     const detection = this.detectFormat(content);
-    
+
     // Determine target format
     const targetFormat: SyntaxFormat = detection.format === 'longform' ? 'shortform' : 'longform';
-    
+
     return this.convertToFormat(content, targetFormat);
   }
 
@@ -161,7 +161,7 @@ export class SyntaxGenerator {
       // For mixed format, we need to parse and regenerate everything
       // This is a simplified approach - in a real implementation, we'd want
       // to integrate with the DSLParser to get the full entity graph
-      
+
       if (targetFormat === 'shortform') {
         return this.convertToShortform(content);
       } else {
@@ -183,7 +183,7 @@ export class SyntaxGenerator {
   toShortform(entities: Map<string, AnyEntity>): Result<string, SyntaxGenerationError> {
     try {
       const lines: string[] = [];
-      
+
       // Sort entities by type for consistent output
       const sortedEntities = Array.from(entities.values()).sort((a, b) => {
         const typeOrder = this.getEntityTypeOrder(a.type);
@@ -199,9 +199,9 @@ export class SyntaxGenerator {
         if (entityLines._tag === 'failure') {
           return entityLines;
         }
-        
+
         lines.push(...entityLines.value);
-        
+
         // Add empty line between entities for readability
         if (this.options.preserveEmptyLines) {
           lines.push('');
@@ -228,7 +228,7 @@ export class SyntaxGenerator {
   toLongform(entities: Map<string, AnyEntity>): Result<string, SyntaxGenerationError> {
     try {
       const lines: string[] = [];
-      
+
       const sortedEntities = Array.from(entities.values()).sort((a, b) => {
         const typeOrder = this.getEntityTypeOrder(a.type);
         const typeOrderB = this.getEntityTypeOrder(b.type);
@@ -243,9 +243,9 @@ export class SyntaxGenerator {
         if (entityLines._tag === 'failure') {
           return entityLines;
         }
-        
+
         lines.push(...entityLines.value);
-        
+
         if (this.options.preserveEmptyLines) {
           lines.push('');
         }
@@ -283,22 +283,22 @@ export class SyntaxGenerator {
       ENTITY_PATTERNS.DEPENDENCY,
     ];
 
-    return patterns.some(pattern => pattern.test(line));
+    return patterns.some((pattern) => pattern.test(line));
   }
 
   private getEntityTypeOrder(type: string): number {
     const order = {
-      'Program': 0,
-      'File': 1,
-      'ClassFile': 2,
-      'Class': 3,
-      'Function': 4,
-      'DTO': 5,
-      'Constants': 6,
-      'Asset': 7,
-      'UIComponent': 8,
-      'RunParameter': 9,
-      'Dependency': 10,
+      Program: 0,
+      File: 1,
+      ClassFile: 2,
+      Class: 3,
+      Function: 4,
+      DTO: 5,
+      Constants: 6,
+      Asset: 7,
+      UIComponent: 8,
+      RunParameter: 9,
+      Dependency: 10,
     };
     return order[type as keyof typeof order] ?? 99;
   }
@@ -308,10 +308,10 @@ export class SyntaxGenerator {
     // In a full implementation, this would parse the content first
     const lines = content.split('\n');
     const result: string[] = [];
-    
+
     for (const line of lines) {
       const trimmed = line.trim();
-      
+
       // Skip empty lines and comments (will be preserved as-is)
       if (!trimmed || trimmed.startsWith('#')) {
         if (this.options.preserveComments || this.options.preserveEmptyLines) {
@@ -319,11 +319,11 @@ export class SyntaxGenerator {
         }
         continue;
       }
-      
+
       // For now, just pass through - full implementation would convert longform to shortform
       result.push(line);
     }
-    
+
     return {
       _tag: 'success',
       value: result.join('\n'),
@@ -334,21 +334,21 @@ export class SyntaxGenerator {
     // This is a simplified conversion that handles basic cases
     const lines = content.split('\n');
     const result: string[] = [];
-    
+
     for (const line of lines) {
       const trimmed = line.trim();
-      
+
       if (!trimmed || trimmed.startsWith('#')) {
         if (this.options.preserveComments || this.options.preserveEmptyLines) {
           result.push(line);
         }
         continue;
       }
-      
+
       // For now, just pass through - full implementation would convert shortform to longform
       result.push(line);
     }
-    
+
     return {
       _tag: 'success',
       value: result.join('\n'),
@@ -490,7 +490,7 @@ export class SyntaxGenerator {
 
   private programToShortform(entity: ProgramEntity): string[] {
     const lines: string[] = [];
-    
+
     let line = `${entity.name} -> ${entity.entry}`;
     if (entity.purpose) {
       line += ` "${entity.purpose}"`;
@@ -509,9 +509,9 @@ export class SyntaxGenerator {
 
   private fileToShortform(entity: FileEntity): string[] {
     const lines: string[] = [];
-    
+
     lines.push(`${entity.name} @ ${entity.path}:`);
-    
+
     if (entity.purpose) {
       lines.push(`  "${entity.purpose}"`);
     }
@@ -529,9 +529,9 @@ export class SyntaxGenerator {
 
   private functionToShortform(entity: FunctionEntity): string[] {
     const lines: string[] = [];
-    
+
     lines.push(`${entity.name} :: ${entity.signature}`);
-    
+
     if (entity.description) {
       lines.push(`  "${entity.description}"`);
     }
@@ -561,7 +561,7 @@ export class SyntaxGenerator {
 
   private classToShortform(entity: ClassEntity): string[] {
     const lines: string[] = [];
-    
+
     let line = `${entity.name} <:`;
     if (entity.extends) {
       line += ` ${entity.extends}`;
@@ -586,7 +586,7 @@ export class SyntaxGenerator {
 
   private classFileToShortform(entity: ClassFileEntity): string[] {
     const lines: string[] = [];
-    
+
     let line = `${entity.name} #: ${entity.path}`;
     if (entity.extends) {
       line += ` <: ${entity.extends}`;
@@ -619,7 +619,7 @@ export class SyntaxGenerator {
 
   private constantsToShortform(entity: ConstantsEntity): string[] {
     const lines: string[] = [];
-    
+
     let line = `${entity.name} ! ${entity.path}`;
     if (entity.schema) {
       line += ` : ${entity.schema}`;
@@ -635,7 +635,7 @@ export class SyntaxGenerator {
 
   private dtoToShortform(entity: DTOEntity): string[] {
     const lines: string[] = [];
-    
+
     let line = `${entity.name} %`;
     if (entity.purpose) {
       line += ` "${entity.purpose}"`;
@@ -669,7 +669,7 @@ export class SyntaxGenerator {
 
   private assetToShortform(entity: AssetEntity): string[] {
     const lines: string[] = [];
-    
+
     lines.push(`${entity.name} ~ "${entity.description}"`);
 
     if (entity.containsProgram) {
@@ -681,7 +681,7 @@ export class SyntaxGenerator {
 
   private uiComponentToShortform(entity: UIComponentEntity): string[] {
     const lines: string[] = [];
-    
+
     const marker = entity.root ? '&!' : '&';
     lines.push(`${entity.name} ${marker} "${entity.purpose}"`);
 
@@ -698,7 +698,7 @@ export class SyntaxGenerator {
 
   private runParameterToShortform(entity: RunParameterEntity): string[] {
     const lines: string[] = [];
-    
+
     let line = `${entity.name} $${entity.paramType} "${entity.description}"`;
     if (entity.required) {
       line += ' (required)';
@@ -714,7 +714,7 @@ export class SyntaxGenerator {
 
   private dependencyToShortform(entity: DependencyEntity): string[] {
     const lines: string[] = [];
-    
+
     let line = `${entity.name} ^ "${entity.purpose}"`;
     if (entity.version) {
       line += ` v${entity.version}`;
@@ -732,15 +732,15 @@ export class SyntaxGenerator {
 
   private programToLongform(entity: ProgramEntity): string[] {
     const lines: string[] = [];
-    
+
     lines.push(`program ${entity.name} {`);
     lines.push(`  type: Program`);
     lines.push(`  entry: ${entity.entry}`);
-    
+
     if (entity.purpose) {
       lines.push(`  purpose: "${entity.purpose}"`);
     }
-    
+
     if (entity.version) {
       lines.push(`  version: ${entity.version}`);
     }
@@ -748,19 +748,19 @@ export class SyntaxGenerator {
     if (entity.exports && entity.exports.length > 0) {
       lines.push(`  exports: [${entity.exports.join(', ')}]`);
     }
-    
+
     lines.push('}');
-    
+
     return lines;
   }
 
   private fileToLongform(entity: FileEntity): string[] {
     const lines: string[] = [];
-    
+
     lines.push(`file ${entity.name} {`);
     lines.push(`  type: File`);
     lines.push(`  path: ${entity.path}`);
-    
+
     if (entity.purpose) {
       lines.push(`  purpose: "${entity.purpose}"`);
     }
@@ -772,19 +772,19 @@ export class SyntaxGenerator {
     if (entity.exports && entity.exports.length > 0) {
       lines.push(`  exports: [${entity.exports.join(', ')}]`);
     }
-    
+
     lines.push('}');
-    
+
     return lines;
   }
 
   private functionToLongform(entity: FunctionEntity): string[] {
     const lines: string[] = [];
-    
+
     lines.push(`function ${entity.name} {`);
     lines.push(`  type: Function`);
     lines.push(`  signature: ${entity.signature}`);
-    
+
     if (entity.description) {
       lines.push(`  description: "${entity.description}"`);
     }
@@ -808,18 +808,18 @@ export class SyntaxGenerator {
     if (entity.consumes && entity.consumes.length > 0) {
       lines.push(`  consumes: [${entity.consumes.join(', ')}]`);
     }
-    
+
     lines.push('}');
-    
+
     return lines;
   }
 
   private classToLongform(entity: ClassEntity): string[] {
     const lines: string[] = [];
-    
+
     lines.push(`class ${entity.name} {`);
     lines.push(`  type: Class`);
-    
+
     if (entity.extends) {
       lines.push(`  extends: ${entity.extends}`);
     }
@@ -835,19 +835,19 @@ export class SyntaxGenerator {
     if (entity.methods && entity.methods.length > 0) {
       lines.push(`  methods: [${entity.methods.join(', ')}]`);
     }
-    
+
     lines.push('}');
-    
+
     return lines;
   }
 
   private classFileToLongform(entity: ClassFileEntity): string[] {
     const lines: string[] = [];
-    
+
     lines.push(`classfile ${entity.name} {`);
     lines.push(`  type: ClassFile`);
     lines.push(`  path: ${entity.path}`);
-    
+
     if (entity.extends) {
       lines.push(`  extends: ${entity.extends}`);
     }
@@ -871,19 +871,19 @@ export class SyntaxGenerator {
     if (entity.exports && entity.exports.length > 0) {
       lines.push(`  exports: [${entity.exports.join(', ')}]`);
     }
-    
+
     lines.push('}');
-    
+
     return lines;
   }
 
   private constantsToLongform(entity: ConstantsEntity): string[] {
     const lines: string[] = [];
-    
+
     lines.push(`constants ${entity.name} {`);
     lines.push(`  type: Constants`);
     lines.push(`  path: ${entity.path}`);
-    
+
     if (entity.schema) {
       lines.push(`  schema: ${entity.schema}`);
     }
@@ -891,18 +891,18 @@ export class SyntaxGenerator {
     if (entity.purpose) {
       lines.push(`  purpose: "${entity.purpose}"`);
     }
-    
+
     lines.push('}');
-    
+
     return lines;
   }
 
   private dtoToLongform(entity: DTOEntity): string[] {
     const lines: string[] = [];
-    
+
     lines.push(`dto ${entity.name} {`);
     lines.push(`  type: DTO`);
-    
+
     if (entity.purpose) {
       lines.push(`  purpose: "${entity.purpose}"`);
     }
@@ -923,15 +923,15 @@ export class SyntaxGenerator {
       }
       lines.push(`  }`);
     }
-    
+
     lines.push('}');
-    
+
     return lines;
   }
 
   private assetToLongform(entity: AssetEntity): string[] {
     const lines: string[] = [];
-    
+
     lines.push(`asset ${entity.name} {`);
     lines.push(`  type: Asset`);
     lines.push(`  description: "${entity.description}"`);
@@ -939,19 +939,19 @@ export class SyntaxGenerator {
     if (entity.containsProgram) {
       lines.push(`  containsProgram: ${entity.containsProgram}`);
     }
-    
+
     lines.push('}');
-    
+
     return lines;
   }
 
   private uiComponentToLongform(entity: UIComponentEntity): string[] {
     const lines: string[] = [];
-    
+
     lines.push(`component ${entity.name} {`);
     lines.push(`  type: UIComponent`);
     lines.push(`  purpose: "${entity.purpose}"`);
-    
+
     if (entity.root) {
       lines.push(`  root: true`);
     }
@@ -963,20 +963,20 @@ export class SyntaxGenerator {
     if (entity.containedBy && entity.containedBy.length > 0) {
       lines.push(`  containedBy: [${entity.containedBy.join(', ')}]`);
     }
-    
+
     lines.push('}');
-    
+
     return lines;
   }
 
   private runParameterToLongform(entity: RunParameterEntity): string[] {
     const lines: string[] = [];
-    
+
     lines.push(`parameter ${entity.name} {`);
     lines.push(`  type: RunParameter`);
     lines.push(`  paramType: ${entity.paramType}`);
     lines.push(`  description: "${entity.description}"`);
-    
+
     if (entity.required) {
       lines.push(`  required: true`);
     }
@@ -984,19 +984,19 @@ export class SyntaxGenerator {
     if (entity.defaultValue) {
       lines.push(`  defaultValue: "${entity.defaultValue}"`);
     }
-    
+
     lines.push('}');
-    
+
     return lines;
   }
 
   private dependencyToLongform(entity: DependencyEntity): string[] {
     const lines: string[] = [];
-    
+
     lines.push(`dependency ${entity.name} {`);
     lines.push(`  type: Dependency`);
     lines.push(`  purpose: "${entity.purpose}"`);
-    
+
     if (entity.version) {
       lines.push(`  version: ${entity.version}`);
     }
@@ -1004,9 +1004,9 @@ export class SyntaxGenerator {
     if (entity.exports && entity.exports.length > 0) {
       lines.push(`  exports: [${entity.exports.join(', ')}]`);
     }
-    
+
     lines.push('}');
-    
+
     return lines;
   }
 }

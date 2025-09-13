@@ -1,6 +1,6 @@
 /**
  * Strongly-typed error system for TypedMind using discriminated unions
- * 
+ *
  * This replaces the weak ValidationError interface with specific error types
  * that provide better type safety and IntelliSense support.
  */
@@ -28,10 +28,10 @@ export interface EntityValidationError extends BaseError {
   readonly kind: 'entity_validation';
   readonly entityName: EntityName;
   readonly entityType: EntityTypeName;
-  readonly type: 
-    | 'missing_entity' 
-    | 'duplicate_entity' 
-    | 'invalid_reference' 
+  readonly type:
+    | 'missing_entity'
+    | 'duplicate_entity'
+    | 'invalid_reference'
     | 'orphaned_entity'
     | 'naming_conflict'
     | 'circular_dependency';
@@ -73,12 +73,7 @@ export interface GrammarError extends BaseError {
 export interface FunctionError extends BaseError {
   readonly kind: 'function';
   readonly functionName: EntityName;
-  readonly type: 
-    | 'invalid_signature' 
-    | 'missing_input_dto' 
-    | 'missing_output_dto' 
-    | 'invalid_call'
-    | 'recursive_call_without_base_case';
+  readonly type: 'invalid_signature' | 'missing_input_dto' | 'missing_output_dto' | 'invalid_call' | 'recursive_call_without_base_case';
   readonly signature?: string;
   readonly calledFunction?: EntityName;
 }
@@ -87,11 +82,7 @@ export interface FunctionError extends BaseError {
 export interface DTOError extends BaseError {
   readonly kind: 'dto';
   readonly dtoName: EntityName;
-  readonly type: 
-    | 'invalid_field_type' 
-    | 'function_in_dto' 
-    | 'missing_field_description'
-    | 'circular_reference';
+  readonly type: 'invalid_field_type' | 'function_in_dto' | 'missing_field_description' | 'circular_reference';
   readonly fieldName?: string;
   readonly fieldType?: string;
 }
@@ -100,11 +91,7 @@ export interface DTOError extends BaseError {
 export interface UIComponentError extends BaseError {
   readonly kind: 'ui_component';
   readonly componentName: EntityName;
-  readonly type: 
-    | 'circular_containment' 
-    | 'orphaned_component' 
-    | 'invalid_containment'
-    | 'multiple_roots';
+  readonly type: 'circular_containment' | 'orphaned_component' | 'invalid_containment' | 'multiple_roots';
   readonly parentComponent?: EntityName;
   readonly childComponent?: EntityName;
 }
@@ -113,11 +100,7 @@ export interface UIComponentError extends BaseError {
 export interface RunParameterError extends BaseError {
   readonly kind: 'run_parameter';
   readonly parameterName: EntityName;
-  readonly type: 
-    | 'invalid_parameter_type' 
-    | 'missing_description' 
-    | 'orphaned_parameter'
-    | 'conflicting_default';
+  readonly type: 'invalid_parameter_type' | 'missing_description' | 'orphaned_parameter' | 'conflicting_default';
   readonly parameterType?: string;
   readonly defaultValue?: string;
 }
@@ -126,28 +109,21 @@ export interface RunParameterError extends BaseError {
 export interface AssetError extends BaseError {
   readonly kind: 'asset';
   readonly assetName: EntityName;
-  readonly type: 
-    | 'missing_description' 
-    | 'invalid_program_reference' 
-    | 'orphaned_asset';
+  readonly type: 'missing_description' | 'invalid_program_reference' | 'orphaned_asset';
   readonly programName?: EntityName;
 }
 
 // Program structure errors
 export interface ProgramStructureError extends BaseError {
   readonly kind: 'program_structure';
-  readonly type: 
-    | 'missing_program' 
-    | 'multiple_programs' 
-    | 'invalid_entry_point'
-    | 'unreachable_entity';
+  readonly type: 'missing_program' | 'multiple_programs' | 'invalid_entry_point' | 'unreachable_entity';
   readonly programName?: EntityName;
   readonly entryPoint?: EntityName;
   readonly unreachableEntity?: EntityName;
 }
 
 // Union of all error types
-export type TypedMindError = 
+export type TypedMindError =
   | ParseError
   | EntityValidationError
   | ImportExportError
@@ -171,7 +147,7 @@ export const TypedMindErrors = {
       raw,
       ...(expected && { expected }),
     }),
-    
+
     unexpectedToken: (position: Position, raw: string, suggestion?: string): ParseError => ({
       kind: 'parse',
       type: 'unexpected_token',
@@ -180,7 +156,7 @@ export const TypedMindErrors = {
       raw,
       ...(suggestion && { suggestion }),
     }),
-    
+
     missingRequiredField: (position: Position, raw: string, field: string): ParseError => ({
       kind: 'parse',
       type: 'missing_required_field',
@@ -190,13 +166,13 @@ export const TypedMindErrors = {
       expected: field,
     }),
   },
-  
+
   entity: {
     missingEntity: (
-      position: Position, 
-      entityName: EntityName, 
+      position: Position,
+      entityName: EntityName,
       entityType: EntityTypeName,
-      referencedEntity: EntityName
+      referencedEntity: EntityName,
     ): EntityValidationError => ({
       kind: 'entity_validation',
       type: 'missing_entity',
@@ -206,12 +182,12 @@ export const TypedMindErrors = {
       entityType,
       details: { referencedEntity },
     }),
-    
+
     duplicateEntity: (
       position: Position,
       entityName: EntityName,
       entityType: EntityTypeName,
-      conflictingEntity: EntityName
+      conflictingEntity: EntityName,
     ): EntityValidationError => ({
       kind: 'entity_validation',
       type: 'duplicate_entity',
@@ -221,12 +197,12 @@ export const TypedMindErrors = {
       entityType,
       details: { conflictingEntity },
     }),
-    
+
     circularDependency: (
       position: Position,
       entityName: EntityName,
       entityType: EntityTypeName,
-      circularPath: EntityName[]
+      circularPath: EntityName[],
     ): EntityValidationError => ({
       kind: 'entity_validation',
       type: 'circular_dependency',
@@ -237,13 +213,9 @@ export const TypedMindErrors = {
       details: { circularPath },
     }),
   },
-  
+
   function: {
-    invalidSignature: (
-      position: Position,
-      functionName: EntityName,
-      signature: string
-    ): FunctionError => ({
+    invalidSignature: (position: Position, functionName: EntityName, signature: string): FunctionError => ({
       kind: 'function',
       type: 'invalid_signature',
       position,
@@ -251,12 +223,8 @@ export const TypedMindErrors = {
       functionName,
       signature,
     }),
-    
-    invalidCall: (
-      position: Position,
-      functionName: EntityName,
-      calledFunction: EntityName
-    ): FunctionError => ({
+
+    invalidCall: (position: Position, functionName: EntityName, calledFunction: EntityName): FunctionError => ({
       kind: 'function',
       type: 'invalid_call',
       position,
@@ -265,13 +233,9 @@ export const TypedMindErrors = {
       calledFunction,
     }),
   },
-  
+
   dto: {
-    functionInDTO: (
-      position: Position,
-      dtoName: EntityName,
-      fieldName: string
-    ): DTOError => ({
+    functionInDTO: (position: Position, dtoName: EntityName, fieldName: string): DTOError => ({
       kind: 'dto',
       type: 'function_in_dto',
       position,
@@ -279,13 +243,8 @@ export const TypedMindErrors = {
       dtoName,
       fieldName,
     }),
-    
-    invalidFieldType: (
-      position: Position,
-      dtoName: EntityName,
-      fieldName: string,
-      fieldType: string
-    ): DTOError => ({
+
+    invalidFieldType: (position: Position, dtoName: EntityName, fieldName: string, fieldType: string): DTOError => ({
       kind: 'dto',
       type: 'invalid_field_type',
       position,
@@ -295,13 +254,9 @@ export const TypedMindErrors = {
       fieldType,
     }),
   },
-  
+
   uiComponent: {
-    circularContainment: (
-      position: Position,
-      componentName: EntityName,
-      parentComponent: EntityName
-    ): UIComponentError => ({
+    circularContainment: (position: Position, componentName: EntityName, parentComponent: EntityName): UIComponentError => ({
       kind: 'ui_component',
       type: 'circular_containment',
       position,
@@ -310,7 +265,7 @@ export const TypedMindErrors = {
       parentComponent,
     }),
   },
-  
+
   program: {
     missingProgram: (position: Position): ProgramStructureError => ({
       kind: 'program_structure',
@@ -318,11 +273,8 @@ export const TypedMindErrors = {
       position,
       severity: 'error',
     }),
-    
-    multiplePrograms: (
-      position: Position,
-      programName: EntityName
-    ): ProgramStructureError => ({
+
+    multiplePrograms: (position: Position, programName: EntityName): ProgramStructureError => ({
       kind: 'program_structure',
       type: 'multiple_programs',
       position,
@@ -333,23 +285,17 @@ export const TypedMindErrors = {
 } as const;
 
 // Type predicate functions for narrowing error types
-export const isParseError = (error: TypedMindError): error is ParseError =>
-  error.kind === 'parse';
+export const isParseError = (error: TypedMindError): error is ParseError => error.kind === 'parse';
 
-export const isEntityValidationError = (error: TypedMindError): error is EntityValidationError =>
-  error.kind === 'entity_validation';
+export const isEntityValidationError = (error: TypedMindError): error is EntityValidationError => error.kind === 'entity_validation';
 
-export const isFunctionError = (error: TypedMindError): error is FunctionError =>
-  error.kind === 'function';
+export const isFunctionError = (error: TypedMindError): error is FunctionError => error.kind === 'function';
 
-export const isDTOError = (error: TypedMindError): error is DTOError =>
-  error.kind === 'dto';
+export const isDTOError = (error: TypedMindError): error is DTOError => error.kind === 'dto';
 
-export const isUIComponentError = (error: TypedMindError): error is UIComponentError =>
-  error.kind === 'ui_component';
+export const isUIComponentError = (error: TypedMindError): error is UIComponentError => error.kind === 'ui_component';
 
-export const isProgramStructureError = (error: TypedMindError): error is ProgramStructureError =>
-  error.kind === 'program_structure';
+export const isProgramStructureError = (error: TypedMindError): error is ProgramStructureError => error.kind === 'program_structure';
 
 // Result type for validation operations
 export interface TypedValidationResult {

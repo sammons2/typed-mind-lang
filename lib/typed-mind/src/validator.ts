@@ -100,7 +100,7 @@ export class DSLValidator {
 
   validate(entities: Map<string, AnyEntity>, optionsOrParseResult?: ValidatorOptions | ParseResult): ValidationResult {
     this.errors = [];
-    
+
     // Handle both old signature (parseResult) and new signature (options)
     let parseResult: ParseResult | undefined;
     if (optionsOrParseResult && 'entities' in optionsOrParseResult) {
@@ -109,7 +109,7 @@ export class DSLValidator {
       // Don't override options if they were set in constructor
     } else if (optionsOrParseResult) {
       // It's ValidatorOptions (new signature) - merge with constructor options
-      this.options = { ...this.options, ...optionsOrParseResult as ValidatorOptions };
+      this.options = { ...this.options, ...(optionsOrParseResult as ValidatorOptions) };
     }
     // If no options passed, keep constructor options
 

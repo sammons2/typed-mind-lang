@@ -18,7 +18,7 @@ main @ src/index.ts:
   -> [startApp]
 startApp :: () => void
 `;
-      
+
       const result = generator.detectFormat(content);
       expect(result.format).toBe('shortform');
       expect(result.confidence).toBeGreaterThan(0.7);
@@ -39,7 +39,7 @@ file main {
   exports: [startApp]
 }
 `;
-      
+
       const result = generator.detectFormat(content);
       expect(result.format).toBe('longform');
       expect(result.confidence).toBeGreaterThan(0.7);
@@ -56,7 +56,7 @@ file main {
 
 startApp :: () => void
 `;
-      
+
       const result = generator.detectFormat(content);
       expect(result.format).toBe('mixed');
     });
@@ -78,7 +78,7 @@ TodoApp -> main v1.0.0
 main @ src/index.ts:
   <- [UserService]
 `;
-      
+
       const result = generator.detectFormat(content);
       expect(result.format).toBe('shortform');
     });
@@ -87,7 +87,7 @@ main @ src/index.ts:
   describe('shortform generation', () => {
     it('should generate Program entity in shortform', () => {
       const entities = new Map<string, AnyEntity>();
-      
+
       const program: ProgramEntity = {
         name: 'TodoApp',
         type: 'Program',
@@ -98,12 +98,12 @@ main @ src/index.ts:
         raw: 'TodoApp -> main "Todo application" v1.0.0',
         exports: ['publicAPI'],
       };
-      
+
       entities.set('TodoApp', program);
-      
+
       const result = generator.toShortform(entities);
       expect(result._tag).toBe('success');
-      
+
       if (result._tag === 'success') {
         expect(result.value).toContain('TodoApp -> main "Todo application" v1.0.0');
         expect(result.value).toContain('-> [publicAPI]');
@@ -112,7 +112,7 @@ main @ src/index.ts:
 
     it('should generate File entity in shortform', () => {
       const entities = new Map<string, AnyEntity>();
-      
+
       const file: FileEntity = {
         name: 'main',
         type: 'File',
@@ -123,12 +123,12 @@ main @ src/index.ts:
         position: { line: 1, column: 1 },
         raw: 'main @ src/index.ts:',
       };
-      
+
       entities.set('main', file);
-      
+
       const result = generator.toShortform(entities);
       expect(result._tag).toBe('success');
-      
+
       if (result._tag === 'success') {
         expect(result.value).toContain('main @ src/index.ts:');
         expect(result.value).toContain('"Main entry file"');
@@ -139,7 +139,7 @@ main @ src/index.ts:
 
     it('should generate Function entity in shortform', () => {
       const entities = new Map<string, AnyEntity>();
-      
+
       const func: FunctionEntity = {
         name: 'createUser',
         type: 'Function',
@@ -153,12 +153,12 @@ main @ src/index.ts:
         position: { line: 1, column: 1 },
         raw: 'createUser :: (data: UserDTO) => Promise<User>',
       };
-      
+
       entities.set('createUser', func);
-      
+
       const result = generator.toShortform(entities);
       expect(result._tag).toBe('success');
-      
+
       if (result._tag === 'success') {
         expect(result.value).toContain('createUser :: (data: UserDTO) => Promise<User>');
         expect(result.value).toContain('"Creates a new user"');
@@ -172,7 +172,7 @@ main @ src/index.ts:
 
     it('should generate DTO entity in shortform', () => {
       const entities = new Map<string, AnyEntity>();
-      
+
       const dto: DTOEntity = {
         name: 'UserDTO',
         type: 'DTO',
@@ -185,12 +185,12 @@ main @ src/index.ts:
         position: { line: 1, column: 1 },
         raw: 'UserDTO % "User data transfer object"',
       };
-      
+
       entities.set('UserDTO', dto);
-      
+
       const result = generator.toShortform(entities);
       expect(result._tag).toBe('success');
-      
+
       if (result._tag === 'success') {
         expect(result.value).toContain('UserDTO % "User data transfer object"');
         expect(result.value).toContain('- name: string "User name"');
@@ -201,7 +201,7 @@ main @ src/index.ts:
 
     it('should generate ClassFile entity in shortform', () => {
       const entities = new Map<string, AnyEntity>();
-      
+
       const classFile: ClassFileEntity = {
         name: 'UserService',
         type: 'ClassFile',
@@ -215,12 +215,12 @@ main @ src/index.ts:
         position: { line: 1, column: 1 },
         raw: 'UserService #: src/services/user.ts <: BaseService',
       };
-      
+
       entities.set('UserService', classFile);
-      
+
       const result = generator.toShortform(entities);
       expect(result._tag).toBe('success');
-      
+
       if (result._tag === 'success') {
         expect(result.value).toContain('UserService #: src/services/user.ts <: BaseService, IUserService');
         expect(result.value).toContain('"User service implementation"');
@@ -234,7 +234,7 @@ main @ src/index.ts:
   describe('longform generation', () => {
     it('should generate Program entity in longform', () => {
       const entities = new Map<string, AnyEntity>();
-      
+
       const program: ProgramEntity = {
         name: 'TodoApp',
         type: 'Program',
@@ -244,12 +244,12 @@ main @ src/index.ts:
         position: { line: 1, column: 1 },
         raw: 'TodoApp -> main "Todo application" v1.0.0',
       };
-      
+
       entities.set('TodoApp', program);
-      
+
       const result = generator.toLongform(entities);
       expect(result._tag).toBe('success');
-      
+
       if (result._tag === 'success') {
         expect(result.value).toContain('program TodoApp {');
         expect(result.value).toContain('type: Program');
@@ -262,7 +262,7 @@ main @ src/index.ts:
 
     it('should generate DTO with nested fields in longform', () => {
       const entities = new Map<string, AnyEntity>();
-      
+
       const dto: DTOEntity = {
         name: 'UserDTO',
         type: 'DTO',
@@ -274,12 +274,12 @@ main @ src/index.ts:
         position: { line: 1, column: 1 },
         raw: 'UserDTO % "User data"',
       };
-      
+
       entities.set('UserDTO', dto);
-      
+
       const result = generator.toLongform(entities);
       expect(result._tag).toBe('success');
-      
+
       if (result._tag === 'success') {
         expect(result.value).toContain('dto UserDTO {');
         expect(result.value).toContain('type: DTO');
@@ -304,10 +304,10 @@ main @ src/index.ts:
   <- [UserService]
   -> [startApp]
 `;
-      
+
       const result = generator.toggleFormat(shortformContent);
       expect(result._tag).toBe('success');
-      
+
       // Note: Since we're using a simplified implementation that doesn't fully parse,
       // we just verify it doesn't error for now
     });
@@ -320,7 +320,7 @@ program TodoApp {
   version: 1.0.0
 }
 `;
-      
+
       const result = generator.toggleFormat(longformContent);
       expect(result._tag).toBe('success');
     });
@@ -330,7 +330,7 @@ program TodoApp {
 This is not valid TypedMind syntax
 RandomText 123 !!@#
 `;
-      
+
       const result = generator.toggleFormat(invalidContent);
       expect(result._tag).toBe('success'); // Should still succeed, just pass through
     });
@@ -339,7 +339,7 @@ RandomText 123 !!@#
   describe('error handling', () => {
     it('should handle unknown entity types', () => {
       const entities = new Map<string, AnyEntity>();
-      
+
       // Create an entity with an unknown type (this shouldn't happen in practice)
       const invalidEntity = {
         name: 'Invalid',
@@ -347,12 +347,12 @@ RandomText 123 !!@#
         position: { line: 1, column: 1 },
         raw: 'Invalid entity',
       };
-      
+
       entities.set('Invalid', invalidEntity);
-      
+
       const result = generator.toShortform(entities);
       expect(result._tag).toBe('failure');
-      
+
       if (result._tag === 'failure') {
         expect(result.error.message).toContain('Unknown entity type');
         expect(result.error.entity).toBe('Invalid');
@@ -361,7 +361,7 @@ RandomText 123 !!@#
 
     it('should preserve comments when configured', () => {
       const entities = new Map<string, AnyEntity>();
-      
+
       const program: ProgramEntity = {
         name: 'TodoApp',
         type: 'Program',
@@ -370,14 +370,14 @@ RandomText 123 !!@#
         position: { line: 1, column: 1 },
         raw: 'TodoApp -> main',
       };
-      
+
       entities.set('TodoApp', program);
-      
+
       const generator = new SyntaxGenerator({ preserveComments: true });
       const result = generator.toShortform(entities);
-      
+
       expect(result._tag).toBe('success');
-      
+
       if (result._tag === 'success') {
         expect(result.value).toContain('# This is the main program');
       }
@@ -385,7 +385,7 @@ RandomText 123 !!@#
 
     it('should respect custom indentation', () => {
       const entities = new Map<string, AnyEntity>();
-      
+
       const file: FileEntity = {
         name: 'main',
         type: 'File',
@@ -395,12 +395,12 @@ RandomText 123 !!@#
         position: { line: 1, column: 1 },
         raw: 'main @ src/index.ts:',
       };
-      
+
       entities.set('main', file);
-      
+
       const generator = new SyntaxGenerator({ indentSize: 4 });
       const result = generator.toShortform(entities);
-      
+
       expect(result._tag).toBe('success');
       // Note: Current implementation uses fixed 2-space indentation
       // This test documents the intended behavior
@@ -410,10 +410,10 @@ RandomText 123 !!@#
   describe('edge cases', () => {
     it('should handle empty entity map', () => {
       const entities = new Map<string, AnyEntity>();
-      
+
       const result = generator.toShortform(entities);
       expect(result._tag).toBe('success');
-      
+
       if (result._tag === 'success') {
         expect(result.value.trim()).toBe('');
       }
@@ -421,7 +421,7 @@ RandomText 123 !!@#
 
     it('should sort entities by type and name', () => {
       const entities = new Map<string, AnyEntity>();
-      
+
       // Add entities in reverse order
       const func: FunctionEntity = {
         name: 'zzz',
@@ -431,7 +431,7 @@ RandomText 123 !!@#
         position: { line: 1, column: 1 },
         raw: 'zzz :: () => void',
       };
-      
+
       const program: ProgramEntity = {
         name: 'aaa',
         type: 'Program',
@@ -439,13 +439,13 @@ RandomText 123 !!@#
         position: { line: 1, column: 1 },
         raw: 'aaa -> main',
       };
-      
+
       entities.set('zzz', func);
       entities.set('aaa', program);
-      
+
       const result = generator.toShortform(entities);
       expect(result._tag).toBe('success');
-      
+
       if (result._tag === 'success') {
         // Program should come before Function due to type ordering
         const programIndex = result.value.indexOf('aaa -> main');
@@ -456,7 +456,7 @@ RandomText 123 !!@#
 
     it('should handle entities with minimal properties', () => {
       const entities = new Map<string, AnyEntity>();
-      
+
       const minimalProgram: ProgramEntity = {
         name: 'App',
         type: 'Program',
@@ -464,12 +464,12 @@ RandomText 123 !!@#
         position: { line: 1, column: 1 },
         raw: 'App -> main',
       };
-      
+
       entities.set('App', minimalProgram);
-      
+
       const result = generator.toShortform(entities);
       expect(result._tag).toBe('success');
-      
+
       if (result._tag === 'success') {
         expect(result.value).toContain('App -> main');
         expect(result.value).not.toContain('undefined');
@@ -482,21 +482,21 @@ RandomText 123 !!@#
     it('should work with detectSyntaxFormat convenience function', () => {
       const content = 'TodoApp -> main v1.0.0';
       const result = detectSyntaxFormat(content);
-      
+
       expect(result.format).toBe('shortform');
     });
 
     it('should work with toggleSyntaxFormat convenience function', () => {
       const content = 'TodoApp -> main v1.0.0';
       const result = toggleSyntaxFormat(content);
-      
+
       expect(result._tag).toBe('success');
     });
 
     it('should accept options in convenience function', () => {
       const content = 'TodoApp -> main v1.0.0';
       const result = toggleSyntaxFormat(content, { preserveComments: false });
-      
+
       expect(result._tag).toBe('success');
     });
   });

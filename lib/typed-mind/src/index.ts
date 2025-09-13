@@ -16,7 +16,7 @@ export type {
   ReferenceType,
   Reference,
   Entity,
-  
+
   // Entity types
   ProgramEntity,
   FileEntity,
@@ -32,11 +32,11 @@ export type {
   RunParameterEntity,
   DependencyEntity,
   AnyEntity,
-  
+
   // Validation types
   ValidationError,
   ValidationResult,
-  
+
   // Import/Graph types
   ImportStatement,
   ProgramGraph,
@@ -63,14 +63,14 @@ export { LongformParser } from './longform-parser';
 export { GrammarValidator, type GrammarValidationResult, type GrammarValidationError } from './grammar-validator';
 export { ENTITY_PATTERNS, CONTINUATION_PATTERNS, GENERAL_PATTERNS, PATTERN_DESCRIPTIONS } from './parser-patterns';
 export { GrammarDocGenerator } from './grammar-doc-generator';
-export { 
-  SyntaxGenerator, 
-  toggleSyntaxFormat, 
+export {
+  SyntaxGenerator,
+  toggleSyntaxFormat,
   detectSyntaxFormat,
   type SyntaxFormat,
   type SyntaxGeneratorOptions,
   type SyntaxGenerationError,
-  type FormatDetectionResult
+  type FormatDetectionResult,
 } from './syntax-generator';
 
 // Enhanced DSLChecker with better type safety
@@ -107,10 +107,7 @@ export class DSLChecker<TOptions extends DSLCheckerOptions = DSLCheckerOptions> 
   /**
    * Type-safe check method with branded types support
    */
-  check<TInput extends CheckerInput>(
-    input: TInput, 
-    filePath?: CheckerFilePath
-  ): ValidationResult {
+  check<TInput extends CheckerInput>(input: TInput, filePath?: CheckerFilePath): ValidationResult {
     const parseResult = this.parser.parse(input);
     const allEntities = new Map(parseResult.entities);
     const allErrors: ValidationError[] = [];
@@ -153,12 +150,9 @@ export class DSLChecker<TOptions extends DSLCheckerOptions = DSLCheckerOptions> 
   /**
    * Enhanced check method that returns Result type for functional error handling
    */
-  checkSafe<TInput extends CheckerInput>(
-    input: TInput,
-    filePath?: CheckerFilePath
-  ): Result<ProgramGraph, ValidationError[]> {
+  checkSafe<TInput extends CheckerInput>(input: TInput, filePath?: CheckerFilePath): Result<ProgramGraph, ValidationError[]> {
     const result = this.check(input, typeof filePath === 'string' ? filePath : undefined);
-    
+
     if (result.valid) {
       const graph = this.parse(input, typeof filePath === 'string' ? filePath : undefined);
       return { _tag: 'success', value: graph };
@@ -170,10 +164,7 @@ export class DSLChecker<TOptions extends DSLCheckerOptions = DSLCheckerOptions> 
   /**
    * Type-safe parse method with branded types support
    */
-  parse<TInput extends CheckerInput>(
-    input: TInput, 
-    filePath?: CheckerFilePath
-  ): ProgramGraph {
+  parse<TInput extends CheckerInput>(input: TInput, filePath?: CheckerFilePath): ProgramGraph {
     const parseResult = this.parser.parse(input);
     const allEntities = new Map(parseResult.entities);
 
@@ -202,20 +193,17 @@ export class DSLChecker<TOptions extends DSLCheckerOptions = DSLCheckerOptions> 
   /**
    * Toggle the syntax format of DSL content between shortform and longform
    */
-  toggleFormat<TInput extends CheckerInput>(
-    input: TInput,
-    filePath?: CheckerFilePath
-  ): Result<string, SyntaxGenerationError> {
+  toggleFormat<TInput extends CheckerInput>(input: TInput, filePath?: CheckerFilePath): Result<string, SyntaxGenerationError> {
     // Detect current format
     const detection = this.syntaxGenerator.detectFormat(input);
-    
+
     // Determine target format
     const targetFormat: 'shortform' | 'longform' = detection.format === 'longform' ? 'shortform' : 'longform';
-    
+
     // Parse entities and convert to target format
     try {
       const graph = this.parse(input, filePath);
-      
+
       if (targetFormat === 'shortform') {
         return this.syntaxGenerator.toShortform(graph.entities);
       } else {
@@ -234,10 +222,7 @@ export class DSLChecker<TOptions extends DSLCheckerOptions = DSLCheckerOptions> 
   /**
    * Convert DSL content to shortform syntax using parsed entities
    */
-  toShortform<TInput extends CheckerInput>(
-    input: TInput,
-    filePath?: CheckerFilePath
-  ): Result<string, SyntaxGenerationError> {
+  toShortform<TInput extends CheckerInput>(input: TInput, filePath?: CheckerFilePath): Result<string, SyntaxGenerationError> {
     const graph = this.parse(input, filePath);
     return this.syntaxGenerator.toShortform(graph.entities);
   }
@@ -245,10 +230,7 @@ export class DSLChecker<TOptions extends DSLCheckerOptions = DSLCheckerOptions> 
   /**
    * Convert DSL content to longform syntax using parsed entities
    */
-  toLongform<TInput extends CheckerInput>(
-    input: TInput,
-    filePath?: CheckerFilePath
-  ): Result<string, SyntaxGenerationError> {
+  toLongform<TInput extends CheckerInput>(input: TInput, filePath?: CheckerFilePath): Result<string, SyntaxGenerationError> {
     const graph = this.parse(input, filePath);
     return this.syntaxGenerator.toLongform(graph.entities);
   }

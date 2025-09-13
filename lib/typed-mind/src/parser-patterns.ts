@@ -150,16 +150,13 @@ export const getGeneralPattern = <T extends GeneralPatternKey>(key: T): (typeof 
 };
 
 // Type-safe pattern testing
-export const testEntityPattern = <T extends EntityPatternKey>(
-  key: T, 
-  input: string
-): input is string & { __patternMatch: T } => {
+export const testEntityPattern = <T extends EntityPatternKey>(key: T, input: string): input is string & { __patternMatch: T } => {
   return ENTITY_PATTERNS[key].test(input);
 };
 
 export const testContinuationPattern = <T extends ContinuationPatternKey>(
   key: T,
-  input: string  
+  input: string,
 ): input is string & { __patternMatch: T } => {
   return CONTINUATION_PATTERNS[key].test(input);
 };

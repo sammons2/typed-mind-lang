@@ -1,9 +1,9 @@
 /**
  * Result type for functional error handling in TypedMind
- * 
+ *
  * This provides a type-safe way to handle operations that can fail,
  * inspired by Rust's Result<T, E> type and functional programming patterns.
- * 
+ *
  * Use this instead of throwing exceptions for expected error conditions.
  */
 
@@ -31,11 +31,9 @@ export const Err = <E>(error: E): Failure<E> => ({
 });
 
 // Type guards
-export const isOk = <T, E>(result: Result<T, E>): result is Success<T> =>
-  result._tag === 'success';
+export const isOk = <T, E>(result: Result<T, E>): result is Success<T> => result._tag === 'success';
 
-export const isErr = <T, E>(result: Result<T, E>): result is Failure<E> =>
-  result._tag === 'failure';
+export const isErr = <T, E>(result: Result<T, E>): result is Failure<E> => result._tag === 'failure';
 
 // Utility functions for working with Results
 export const Result = {
@@ -43,50 +41,50 @@ export const Result = {
    * Create a successful result
    */
   ok: Ok,
-  
+
   /**
    * Create a failed result
    */
   err: Err,
-  
+
   /**
    * Check if result is successful
    */
   isOk,
-  
+
   /**
    * Check if result is failed
    */
   isErr,
-  
+
   /**
    * Map over the success value, leaving errors unchanged
    */
   map: <T, U, E>(result: Result<T, E>, fn: (value: T) => U): Result<U, E> => {
     return isOk(result) ? Ok(fn(result.value)) : result;
   },
-  
+
   /**
    * Map over the error value, leaving success unchanged
    */
   mapErr: <T, E, F>(result: Result<T, E>, fn: (error: E) => F): Result<T, F> => {
     return isErr(result) ? Err(fn(result.error)) : result;
   },
-  
+
   /**
    * Chain operations that return Results (flatMap)
    */
   andThen: <T, U, E>(result: Result<T, E>, fn: (value: T) => Result<U, E>): Result<U, E> => {
     return isOk(result) ? fn(result.value) : result;
   },
-  
+
   /**
    * Provide a default value for failed results
    */
   unwrapOr: <T, E>(result: Result<T, E>, defaultValue: T): T => {
     return isOk(result) ? result.value : defaultValue;
   },
-  
+
   /**
    * Extract the value or throw the error
    */
@@ -96,7 +94,7 @@ export const Result = {
     }
     throw result.error;
   },
-  
+
   /**
    * Extract the error or throw if successful
    */
@@ -106,7 +104,7 @@ export const Result = {
     }
     throw new Error('Called unwrapErr on a successful result');
   },
-  
+
   /**
    * Combine multiple Results into a single Result containing an array
    * If any Result is an error, return the first error
@@ -121,7 +119,7 @@ export const Result = {
     }
     return Ok(values);
   },
-  
+
   /**
    * Try to execute a function that might throw, converting to Result
    */
@@ -132,7 +130,7 @@ export const Result = {
       return Err(error instanceof Error ? error : new Error(String(error)));
     }
   },
-  
+
   /**
    * Try to execute an async function that might throw, converting to Result
    */
@@ -144,7 +142,7 @@ export const Result = {
       return Err(error instanceof Error ? error : new Error(String(error)));
     }
   },
-  
+
   /**
    * Apply a function to both success and error cases
    */
@@ -153,7 +151,7 @@ export const Result = {
     handlers: {
       ok: (value: T) => U;
       err: (error: E) => U;
-    }
+    },
   ): U => {
     return isOk(result) ? handlers.ok(result.value) : handlers.err(result.error);
   },
@@ -164,21 +162,15 @@ export const AsyncResult = {
   /**
    * Map over an async Result
    */
-  map: async <T, U, E>(
-    result: Promise<Result<T, E>>,
-    fn: (value: T) => U | Promise<U>
-  ): Promise<Result<U, E>> => {
+  map: async <T, U, E>(result: Promise<Result<T, E>>, fn: (value: T) => U | Promise<U>): Promise<Result<U, E>> => {
     const resolved = await result;
     return isOk(resolved) ? Ok(await fn(resolved.value)) : resolved;
   },
-  
+
   /**
    * Chain async operations that return Results
    */
-  andThen: async <T, U, E>(
-    result: Promise<Result<T, E>>,
-    fn: (value: T) => Promise<Result<U, E>>
-  ): Promise<Result<U, E>> => {
+  andThen: async <T, U, E>(result: Promise<Result<T, E>>, fn: (value: T) => Promise<Result<U, E>>): Promise<Result<U, E>> => {
     const resolved = await result;
     return isOk(resolved) ? await fn(resolved.value) : resolved;
   },
