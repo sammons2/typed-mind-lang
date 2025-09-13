@@ -10,4 +10,9 @@ export default defineConfig({
   bundle: true,
   platform: 'node',
   target: 'node16',
+  // Fix vscode import issues
+  esbuildOptions(options) {
+    options.mainFields = ['main', 'module'];
+    options.conditions = ['node'];
+  },
 });

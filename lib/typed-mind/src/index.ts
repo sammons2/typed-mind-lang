@@ -2,6 +2,7 @@ import { DSLParser } from './parser';
 import { DSLValidator } from './validator';
 import { ErrorFormatter } from './formatter';
 import { ImportResolver } from './import-resolver';
+import { SyntaxGenerator, type SyntaxGenerationError } from './syntax-generator';
 import type { ValidationResult, ProgramGraph, AnyEntity, ValidationError } from './types';
 import type { Result } from './result';
 import type { FilePath } from './branded-types';
@@ -62,6 +63,15 @@ export { LongformParser } from './longform-parser';
 export { GrammarValidator, type GrammarValidationResult, type GrammarValidationError } from './grammar-validator';
 export { ENTITY_PATTERNS, CONTINUATION_PATTERNS, GENERAL_PATTERNS, PATTERN_DESCRIPTIONS } from './parser-patterns';
 export { GrammarDocGenerator } from './grammar-doc-generator';
+export { 
+  SyntaxGenerator, 
+  toggleSyntaxFormat, 
+  detectSyntaxFormat,
+  type SyntaxFormat,
+  type SyntaxGeneratorOptions,
+  type SyntaxGenerationError,
+  type FormatDetectionResult
+} from './syntax-generator';
 
 // Enhanced DSLChecker with better type safety
 export interface DSLCheckerOptions {
@@ -79,6 +89,7 @@ export class DSLChecker<TOptions extends DSLCheckerOptions = DSLCheckerOptions> 
   private readonly validator: DSLValidator;
   private readonly formatter = new ErrorFormatter();
   private readonly importResolver = new ImportResolver();
+  private readonly syntaxGenerator = new SyntaxGenerator();
   private readonly options: TOptions;
 
   constructor(options: TOptions = {} as TOptions) {
@@ -186,6 +197,67 @@ export class DSLChecker<TOptions extends DSLCheckerOptions = DSLCheckerOptions> 
       dependencies,
       imports: parseResult.imports,
     };
+  }
+
+  /**
+   * Toggle the syntax format of DSL content between shortform and longform
+   */
+  toggleFormat<TInput extends CheckerInput>(
+    input: TInput,
+    filePath?: CheckerFilePath
+  ): Result<string, SyntaxGenerationError> {
+    // Detect current format
+    const detection = this.syntaxGenerator.detectFormat(input);
+    
+    // Determine target format
+    const targetFormat: 'shortform' | 'longform' = detection.format === 'longform' ? 'shortform' : 'longform';
+    
+    // Parse entities and convert to target format
+    try {
+      const graph = this.parse(input, filePath);
+      
+      if (targetFormat === 'shortform') {
+        return this.syntaxGenerator.toShortform(graph.entities);
+      } else {
+        return this.syntaxGenerator.toLongform(graph.entities);
+      }
+    } catch (error) {
+      return {
+        _tag: 'failure',
+        error: {
+          message: error instanceof Error ? error.message : 'Failed to parse content for format conversion',
+        },
+      };
+    }
+  }
+
+  /**
+   * Convert DSL content to shortform syntax using parsed entities
+   */
+  toShortform<TInput extends CheckerInput>(
+    input: TInput,
+    filePath?: CheckerFilePath
+  ): Result<string, SyntaxGenerationError> {
+    const graph = this.parse(input, filePath);
+    return this.syntaxGenerator.toShortform(graph.entities);
+  }
+
+  /**
+   * Convert DSL content to longform syntax using parsed entities
+   */
+  toLongform<TInput extends CheckerInput>(
+    input: TInput,
+    filePath?: CheckerFilePath
+  ): Result<string, SyntaxGenerationError> {
+    const graph = this.parse(input, filePath);
+    return this.syntaxGenerator.toLongform(graph.entities);
+  }
+
+  /**
+   * Detect the primary syntax format of DSL content
+   */
+  detectFormat<TInput extends CheckerInput>(input: TInput) {
+    return this.syntaxGenerator.detectFormat(input);
   }
 
   private buildDependencyGraph(entities: Map<string, AnyEntity>): Map<string, string[]> {

@@ -23,7 +23,7 @@ import {
 } from 'vscode-languageserver/node';
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { DSLParser, DSLValidator } from '@sammons/typed-mind';
+import { DSLParser, DSLValidator, SyntaxGenerator, DSLChecker } from '@sammons/typed-mind';
 import type { AnyEntity } from '@sammons/typed-mind';
 
 export class TypedMindLanguageServer {
@@ -31,6 +31,7 @@ export class TypedMindLanguageServer {
   private documents = new TextDocuments<TextDocument>(TextDocument);
   private parser = new DSLParser();
   private validator = new DSLValidator();
+  private syntaxGenerator = new SyntaxGenerator();
 
   // Cache parsed entities per document
   private documentEntities = new Map<string, Map<string, AnyEntity>>();
@@ -119,6 +120,11 @@ export class TypedMindLanguageServer {
     // Handle semantic tokens
     this.connection.languages.semanticTokens.on((params: SemanticTokensParams): SemanticTokens => {
       return this.provideSemanticTokens(params);
+    });
+
+    // Handle custom format toggle request
+    this.connection.onRequest('typedmind/toggleFormat', (params: { uri: string; range?: { start: number; end: number } }) => {
+      return this.handleToggleFormat(params);
     });
   }
 
@@ -644,6 +650,70 @@ export class TypedMindLanguageServer {
       return 1 << this.tokenModifiers.indexOf(SemanticTokenModifiers.declaration);
     }
     return 0;
+  }
+
+  /**
+   * Handle format toggle request from VS Code extension
+   */
+  private async handleToggleFormat(params: { uri: string; range?: { start: number; end: number } }): Promise<{ newText: string; error?: string }> {
+    try {
+      this.connection.console.log(`Toggle format request received for ${params.uri}`);
+      
+      const document = this.documents.get(params.uri);
+      if (!document) {
+        this.connection.console.log('Document not found');
+        return { newText: '', error: 'Document not found' };
+      }
+
+      const fullText = document.getText();
+      let textToProcess = fullText;
+      
+      this.connection.console.log(`Original text length: ${fullText.length}`);
+      
+      // Handle selection range if provided
+      if (params.range) {
+        const lines = fullText.split('\n');
+        const startLineIndex = Math.max(0, params.range.start);
+        const endLineIndex = Math.min(lines.length - 1, params.range.end);
+        
+        if (startLineIndex <= endLineIndex) {
+          textToProcess = lines.slice(startLineIndex, endLineIndex + 1).join('\n');
+        }
+        this.connection.console.log(`Processing selected text (lines ${startLineIndex}-${endLineIndex}), length: ${textToProcess.length}`);
+      } else {
+        this.connection.console.log('Processing entire document');
+      }
+
+      // Detect current format first
+      const detection = this.syntaxGenerator.detectFormat(textToProcess);
+      this.connection.console.log(`Detected format: ${JSON.stringify(detection)}`);
+
+      // Use DSL checker for proper parsing
+      const checker = new DSLChecker();
+      const result = checker.toggleFormat(textToProcess);
+      
+      this.connection.console.log(`Toggle result success: ${result._tag === 'success'}`);
+      
+      if (result._tag === 'success') {
+        this.connection.console.log(`New text length: ${result.value.length}`);
+        this.connection.console.log(`Content changed: ${result.value !== textToProcess}`);
+        return { newText: result.value };
+      } else {
+        this.connection.console.log(`Toggle error: ${result.error.message}`);
+        return { 
+          newText: textToProcess, // Return original on error
+          error: result.error.message 
+        };
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error during format toggle';
+      this.connection.console.error(`Format toggle error: ${errorMessage}`);
+      
+      return { 
+        newText: '', 
+        error: errorMessage 
+      };
+    }
   }
 
   start(): void {

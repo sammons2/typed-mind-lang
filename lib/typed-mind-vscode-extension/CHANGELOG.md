@@ -35,6 +35,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pattern recognition through text styles
 - High contrast design meeting WCAG standards
 
+## [0.1.7] - 2025-09-13
+
+### Added
+- **Format Toggle Command** - Toggle between shortform and longform syntax with `Ctrl+Shift+Alt+F`
+- **VS Code Command Integration** - "TypedMind: Toggle Syntax Format" in command palette
+- **Context Menu Support** - Right-click menu option to toggle format in .tmd files
+- **Syntax Generator** - Complete bidirectional conversion between shortform and longform
+- **Selection Support** - Toggle format for selected text or entire document
+- **Smart Format Detection** - Automatically detects current format (shortform/longform/mixed)
+
+### Fixed
+- **LSP Server Crashes** - Fixed bundling issues with vscode-languageserver dependencies
+- **Node Version Compatibility** - Reduced requirement from Node >=22 to >=18 for wider compatibility
+- **WorkspaceEdit Constructor Error** - Fixed VS Code API import issues in bundled extension
+- **Hover Tooltips** - Resolved hover provider not showing entity information
+- **LSP Path Resolution** - Fixed server module path detection for both dev and production environments
+
+### Changed
+- **Improved Error Handling** - Better error messages and recovery throughout LSP and extension
+- **Enhanced Bundling** - All dependencies properly bundled (extension: 783KB, LSP: 631KB)
+- **Cleaner Logging** - Reduced verbose logging in production, added debug mode for troubleshooting
+
 ## [Unreleased]
 
 ### Added

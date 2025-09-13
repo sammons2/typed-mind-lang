@@ -1,11 +1,13 @@
 import * as path from 'path';
-import * as vscode from 'vscode';
 import {
   LanguageClient,
   LanguageClientOptions,
   ServerOptions,
   TransportKind,
 } from 'vscode-languageclient/node';
+
+// Use require for vscode to avoid __toESM issues
+const vscode = require('vscode');
 
 let client: LanguageClient;
 

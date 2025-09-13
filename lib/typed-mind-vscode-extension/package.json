@@ -2,7 +2,7 @@
   "name": "typed-mind",
   "displayName": "TypedMind DSL",
   "description": "Language support for TypedMind DSL - a declarative architecture description language with bidirectional validation",
-  "version": "0.1.5",
+  "version": "0.1.7",
   "author": "sammons",
   "license": "MIT",
   "repository": {
@@ -73,6 +73,36 @@
         "path": "./themes/typedmind-accessible-light.json"
       }
     ],
+    "commands": [
+      {
+        "command": "typedmind.toggleFormat",
+        "title": "Toggle Syntax Format",
+        "category": "TypedMind"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "typedmind.toggleFormat",
+        "key": "ctrl+shift+alt+f",
+        "mac": "cmd+shift+alt+f",
+        "when": "editorTextFocus && resourceExtname == .tmd"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "typedmind.toggleFormat",
+          "when": "resourceExtname == .tmd",
+          "group": "1_modification"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "typedmind.toggleFormat",
+          "when": "resourceExtname == .tmd"
+        }
+      ]
+    },
     "configuration": {
       "type": "object",
       "title": "TypedMind",
