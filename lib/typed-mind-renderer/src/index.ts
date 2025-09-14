@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * TypedMind Renderer - Main Entry Point
  * Exports both the original renderer and the new advanced renderer

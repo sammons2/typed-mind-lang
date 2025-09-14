@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Graph Metrics Dashboard System
  * Provides comprehensive architectural analysis with complexity metrics, coupling analysis, and health indicators

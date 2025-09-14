@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Validation Error Visualization System
  * Provides comprehensive error display with inline badges, severity indicators, and suggested fixes

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Advanced TypedMind Renderer - Enterprise-Grade Visualization Platform
  * Integrates all advanced capabilities into a comprehensive renderer system

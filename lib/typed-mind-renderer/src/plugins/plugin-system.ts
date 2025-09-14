@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Extensible Plugin Architecture for TypedMind Renderer
  * Provides comprehensive plugin system with custom entity renderers and layout algorithms
