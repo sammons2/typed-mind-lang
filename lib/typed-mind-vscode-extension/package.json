@@ -79,6 +79,12 @@
         "command": "typedmind.toggleFormat",
         "title": "Toggle Syntax Format",
         "category": "TypedMind"
+      },
+      {
+        "command": "typedmind.preview",
+        "title": "Preview TypedMind Visualization",
+        "category": "TypedMind",
+        "icon": "$(open-preview)"
       }
     ],
     "keybindings": [
@@ -86,6 +92,12 @@
         "command": "typedmind.toggleFormat",
         "key": "ctrl+shift+alt+f",
         "mac": "cmd+shift+alt+f",
+        "when": "editorTextFocus && resourceExtname == .tmd"
+      },
+      {
+        "command": "typedmind.preview",
+        "key": "ctrl+shift+v",
+        "mac": "cmd+shift+v",
         "when": "editorTextFocus && resourceExtname == .tmd"
       }
     ],
@@ -95,11 +107,27 @@
           "command": "typedmind.toggleFormat",
           "when": "resourceExtname == .tmd",
           "group": "1_modification"
+        },
+        {
+          "command": "typedmind.preview",
+          "when": "resourceExtname == .tmd",
+          "group": "navigation"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "typedmind.preview",
+          "when": "resourceExtname == .tmd",
+          "group": "navigation"
         }
       ],
       "commandPalette": [
         {
           "command": "typedmind.toggleFormat",
+          "when": "resourceExtname == .tmd"
+        },
+        {
+          "command": "typedmind.preview",
           "when": "resourceExtname == .tmd"
         }
       ]
@@ -131,7 +159,9 @@
     "clean": "rm -rf dist lsp-dist lsp-bundled node_modules *.vsix"
   },
   "dependencies": {
+    "@sammons/typed-mind": "workspace:*",
     "@sammons/typed-mind-lsp": "workspace:*",
+    "@sammons/typed-mind-renderer": "workspace:*",
     "vscode-languageclient": "^9.0.1"
   },
   "devDependencies": {

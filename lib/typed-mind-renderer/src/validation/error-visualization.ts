@@ -39,12 +39,15 @@ export interface ErrorVisualizationOptions {
  * Enhanced error processing and categorization
  */
 export class ValidationErrorProcessor {
-  private errorCatalog = new Map<string, {
-    category: EnhancedValidationError['category'];
-    quickFix?: (error: ValidationError) => QuickFix | null;
-    documentation: string;
-    examples: string[];
-  }>();
+  private errorCatalog = new Map<
+    string,
+    {
+      category: EnhancedValidationError['category'];
+      quickFix?: (error: ValidationError) => QuickFix | null;
+      documentation: string;
+      examples: string[];
+    }
+  >();
 
   constructor() {
     this.initializeErrorCatalog();
@@ -60,7 +63,7 @@ export class ValidationErrorProcessor {
         id: `error-${index}-${Date.now()}`,
         category: this.categorizeError(error),
         affectedEntities: this.extractAffectedEntities(error),
-        relatedErrors: []
+        relatedErrors: [],
       };
 
       // Add quick fix if available
@@ -102,7 +105,7 @@ export class ValidationErrorProcessor {
     return Array.from(groups.entries()).map(([group, groupErrors]) => ({
       group,
       errors: groupErrors,
-      severity: this.getGroupSeverity(groupErrors)
+      severity: this.getGroupSeverity(groupErrors),
     }));
   }
 
@@ -121,7 +124,7 @@ export class ValidationErrorProcessor {
       byCategory: {} as Record<string, number>,
       bySeverity: { error: 0, warning: 0, info: 0, success: 0 } as Record<ErrorSeverity, number>,
       fixable: 0,
-      critical: 0
+      critical: 0,
     };
 
     for (const error of errors) {
@@ -155,8 +158,8 @@ export class ValidationErrorProcessor {
         title: 'Fix entity name',
         description: 'Rename to follow valid identifier rules',
         action: 'replace',
-        confident: true
-      })
+        confident: true,
+      }),
     });
 
     // Reference errors
@@ -168,8 +171,8 @@ export class ValidationErrorProcessor {
         title: 'Create missing entity',
         description: 'Generate a skeleton entity definition',
         action: 'add',
-        confident: false
-      })
+        confident: false,
+      }),
     });
 
     // Structure errors
@@ -181,8 +184,8 @@ export class ValidationErrorProcessor {
         title: 'Break circular dependency',
         description: 'Extract shared functionality to new entity',
         action: 'restructure',
-        confident: false
-      })
+        confident: false,
+      }),
     });
 
     // Best practice warnings
@@ -194,8 +197,8 @@ export class ValidationErrorProcessor {
         title: 'Remove unused entity',
         description: 'Delete entity if not needed',
         action: 'remove',
-        confident: true
-      })
+        confident: true,
+      }),
     });
   }
 
@@ -252,7 +255,7 @@ export class ValidationErrorProcessor {
     const severityOrder: ErrorSeverity[] = ['error', 'warning', 'info', 'success'];
 
     for (const severity of severityOrder) {
-      if (errors.some(e => e.severity === severity)) {
+      if (errors.some((e) => e.severity === severity)) {
         return severity;
       }
     }
@@ -279,7 +282,7 @@ export class ErrorVisualizationRenderer {
       enableQuickFixes: true,
       maxInlineErrors: 10,
       autoHighlightAffectedEntities: true,
-      ...options
+      ...options,
     };
   }
 
@@ -305,9 +308,7 @@ export class ErrorVisualizationRenderer {
     badge.className = 'error-badge';
     badge.dataset['entityId'] = entityId;
 
-    const severestError = errors.sort((a, b) =>
-      this.getSeverityOrder(b.severity) - this.getSeverityOrder(a.severity)
-    )[0];
+    const severestError = errors.sort((a, b) => this.getSeverityOrder(b.severity) - this.getSeverityOrder(a.severity))[0];
 
     badge.className += ` error-badge-${severestError.severity}`;
 
@@ -333,7 +334,7 @@ export class ErrorVisualizationRenderer {
     if (!this.options.autoHighlightAffectedEntities) return;
 
     // Clear previous highlights
-    svg.querySelectorAll('.error-highlight').forEach(el => {
+    svg.querySelectorAll('.error-highlight').forEach((el) => {
       el.classList.remove('error-highlight');
     });
 
@@ -350,7 +351,7 @@ export class ErrorVisualizationRenderer {
 
   private generateErrorPanelHTML(
     stats: ReturnType<ValidationErrorProcessor['generateErrorStats']>,
-    groups: ReturnType<ValidationErrorProcessor['groupRelatedErrors']>
+    groups: ReturnType<ValidationErrorProcessor['groupRelatedErrors']>,
   ): string {
     return `
       <div class="error-panel">
@@ -373,7 +374,7 @@ export class ErrorVisualizationRenderer {
         </div>
 
         <div class="error-groups">
-          ${groups.map(group => this.generateErrorGroupHTML(group)).join('')}
+          ${groups.map((group) => this.generateErrorGroupHTML(group)).join('')}
         </div>
 
         ${this.generateErrorCategoryBreakdown(stats)}
@@ -397,7 +398,7 @@ export class ErrorVisualizationRenderer {
           </button>
         </div>
         <div class="error-group-content">
-          ${group.errors.map(error => this.generateErrorItemHTML(error)).join('')}
+          ${group.errors.map((error) => this.generateErrorItemHTML(error)).join('')}
         </div>
       </div>
     `;
@@ -412,22 +413,30 @@ export class ErrorVisualizationRenderer {
           <div class="error-item-category">${error.category}</div>
         </div>
 
-        ${error.affectedEntities.length > 0 ? `
+        ${
+          error.affectedEntities.length > 0
+            ? `
           <div class="error-item-entities">
             <strong>Affects:</strong>
-            ${error.affectedEntities.map(entity =>
-              `<span class="error-entity-tag" data-entity="${entity}">${entity}</span>`
-            ).join('')}
+            ${error.affectedEntities.map((entity) => `<span class="error-entity-tag" data-entity="${entity}">${entity}</span>`).join('')}
           </div>
-        ` : ''}
+        `
+            : ''
+        }
 
-        ${error.suggestion ? `
+        ${
+          error.suggestion
+            ? `
           <div class="error-item-suggestion">
             <strong>Suggestion:</strong> ${error.suggestion}
           </div>
-        ` : ''}
+        `
+            : ''
+        }
 
-        ${error.quickFix && this.options.enableQuickFixes ? `
+        ${
+          error.quickFix && this.options.enableQuickFixes
+            ? `
           <div class="error-item-quickfix">
             <button class="quickfix-btn" data-error-id="${error.id}">
               ${error.quickFix.title}
@@ -435,20 +444,30 @@ export class ErrorVisualizationRenderer {
             <div class="quickfix-description">${error.quickFix.description}</div>
             ${error.quickFix.confident ? '' : '<div class="quickfix-warning">⚠️ Review suggested changes</div>'}
           </div>
-        ` : ''}
+        `
+            : ''
+        }
 
-        ${error.documentation ? `
+        ${
+          error.documentation
+            ? `
           <details class="error-item-details">
             <summary>More Information</summary>
             <div class="error-documentation">${error.documentation}</div>
-            ${error.examples && error.examples.length > 0 ? `
+            ${
+              error.examples && error.examples.length > 0
+                ? `
               <div class="error-examples">
                 <strong>Examples:</strong>
-                <ul>${error.examples.map(ex => `<li>${ex}</li>`).join('')}</ul>
+                <ul>${error.examples.map((ex) => `<li>${ex}</li>`).join('')}</ul>
               </div>
-            ` : ''}
+            `
+                : ''
+            }
           </details>
-        ` : ''}
+        `
+            : ''
+        }
       </div>
     `;
   }
@@ -458,19 +477,23 @@ export class ErrorVisualizationRenderer {
       <div class="error-category-breakdown">
         <h4>Issues by Category</h4>
         <div class="error-categories">
-          ${Object.entries(stats.byCategory).map(([category, count]) => `
+          ${Object.entries(stats.byCategory)
+            .map(
+              ([category, count]) => `
             <div class="error-category-item">
               <span class="error-category-name">${category}</span>
               <span class="error-category-count">${count}</span>
             </div>
-          `).join('')}
+          `,
+            )
+            .join('')}
         </div>
       </div>
     `;
   }
 
   private generateErrorTooltip(errors: EnhancedValidationError[]): string {
-    return errors.map(error => `${this.getSeverityIcon(error.severity)} ${error.message}`).join('\n');
+    return errors.map((error) => `${this.getSeverityIcon(error.severity)} ${error.message}`).join('\n');
   }
 
   private getSeverityIcon(severity: ErrorSeverity): string {
@@ -478,7 +501,7 @@ export class ErrorVisualizationRenderer {
       error: '❌',
       warning: '⚠️',
       info: 'ℹ️',
-      success: '✅'
+      success: '✅',
     };
     return icons[severity] || '❓';
   }
@@ -490,7 +513,7 @@ export class ErrorVisualizationRenderer {
 
   private attachEventListeners(): void {
     // Group toggle functionality
-    this.container.querySelectorAll('.error-group-toggle').forEach(btn => {
+    this.container.querySelectorAll('.error-group-toggle').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         const group = (e.target as HTMLElement).closest('.error-group');
         group?.classList.toggle('collapsed');
@@ -498,7 +521,7 @@ export class ErrorVisualizationRenderer {
     });
 
     // Entity highlighting on hover
-    this.container.querySelectorAll('.error-entity-tag').forEach(tag => {
+    this.container.querySelectorAll('.error-entity-tag').forEach((tag) => {
       tag.addEventListener('mouseenter', (e) => {
         const entityName = (e.target as HTMLElement).dataset['entity'];
         if (entityName) {
@@ -512,7 +535,7 @@ export class ErrorVisualizationRenderer {
     });
 
     // Quick fix buttons
-    this.container.querySelectorAll('.quickfix-btn').forEach(btn => {
+    this.container.querySelectorAll('.quickfix-btn').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         const errorId = (e.target as HTMLElement).dataset['errorId'];
         if (errorId) {

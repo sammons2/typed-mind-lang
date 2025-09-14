@@ -73,7 +73,7 @@ export class GraphMetricsAnalyzer {
   constructor(graph: ProgramGraph) {
     this.graph = graph;
     this.entities = Array.from(graph.entities.values());
-    this.entityMap = new Map(this.entities.map(e => [e.name, e]));
+    this.entityMap = new Map(this.entities.map((e) => [e.name, e]));
     this.buildDependencyGraphs();
   }
 
@@ -91,7 +91,7 @@ export class GraphMetricsAnalyzer {
       this.analyzeStructure(),
       this.analyzeTestability(),
       this.analyzeMaintainability(),
-      this.analyzePerformance()
+      this.analyzePerformance(),
     ];
 
     const healthScore = this.calculateHealthScore(categories);
@@ -100,7 +100,7 @@ export class GraphMetricsAnalyzer {
     return {
       healthScore,
       categories,
-      detailedMetrics
+      detailedMetrics,
     };
   }
 
@@ -124,7 +124,7 @@ export class GraphMetricsAnalyzer {
           name: 'Total Entities',
           description: 'Total number of architectural entities',
           value: totalEntities,
-          threshold: { good: 50, warning: 100, critical: 200 }
+          threshold: { good: 50, warning: 100, critical: 200 },
         },
         {
           id: 'avg-dependencies',
@@ -132,23 +132,23 @@ export class GraphMetricsAnalyzer {
           description: 'Average number of dependencies per entity',
           value: avgDependenciesPerEntity,
           threshold: { good: 5, warning: 10, critical: 15 },
-          unit: 'deps/entity'
+          unit: 'deps/entity',
         },
         {
           id: 'cyclomatic-complexity',
           name: 'Cyclomatic Complexity',
           description: 'Measure of code complexity based on decision points',
           value: cyclomaticComplexity,
-          threshold: { good: 10, warning: 20, critical: 30 }
+          threshold: { good: 10, warning: 20, critical: 30 },
         },
         {
           id: 'inheritance-depth',
           name: 'Max Inheritance Depth',
           description: 'Maximum depth of class inheritance hierarchy',
           value: depthOfInheritance,
-          threshold: { good: 3, warning: 5, critical: 7 }
-        }
-      ]
+          threshold: { good: 3, warning: 5, critical: 7 },
+        },
+      ],
     };
   }
 
@@ -171,14 +171,14 @@ export class GraphMetricsAnalyzer {
           name: 'Average Afferent Coupling',
           description: 'Average number of entities depending on each entity',
           value: this.calculateAverage(Array.from(afferentCoupling.values())),
-          threshold: { good: 3, warning: 7, critical: 12 }
+          threshold: { good: 3, warning: 7, critical: 12 },
         },
         {
           id: 'avg-efferent-coupling',
           name: 'Average Efferent Coupling',
           description: 'Average number of entities each entity depends on',
           value: this.calculateAverage(Array.from(efferentCoupling.values())),
-          threshold: { good: 5, warning: 10, critical: 15 }
+          threshold: { good: 5, warning: 10, critical: 15 },
         },
         {
           id: 'avg-instability',
@@ -186,16 +186,16 @@ export class GraphMetricsAnalyzer {
           description: 'Average instability score (efferent / (afferent + efferent))',
           value: this.calculateAverage(Array.from(instability.values())),
           threshold: { good: 0.3, warning: 0.6, critical: 0.8 },
-          unit: 'ratio'
+          unit: 'ratio',
         },
         {
           id: 'circular-dependencies',
           name: 'Circular Dependencies',
           description: 'Number of circular dependency chains detected',
           value: circularDependencies.length,
-          threshold: { good: 0, warning: 2, critical: 5 }
-        }
-      ]
+          threshold: { good: 0, warning: 2, critical: 5 },
+        },
+      ],
     };
   }
 
@@ -218,21 +218,21 @@ export class GraphMetricsAnalyzer {
           name: 'Layer Violations',
           description: 'Number of inappropriate cross-layer dependencies',
           value: layerViolations.length,
-          threshold: { good: 0, warning: 3, critical: 8 }
+          threshold: { good: 0, warning: 3, critical: 8 },
         },
         {
           id: 'dead-code',
           name: 'Dead Code Entities',
           description: 'Number of unused or unreachable entities',
           value: deadCode.length,
-          threshold: { good: 0, warning: 5, critical: 15 }
+          threshold: { good: 0, warning: 5, critical: 15 },
         },
         {
           id: 'missing-abstractions',
           name: 'Missing Abstractions',
           description: 'Areas that would benefit from abstraction layers',
           value: missingAbstractions.length,
-          threshold: { good: 0, warning: 3, critical: 8 }
+          threshold: { good: 0, warning: 3, critical: 8 },
         },
         {
           id: 'cohesion-score',
@@ -240,9 +240,9 @@ export class GraphMetricsAnalyzer {
           description: 'How well entities group together logically',
           value: cohesionScore,
           threshold: { good: 0.7, warning: 0.5, critical: 0.3 },
-          unit: 'score'
-        }
-      ]
+          unit: 'score',
+        },
+      ],
     };
   }
 
@@ -265,7 +265,7 @@ export class GraphMetricsAnalyzer {
           description: 'Estimated percentage of testable code coverage',
           value: testCoverage * 100,
           threshold: { good: 80, warning: 60, critical: 40 },
-          unit: '%'
+          unit: '%',
         },
         {
           id: 'mockability-score',
@@ -273,7 +273,7 @@ export class GraphMetricsAnalyzer {
           description: 'How easily dependencies can be mocked',
           value: mockabilityScore,
           threshold: { good: 0.8, warning: 0.6, critical: 0.4 },
-          unit: 'score'
+          unit: 'score',
         },
         {
           id: 'isolation-score',
@@ -281,9 +281,9 @@ export class GraphMetricsAnalyzer {
           description: 'How well entities can be tested in isolation',
           value: isolationScore,
           threshold: { good: 0.7, warning: 0.5, critical: 0.3 },
-          unit: 'score'
-        }
-      ]
+          unit: 'score',
+        },
+      ],
     };
   }
 
@@ -306,7 +306,7 @@ export class GraphMetricsAnalyzer {
           description: 'Average impact radius of changes',
           value: changeImpactScore,
           threshold: { good: 0.2, warning: 0.4, critical: 0.7 },
-          unit: 'ratio'
+          unit: 'ratio',
         },
         {
           id: 'documentation-coverage',
@@ -314,7 +314,7 @@ export class GraphMetricsAnalyzer {
           description: 'Percentage of entities with documentation',
           value: documentationCoverage * 100,
           threshold: { good: 80, warning: 60, critical: 40 },
-          unit: '%'
+          unit: '%',
         },
         {
           id: 'consistency-score',
@@ -322,9 +322,9 @@ export class GraphMetricsAnalyzer {
           description: 'How consistently patterns are applied',
           value: consistencyScore,
           threshold: { good: 0.8, warning: 0.6, critical: 0.4 },
-          unit: 'score'
-        }
-      ]
+          unit: 'score',
+        },
+      ],
     };
   }
 
@@ -346,23 +346,23 @@ export class GraphMetricsAnalyzer {
           name: 'Max Dependency Chain',
           description: 'Longest chain of dependencies',
           value: dependencyChainLength,
-          threshold: { good: 5, warning: 10, critical: 15 }
+          threshold: { good: 5, warning: 10, critical: 15 },
         },
         {
           id: 'fan-out-score',
           name: 'Average Fan-Out',
           description: 'Average number of entities calling each entity',
           value: fanOutScore,
-          threshold: { good: 3, warning: 7, critical: 12 }
+          threshold: { good: 3, warning: 7, critical: 12 },
         },
         {
           id: 'bottleneck-entities',
           name: 'Potential Bottlenecks',
           description: 'Number of entities that could be performance bottlenecks',
           value: bottleneckScore,
-          threshold: { good: 0, warning: 3, critical: 8 }
-        }
-      ]
+          threshold: { good: 0, warning: 3, critical: 8 },
+        },
+      ],
     };
   }
 
@@ -405,7 +405,7 @@ export class GraphMetricsAnalyzer {
       categories: categoryScores,
       trends: {}, // Would need historical data to calculate trends
       recommendations: recommendations.slice(0, 10), // Top 10 recommendations
-      risks: risks.slice(0, 5) // Top 5 risks
+      risks: risks.slice(0, 5), // Top 5 risks
     };
   }
 
@@ -495,14 +495,13 @@ export class GraphMetricsAnalyzer {
   }
 
   private calculateAverageDependencies(): number {
-    const total = Array.from(this.dependencyGraph.values())
-      .reduce((sum, deps) => sum + deps.size, 0);
+    const total = Array.from(this.dependencyGraph.values()).reduce((sum, deps) => sum + deps.size, 0);
     return this.entities.length > 0 ? total / this.entities.length : 0;
   }
 
   private calculateCyclomaticComplexity(): number {
     // Simplified cyclomatic complexity based on function signatures
-    const functions = this.entities.filter(e => e.type === 'Function');
+    const functions = this.entities.filter((e) => e.type === 'Function');
     return functions.reduce((total, func) => {
       const deps = this.dependencyGraph.get(func.name)?.size || 0;
       return total + Math.max(1, deps - 1); // Basic approximation
@@ -613,31 +612,51 @@ export class GraphMetricsAnalyzer {
   // Additional helper methods would continue here...
   // For brevity, I'm including placeholder implementations
 
-  private detectLayerViolations(): any[] { return []; }
+  private detectLayerViolations(): any[] {
+    return [];
+  }
   private detectDeadCode(): string[] {
     return this.entities
-      .filter(entity => {
+      .filter((entity) => {
         const dependents = this.reverseDependencyGraph.get(entity.name);
         return dependents?.size === 0 && entity.type !== 'Program';
       })
-      .map(entity => entity.name);
+      .map((entity) => entity.name);
   }
-  private detectMissingAbstractions(): any[] { return []; }
-  private calculateCohesionScore(): number { return 0.7; }
-  private estimateTestCoverage(): number { return 0.6; }
-  private calculateMockabilityScore(): number { return 0.7; }
-  private calculateIsolationScore(): number { return 0.6; }
-  private calculateChangeImpactScore(): number { return 0.3; }
+  private detectMissingAbstractions(): any[] {
+    return [];
+  }
+  private calculateCohesionScore(): number {
+    return 0.7;
+  }
+  private estimateTestCoverage(): number {
+    return 0.6;
+  }
+  private calculateMockabilityScore(): number {
+    return 0.7;
+  }
+  private calculateIsolationScore(): number {
+    return 0.6;
+  }
+  private calculateChangeImpactScore(): number {
+    return 0.3;
+  }
   private calculateDocumentationCoverage(): number {
-    const documented = this.entities.filter(e =>
-      'description' in e || 'purpose' in e || e.comment
-    ).length;
+    const documented = this.entities.filter((e) => 'description' in e || 'purpose' in e || e.comment).length;
     return documented / this.entities.length;
   }
-  private calculateConsistencyScore(): number { return 0.8; }
-  private calculateMaxDependencyChainLength(): number { return 8; }
-  private calculateFanOutScore(): number { return 4; }
-  private identifyBottlenecks(): number { return 2; }
+  private calculateConsistencyScore(): number {
+    return 0.8;
+  }
+  private calculateMaxDependencyChainLength(): number {
+    return 8;
+  }
+  private calculateFanOutScore(): number {
+    return 4;
+  }
+  private identifyBottlenecks(): number {
+    return 2;
+  }
 
   private generateRecommendations(metric: Metric, category: string): Recommendation[] {
     // Generate specific recommendations based on metric
@@ -654,7 +673,7 @@ export class GraphMetricsAnalyzer {
       entityTypes: this.getEntityTypeDistribution(),
       dependencyMatrix: this.generateDependencyMatrix(),
       hotspots: this.identifyHotspots(),
-      patterns: this.identifyArchitecturalPatterns()
+      patterns: this.identifyArchitecturalPatterns(),
     };
   }
 

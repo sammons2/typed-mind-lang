@@ -15,8 +15,15 @@ export type TargetLanguage = 'typescript' | 'javascript' | 'python' | 'java' | '
  * Code generation frameworks/libraries
  */
 export type TargetFramework =
-  | 'react' | 'vue' | 'angular' | 'svelte'  // Frontend
-  | 'express' | 'nest' | 'fastapi' | 'spring' | 'dotnet'  // Backend
+  | 'react'
+  | 'vue'
+  | 'angular'
+  | 'svelte' // Frontend
+  | 'express'
+  | 'nest'
+  | 'fastapi'
+  | 'spring'
+  | 'dotnet' // Backend
   | 'none';
 
 /**
@@ -110,10 +117,7 @@ export class CodeGenerationEngine {
   /**
    * Generate code for entire architecture
    */
-  async generateArchitecture(
-    graph: ProgramGraph,
-    config: CodeGenConfig
-  ): Promise<ArchitectureCodeResult> {
+  async generateArchitecture(graph: ProgramGraph, config: CodeGenConfig): Promise<ArchitectureCodeResult> {
     const entities = Array.from(graph.entities.values());
     const generatedEntities: GeneratedCode[] = [];
     const globalDependencies = new Set<CodeDependency>();
@@ -127,7 +131,7 @@ export class CodeGenerationEngine {
         generatedEntities.push(generated);
 
         // Collect dependencies
-        generated.dependencies.forEach(dep => globalDependencies.add(dep));
+        generated.dependencies.forEach((dep) => globalDependencies.add(dep));
       } catch (error) {
         console.warn(`Failed to generate code for ${entity.name}:`, error);
       }
@@ -142,18 +146,14 @@ export class CodeGenerationEngine {
       dependencies: Array.from(globalDependencies),
       config,
       summary: this.generateSummary(generatedEntities),
-      recommendations: this.generateRecommendations(generatedEntities, graph)
+      recommendations: this.generateRecommendations(generatedEntities, graph),
     };
   }
 
   /**
    * Generate code for a single entity
    */
-  async generateEntity(
-    entity: AnyEntity,
-    config: CodeGenConfig,
-    graph: ProgramGraph
-  ): Promise<GeneratedCode> {
+  async generateEntity(entity: AnyEntity, config: CodeGenConfig, graph: ProgramGraph): Promise<GeneratedCode> {
     const generator = this.generators.get(config.language);
     if (!generator) {
       throw new Error(`No generator available for language: ${config.language}`);
@@ -165,10 +165,7 @@ export class CodeGenerationEngine {
   /**
    * Preview code generation for UI display
    */
-  async previewCode(
-    entity: AnyEntity,
-    config: Partial<CodeGenConfig>
-  ): Promise<CodePreview> {
+  async previewCode(entity: AnyEntity, config: Partial<CodeGenConfig>): Promise<CodePreview> {
     const fullConfig: CodeGenConfig = this.mergeWithDefaults(config);
 
     try {
@@ -180,7 +177,7 @@ export class CodeGenerationEngine {
         config: fullConfig,
         files: generated.files,
         metadata: generated.metadata,
-        preview: this.createPreviewHTML(generated)
+        preview: this.createPreviewHTML(generated),
       };
     } catch (error) {
       return {
@@ -188,7 +185,7 @@ export class CodeGenerationEngine {
         entity,
         config: fullConfig,
         error: error instanceof Error ? error.message : 'Unknown error',
-        preview: this.createErrorPreviewHTML(entity, error)
+        preview: this.createErrorPreviewHTML(entity, error),
       };
     }
   }
@@ -216,8 +213,8 @@ export class CodeGenerationEngine {
         java: ['spring', 'none'],
         csharp: ['dotnet', 'none'],
         go: ['none'],
-        rust: ['none']
-      }
+        rust: ['none'],
+      },
     };
   }
 
@@ -283,10 +280,7 @@ export class CodeGenerationEngine {
     return deps;
   }
 
-  private async generateProjectFiles(
-    config: CodeGenConfig,
-    dependencies: CodeDependency[]
-  ): Promise<GeneratedFile[]> {
+  private async generateProjectFiles(config: CodeGenConfig, dependencies: CodeDependency[]): Promise<GeneratedFile[]> {
     const files: GeneratedFile[] = [];
 
     // Generate package.json/requirements.txt/etc.
@@ -304,8 +298,8 @@ export class CodeGenerationEngine {
   }
 
   private generatePackageJson(dependencies: CodeDependency[], config: CodeGenConfig): GeneratedFile {
-    const deps = dependencies.filter(d => d.type === 'dependency');
-    const devDeps = dependencies.filter(d => d.type === 'devDependency');
+    const deps = dependencies.filter((d) => d.type === 'dependency');
+    const devDeps = dependencies.filter((d) => d.type === 'devDependency');
 
     const packageJson = {
       name: 'generated-typed-mind-project',
@@ -316,10 +310,10 @@ export class CodeGenerationEngine {
         build: config.language === 'typescript' ? 'tsc' : 'echo "No build step"',
         start: 'node dist/index.js',
         dev: 'nodemon src/index.ts',
-        test: 'jest'
+        test: 'jest',
       },
-      dependencies: Object.fromEntries(deps.map(d => [d.name, d.version])),
-      devDependencies: Object.fromEntries(devDeps.map(d => [d.name, d.version]))
+      dependencies: Object.fromEntries(deps.map((d) => [d.name, d.version])),
+      devDependencies: Object.fromEntries(devDeps.map((d) => [d.name, d.version])),
     };
 
     return {
@@ -329,7 +323,7 @@ export class CodeGenerationEngine {
       language: 'javascript' as TargetLanguage,
       type: 'config',
       exports: [],
-      imports: []
+      imports: [],
     };
   }
 
@@ -347,10 +341,10 @@ export class CodeGenerationEngine {
         forceConsistentCasingInFileNames: true,
         resolveJsonModule: true,
         declaration: config.includeTypeDefinitions,
-        declarationMap: config.includeTypeDefinitions
+        declarationMap: config.includeTypeDefinitions,
       },
       include: ['src/**/*'],
-      exclude: ['node_modules', 'dist']
+      exclude: ['node_modules', 'dist'],
     };
 
     return {
@@ -360,14 +354,14 @@ export class CodeGenerationEngine {
       language: 'typescript',
       type: 'config',
       exports: [],
-      imports: []
+      imports: [],
     };
   }
 
   private generateRequirementsTxt(dependencies: CodeDependency[]): GeneratedFile {
     const content = dependencies
-      .filter(d => d.type === 'dependency')
-      .map(d => `${d.name}==${d.version}`)
+      .filter((d) => d.type === 'dependency')
+      .map((d) => `${d.name}==${d.version}`)
       .join('\n');
 
     return {
@@ -377,7 +371,7 @@ export class CodeGenerationEngine {
       language: 'python',
       type: 'config',
       exports: [],
-      imports: []
+      imports: [],
     };
   }
 
@@ -392,7 +386,7 @@ export class CodeGenerationEngine {
       language: config.language,
       type: 'config',
       exports: [],
-      imports: []
+      imports: [],
     });
 
     // Generate README.md
@@ -403,7 +397,7 @@ export class CodeGenerationEngine {
       language: config.language,
       type: 'config',
       exports: [],
-      imports: []
+      imports: [],
     });
 
     return files;
@@ -453,7 +447,7 @@ Thumbs.db
       java: '\n# Java\n*.class\ntarget/',
       csharp: '\n# C#\nbin/\nobj/',
       go: '\n# Go\n*.exe\n*.exe~',
-      rust: '\n# Rust\ntarget/'
+      rust: '\n# Rust\ntarget/',
     };
 
     return common + (languageSpecific[language] || '');
@@ -495,7 +489,9 @@ Generated at: ${new Date().toISOString()}
           </div>
         </div>
         <div class="code-preview-files">
-          ${generated.files.map(file => `
+          ${generated.files
+            .map(
+              (file) => `
             <div class="code-file">
               <div class="file-header">
                 <span class="file-path">${file.path}/${file.filename}</span>
@@ -503,26 +499,40 @@ Generated at: ${new Date().toISOString()}
               </div>
               <pre class="file-content"><code class="language-${file.language}">${this.escapeHtml(file.content)}</code></pre>
             </div>
-          `).join('')}
+          `,
+            )
+            .join('')}
         </div>
-        ${generated.dependencies.length > 0 ? `
+        ${
+          generated.dependencies.length > 0
+            ? `
           <div class="code-dependencies">
             <h4>Dependencies</h4>
             <ul>
-              ${generated.dependencies.map(dep => `
+              ${generated.dependencies
+                .map(
+                  (dep) => `
                 <li>${dep.name}@${dep.version} (${dep.type})</li>
-              `).join('')}
+              `,
+                )
+                .join('')}
             </ul>
           </div>
-        ` : ''}
-        ${generated.metadata.recommendations.length > 0 ? `
+        `
+            : ''
+        }
+        ${
+          generated.metadata.recommendations.length > 0
+            ? `
           <div class="code-recommendations">
             <h4>Recommendations</h4>
             <ul>
-              ${generated.metadata.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+              ${generated.metadata.recommendations.map((rec) => `<li>${rec}</li>`).join('')}
             </ul>
           </div>
-        ` : ''}
+        `
+            : ''
+        }
       </div>
     `;
   }
@@ -545,9 +555,9 @@ Generated at: ${new Date().toISOString()}
       '<': '&lt;',
       '>': '&gt;',
       '"': '&quot;',
-      "'": '&#039;'
+      "'": '&#039;',
     };
-    return text.replace(/[&<>"']/g, m => map[m]);
+    return text.replace(/[&<>"']/g, (m) => map[m]);
   }
 
   private mergeWithDefaults(config: Partial<CodeGenConfig>): CodeGenConfig {
@@ -564,15 +574,15 @@ Generated at: ${new Date().toISOString()}
         quotes: 'single',
         semicolons: true,
         trailingCommas: true,
-        maxLineLength: 100
+        maxLineLength: 100,
       },
       patterns: {
         useInterfaces: true,
         useAbstractClasses: true,
         useDependencyInjection: true,
-        useAsyncAwait: true
+        useAsyncAwait: true,
       },
-      ...config
+      ...config,
     };
   }
 
@@ -580,10 +590,10 @@ Generated at: ${new Date().toISOString()}
     return {
       totalEntities: entities.length,
       totalFiles: entities.reduce((sum, e) => sum + e.files.length, 0),
-      totalDependencies: new Set(entities.flatMap(e => e.dependencies.map(d => d.name))).size,
+      totalDependencies: new Set(entities.flatMap((e) => e.dependencies.map((d) => d.name))).size,
       averageConfidence: entities.reduce((sum, e) => sum + e.metadata.confidence, 0) / entities.length,
-      languages: [...new Set(entities.map(e => e.language))],
-      patterns: [...new Set(entities.flatMap(e => e.metadata.patterns))]
+      languages: [...new Set(entities.map((e) => e.language))],
+      patterns: [...new Set(entities.flatMap((e) => e.metadata.patterns))],
     };
   }
 
@@ -591,14 +601,14 @@ Generated at: ${new Date().toISOString()}
     const recommendations: string[] = [];
 
     // Check for common issues
-    const lowConfidenceEntities = entities.filter(e => e.metadata.confidence < 0.7);
+    const lowConfidenceEntities = entities.filter((e) => e.metadata.confidence < 0.7);
     if (lowConfidenceEntities.length > 0) {
       recommendations.push(`Review ${lowConfidenceEntities.length} entities with low generation confidence`);
     }
 
     // Check for missing patterns
-    const hasControllers = entities.some(e => e.entityType === 'Class' && e.entityId.includes('Controller'));
-    const hasServices = entities.some(e => e.entityType === 'Class' && e.entityId.includes('Service'));
+    const hasControllers = entities.some((e) => e.entityType === 'Class' && e.entityId.includes('Controller'));
+    const hasServices = entities.some((e) => e.entityType === 'Class' && e.entityId.includes('Service'));
 
     if (hasControllers && !hasServices) {
       recommendations.push('Consider adding service layer for better separation of concerns');
@@ -613,11 +623,7 @@ Generated at: ${new Date().toISOString()}
 abstract class LanguageGenerator {
   constructor(protected templateEngine: CodeTemplateEngine) {}
 
-  abstract generateEntity(
-    entity: AnyEntity,
-    config: CodeGenConfig,
-    graph: ProgramGraph
-  ): Promise<GeneratedCode>;
+  abstract generateEntity(entity: AnyEntity, config: CodeGenConfig, graph: ProgramGraph): Promise<GeneratedCode>;
 
   protected createMetadata(entity: AnyEntity, confidence: number): CodeMetadata {
     return {
@@ -626,17 +632,13 @@ abstract class LanguageGenerator {
       completeness: 0.8,
       patterns: [],
       recommendations: [],
-      warnings: []
+      warnings: [],
     };
   }
 }
 
 class TypeScriptGenerator extends LanguageGenerator {
-  async generateEntity(
-    entity: AnyEntity,
-    config: CodeGenConfig,
-    graph: ProgramGraph
-  ): Promise<GeneratedCode> {
+  async generateEntity(entity: AnyEntity, config: CodeGenConfig, graph: ProgramGraph): Promise<GeneratedCode> {
     const files: GeneratedFile[] = [];
     const dependencies: CodeDependency[] = [];
 
@@ -667,7 +669,7 @@ class TypeScriptGenerator extends LanguageGenerator {
       framework: config.framework,
       files,
       dependencies,
-      metadata: this.createMetadata(entity, 0.85)
+      metadata: this.createMetadata(entity, 0.85),
     };
   }
 
@@ -675,11 +677,13 @@ class TypeScriptGenerator extends LanguageGenerator {
     const fields = entity.fields || [];
 
     const content = `${config.includeComments ? `/**\n * ${entity.purpose || `DTO for ${entity.name}`}\n */\n` : ''}export interface ${entity.name} {
-${fields.map((field: any) => {
-      const optional = field.optional ? '?' : '';
-      const comment = config.includeComments && field.description ? `\n  /** ${field.description} */` : '';
-      return `${comment}\n  ${field.name}${optional}: ${field.type};`;
-    }).join('\n')}
+${fields
+  .map((field: any) => {
+    const optional = field.optional ? '?' : '';
+    const comment = config.includeComments && field.description ? `\n  /** ${field.description} */` : '';
+    return `${comment}\n  ${field.name}${optional}: ${field.type};`;
+  })
+  .join('\n')}
 }
 
 ${config.includeTypeDefinitions ? `\nexport type Partial${entity.name} = Partial<${entity.name}>;\n` : ''}`;
@@ -691,7 +695,7 @@ ${config.includeTypeDefinitions ? `\nexport type Partial${entity.name} = Partial
       language: 'typescript',
       type: 'interface',
       exports: [entity.name],
-      imports: []
+      imports: [],
     };
   }
 
@@ -705,9 +709,13 @@ ${config.includeTypeDefinitions ? `\nexport type Partial${entity.name} = Partial
     // TODO: Implement constructor
   }
 
-${methods.map((method: string) => `  ${method}(): void {
+${methods
+  .map(
+    (method: string) => `  ${method}(): void {
     // TODO: Implement ${method}
-  }`).join('\n\n')}
+  }`,
+  )
+  .join('\n\n')}
 }`;
 
     return {
@@ -717,7 +725,7 @@ ${methods.map((method: string) => `  ${method}(): void {
       language: 'typescript',
       type: 'source',
       exports: [entity.name],
-      imports: []
+      imports: [],
     };
   }
 
@@ -745,7 +753,7 @@ describe('${entity.name}', () => {
       language: 'typescript',
       type: 'test',
       exports: [],
-      imports: [{ from: `../classes/${entity.name}`, imports: [entity.name] }]
+      imports: [{ from: `../classes/${entity.name}`, imports: [entity.name] }],
     };
   }
 
@@ -762,7 +770,7 @@ describe('${entity.name}', () => {
       language: 'typescript',
       type: 'source',
       exports: [entity.name],
-      imports: []
+      imports: [],
     };
   }
 
@@ -790,7 +798,7 @@ export default ${entity.name};`;
       language: 'typescript',
       type: 'source',
       exports: [entity.name, 'default'],
-      imports: [{ from: 'react', imports: ['React'] }]
+      imports: [{ from: 'react', imports: ['React'] }],
     });
 
     // CSS module (optional)
@@ -805,7 +813,7 @@ export default ${entity.name};`;
       language: 'css' as TargetLanguage,
       type: 'source',
       exports: [],
-      imports: []
+      imports: [],
     });
 
     return files;

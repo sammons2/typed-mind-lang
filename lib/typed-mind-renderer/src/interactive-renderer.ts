@@ -48,9 +48,13 @@ class InteractiveTypedMindRenderer {
 
   // Suppress TypeScript warnings for variables used in generated JavaScript
   private _suppressTsWarnings() {
-    return { viewHistory: this.viewHistory, undoStack: this.undoStack,
-             redoStack: this.redoStack, bookmarks: this.bookmarks,
-             performanceMetrics: this.performanceMetrics };
+    return {
+      viewHistory: this.viewHistory,
+      undoStack: this.undoStack,
+      redoStack: this.redoStack,
+      bookmarks: this.bookmarks,
+      performanceMetrics: this.performanceMetrics,
+    };
   }
 
   constructor(private options: InteractiveRendererOptions = {}) {
@@ -154,9 +158,7 @@ ${this.generateInteractiveRendererJS()}
     if (!data.entities || data.entities.length === 0) return '';
 
     const headers = ['name', 'type', 'path', 'signature', 'description'];
-    const rows = data.entities.map((entity: any) =>
-      headers.map(header => `"${(entity[header] || '').replace(/"/g, '""')}"`).join(',')
-    );
+    const rows = data.entities.map((entity: any) => headers.map((header) => `"${(entity[header] || '').replace(/"/g, '""')}"`).join(','));
 
     return [headers.join(','), ...rows].join('\n');
   }

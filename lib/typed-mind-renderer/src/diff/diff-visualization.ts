@@ -153,11 +153,7 @@ export class ArchitectureDiffAnalyzer {
   /**
    * Compare two architecture graphs
    */
-  async compareArchitectures(
-    oldGraph: ProgramGraph,
-    newGraph: ProgramGraph,
-    options: DiffOptions = {}
-  ): Promise<ArchitectureDiff> {
+  async compareArchitectures(oldGraph: ProgramGraph, newGraph: ProgramGraph, options: DiffOptions = {}): Promise<ArchitectureDiff> {
     const startTime = Date.now();
 
     // Create entity mappings for comparison
@@ -186,7 +182,7 @@ export class ArchitectureDiffAnalyzer {
       entityDiffs,
       relationshipDiffs,
       metrics,
-      visualization
+      visualization,
     };
 
     return diff;
@@ -195,11 +191,7 @@ export class ArchitectureDiffAnalyzer {
   /**
    * Generate visual diff representation
    */
-  renderDiffVisualization(
-    diff: ArchitectureDiff,
-    container: HTMLElement,
-    mode: DiffVisualization['mode'] = 'overlay'
-  ): DiffRenderer {
+  renderDiffVisualization(diff: ArchitectureDiff, container: HTMLElement, mode: DiffVisualization['mode'] = 'overlay'): DiffRenderer {
     return new DiffRenderer(diff, container, mode);
   }
 
@@ -232,7 +224,7 @@ export class ArchitectureDiffAnalyzer {
   private async analyzeEntityChanges(
     oldEntities: Map<string, AnyEntity>,
     newEntities: Map<string, AnyEntity>,
-    options: DiffOptions
+    options: DiffOptions,
   ): Promise<EntityDiff[]> {
     const entityDiffs: EntityDiff[] = [];
 
@@ -273,7 +265,7 @@ export class ArchitectureDiffAnalyzer {
     entityName: string,
     oldVersion?: AnyEntity,
     newVersion?: AnyEntity,
-    options?: DiffOptions
+    options?: DiffOptions,
   ): Promise<EntityDiff> {
     const impact = await this.assessImpact(changeType, oldVersion, newVersion, options);
 
@@ -287,15 +279,11 @@ export class ArchitectureDiffAnalyzer {
       fieldChanges: [],
       relationshipChanges: [],
       impact,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
   }
 
-  private async compareEntities(
-    oldEntity: AnyEntity,
-    newEntity: AnyEntity,
-    options: DiffOptions
-  ): Promise<EntityDiff | null> {
+  private async compareEntities(oldEntity: AnyEntity, newEntity: AnyEntity, options: DiffOptions): Promise<EntityDiff | null> {
     const fieldChanges = this.compareEntityFields(oldEntity, newEntity);
     const relationshipChanges = this.compareEntityRelationships(oldEntity, newEntity);
 
@@ -315,7 +303,7 @@ export class ArchitectureDiffAnalyzer {
       fieldChanges,
       relationshipChanges,
       impact,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
   }
 
@@ -335,7 +323,7 @@ export class ArchitectureDiffAnalyzer {
           changeType: this.getFieldChangeType(oldValue, newValue),
           oldValue,
           newValue,
-          significance: this.assessFieldSignificance(field, oldValue, newValue)
+          significance: this.assessFieldSignificance(field, oldValue, newValue),
         });
       }
     }
@@ -361,7 +349,7 @@ export class ArchitectureDiffAnalyzer {
           fromEntity: oldEntity.name,
           toEntity: change.value,
           oldRelationship: change.type === 'removed' ? change.value : undefined,
-          newRelationship: change.type === 'added' ? change.value : undefined
+          newRelationship: change.type === 'added' ? change.value : undefined,
         });
       }
     }
@@ -369,10 +357,7 @@ export class ArchitectureDiffAnalyzer {
     return relationshipDiffs;
   }
 
-  private async analyzeRelationshipChanges(
-    oldGraph: ProgramGraph,
-    newGraph: ProgramGraph
-  ): Promise<RelationshipDiff[]> {
+  private async analyzeRelationshipChanges(oldGraph: ProgramGraph, newGraph: ProgramGraph): Promise<RelationshipDiff[]> {
     const relationshipDiffs: RelationshipDiff[] = [];
 
     // Build relationship maps for both graphs
@@ -387,7 +372,7 @@ export class ArchitectureDiffAnalyzer {
           relationshipType: newRel.type,
           fromEntity: newRel.from,
           toEntity: newRel.to,
-          newRelationship: newRel
+          newRelationship: newRel,
         });
       }
     }
@@ -399,7 +384,7 @@ export class ArchitectureDiffAnalyzer {
           relationshipType: oldRel.type,
           fromEntity: oldRel.from,
           toEntity: oldRel.to,
-          oldRelationship: oldRel
+          oldRelationship: oldRel,
         });
       }
     }
@@ -410,17 +395,18 @@ export class ArchitectureDiffAnalyzer {
   private detectRenames(
     oldEntities: Map<string, AnyEntity>,
     newEntities: Map<string, AnyEntity>,
-    existingDiffs: EntityDiff[]
+    existingDiffs: EntityDiff[],
   ): EntityDiff[] {
     const renames: EntityDiff[] = [];
-    const removedEntities = existingDiffs.filter(d => d.changeType === 'removed');
-    const addedEntities = existingDiffs.filter(d => d.changeType === 'added');
+    const removedEntities = existingDiffs.filter((d) => d.changeType === 'removed');
+    const addedEntities = existingDiffs.filter((d) => d.changeType === 'added');
 
     // Use fuzzy matching to detect potential renames
     for (const removed of removedEntities) {
       for (const added of addedEntities) {
         const similarity = this.calculateSimilarity(removed.oldVersion!, added.newVersion!);
-        if (similarity > 0.8) { // High similarity threshold
+        if (similarity > 0.8) {
+          // High similarity threshold
           renames.push({
             id: `renamed-${removed.entityName}-${added.entityName}`,
             changeType: 'renamed',
@@ -434,8 +420,8 @@ export class ArchitectureDiffAnalyzer {
                 changeType: 'modified',
                 oldValue: removed.entityName,
                 newValue: added.entityName,
-                significance: 'major'
-              }
+                significance: 'major',
+              },
             ],
             relationshipChanges: [],
             impact: {
@@ -444,9 +430,9 @@ export class ArchitectureDiffAnalyzer {
               riskFactors: ['Name change may break references'],
               migrationEffort: 'medium',
               breakingChanges: true,
-              recommendations: ['Update all references to use new name']
+              recommendations: ['Update all references to use new name'],
             },
-            timestamp: new Date()
+            timestamp: new Date(),
           });
         }
       }
@@ -459,7 +445,7 @@ export class ArchitectureDiffAnalyzer {
     changeType: DiffChangeType,
     oldVersion?: AnyEntity,
     newVersion?: AnyEntity,
-    options?: DiffOptions
+    options?: DiffOptions,
   ): Promise<DiffImpact> {
     const impact: DiffImpact = {
       severity: 'low',
@@ -467,7 +453,7 @@ export class ArchitectureDiffAnalyzer {
       riskFactors: [],
       migrationEffort: 'trivial',
       breakingChanges: false,
-      recommendations: []
+      recommendations: [],
     };
 
     // Use registered detectors to assess impact
@@ -534,13 +520,13 @@ export class ArchitectureDiffAnalyzer {
   }
 
   private generateSummary(entityDiffs: EntityDiff[], relationshipDiffs: RelationshipDiff[]): DiffSummary {
-    const added = entityDiffs.filter(d => d.changeType === 'added').length;
-    const removed = entityDiffs.filter(d => d.changeType === 'removed').length;
-    const modified = entityDiffs.filter(d => d.changeType === 'modified').length;
-    const renamed = entityDiffs.filter(d => d.changeType === 'renamed').length;
-    const moved = entityDiffs.filter(d => d.changeType === 'moved').length;
+    const added = entityDiffs.filter((d) => d.changeType === 'added').length;
+    const removed = entityDiffs.filter((d) => d.changeType === 'removed').length;
+    const modified = entityDiffs.filter((d) => d.changeType === 'modified').length;
+    const renamed = entityDiffs.filter((d) => d.changeType === 'renamed').length;
+    const moved = entityDiffs.filter((d) => d.changeType === 'moved').length;
 
-    const breakingChanges = entityDiffs.filter(d => d.impact.breakingChanges).length;
+    const breakingChanges = entityDiffs.filter((d) => d.impact.breakingChanges).length;
 
     return {
       totalChanges: entityDiffs.length + relationshipDiffs.length,
@@ -551,14 +537,14 @@ export class ArchitectureDiffAnalyzer {
       movedEntities: moved,
       relationshipChanges: relationshipDiffs.length,
       breakingChanges,
-      overallImpact: this.calculateOverallImpact(entityDiffs)
+      overallImpact: this.calculateOverallImpact(entityDiffs),
     };
   }
 
   private calculateOverallImpact(entityDiffs: EntityDiff[]): DiffImpact['severity'] {
-    if (entityDiffs.some(d => d.impact.severity === 'critical')) return 'critical';
-    if (entityDiffs.some(d => d.impact.severity === 'high')) return 'high';
-    if (entityDiffs.some(d => d.impact.severity === 'medium')) return 'medium';
+    if (entityDiffs.some((d) => d.impact.severity === 'critical')) return 'critical';
+    if (entityDiffs.some((d) => d.impact.severity === 'high')) return 'high';
+    if (entityDiffs.some((d) => d.impact.severity === 'medium')) return 'medium';
     return 'low';
   }
 
@@ -570,7 +556,7 @@ export class ArchitectureDiffAnalyzer {
       complexityDelta: 0.05,
       couplingDelta: -0.02,
       testabilityImpact: 0.1,
-      maintainabilityImpact: 0.08
+      maintainabilityImpact: 0.08,
     };
   }
 
@@ -582,7 +568,7 @@ export class ArchitectureDiffAnalyzer {
       groupByChangeType: false,
       entityStyles: this.getDefaultEntityStyles(),
       relationshipStyles: this.getDefaultRelationshipStyles(),
-      annotations: []
+      annotations: [],
     };
   }
 
@@ -592,7 +578,7 @@ export class ArchitectureDiffAnalyzer {
       removed: { fill: '#dc3545', stroke: '#c82333', strokeWidth: 2, opacity: 0.6, animation: 'fade-out' },
       modified: { fill: '#ffc107', stroke: '#e0a800', strokeWidth: 3, opacity: 1, animation: 'pulse' },
       moved: { fill: '#17a2b8', stroke: '#138496', strokeWidth: 2, opacity: 1, animation: 'slide' },
-      renamed: { fill: '#6f42c1', stroke: '#5a32a3', strokeWidth: 2, opacity: 1 }
+      renamed: { fill: '#6f42c1', stroke: '#5a32a3', strokeWidth: 2, opacity: 1 },
     };
   }
 
@@ -602,7 +588,7 @@ export class ArchitectureDiffAnalyzer {
       removed: { stroke: '#dc3545', strokeWidth: 2, strokeDasharray: '5,5', opacity: 0.6, animation: 'erase' },
       modified: { stroke: '#ffc107', strokeWidth: 3, opacity: 1, animation: 'pulse' },
       moved: { stroke: '#17a2b8', strokeWidth: 2, opacity: 1 },
-      renamed: { stroke: '#6f42c1', strokeWidth: 2, opacity: 1 }
+      renamed: { stroke: '#6f42c1', strokeWidth: 2, opacity: 1 },
     };
   }
 
@@ -653,12 +639,7 @@ export interface ChangeDetector {
   name: string;
   description: string;
 
-  assessImpact(
-    changeType: DiffChangeType,
-    oldVersion?: AnyEntity,
-    newVersion?: AnyEntity,
-    options?: DiffOptions
-  ): Promise<DiffImpact>;
+  assessImpact(changeType: DiffChangeType, oldVersion?: AnyEntity, newVersion?: AnyEntity, options?: DiffOptions): Promise<DiffImpact>;
 }
 
 // Built-in change detectors
@@ -667,18 +648,14 @@ class EntityStructureDetector implements ChangeDetector {
   name = 'Entity Structure Detector';
   description = 'Detects structural changes in entities';
 
-  async assessImpact(
-    changeType: DiffChangeType,
-    oldVersion?: AnyEntity,
-    newVersion?: AnyEntity
-  ): Promise<DiffImpact> {
+  async assessImpact(changeType: DiffChangeType, oldVersion?: AnyEntity, newVersion?: AnyEntity): Promise<DiffImpact> {
     return {
       severity: changeType === 'removed' ? 'high' : 'low',
       affectedEntities: [],
       riskFactors: [],
       migrationEffort: 'low',
       breakingChanges: changeType === 'removed',
-      recommendations: []
+      recommendations: [],
     };
   }
 }
@@ -695,7 +672,7 @@ class RelationshipChangeDetector implements ChangeDetector {
       riskFactors: [],
       migrationEffort: 'medium',
       breakingChanges: false,
-      recommendations: []
+      recommendations: [],
     };
   }
 }
@@ -712,7 +689,7 @@ class SemanticChangeDetector implements ChangeDetector {
       riskFactors: [],
       migrationEffort: 'low',
       breakingChanges: false,
-      recommendations: []
+      recommendations: [],
     };
   }
 }
@@ -722,15 +699,14 @@ class BreakingChangeDetector implements ChangeDetector {
   name = 'Breaking Change Detector';
   description = 'Detects changes that break API compatibility';
 
-  async assessImpact(
-    changeType: DiffChangeType,
-    oldVersion?: AnyEntity,
-    newVersion?: AnyEntity
-  ): Promise<DiffImpact> {
-    const isBreaking = changeType === 'removed' ||
-      (oldVersion?.type === 'Function' && newVersion?.type === 'Function' &&
-       'signature' in oldVersion && 'signature' in newVersion &&
-       oldVersion.signature !== newVersion.signature);
+  async assessImpact(changeType: DiffChangeType, oldVersion?: AnyEntity, newVersion?: AnyEntity): Promise<DiffImpact> {
+    const isBreaking =
+      changeType === 'removed' ||
+      (oldVersion?.type === 'Function' &&
+        newVersion?.type === 'Function' &&
+        'signature' in oldVersion &&
+        'signature' in newVersion &&
+        oldVersion.signature !== newVersion.signature);
 
     return {
       severity: isBreaking ? 'critical' : 'low',
@@ -738,7 +714,7 @@ class BreakingChangeDetector implements ChangeDetector {
       riskFactors: isBreaking ? ['API compatibility broken'] : [],
       migrationEffort: isBreaking ? 'high' : 'trivial',
       breakingChanges: isBreaking,
-      recommendations: isBreaking ? ['Update API consumers', 'Add deprecation warnings'] : []
+      recommendations: isBreaking ? ['Update API consumers', 'Add deprecation warnings'] : [],
     };
   }
 }
@@ -750,7 +726,7 @@ class DiffRenderer {
   constructor(
     private diff: ArchitectureDiff,
     private container: HTMLElement,
-    private mode: DiffVisualization['mode']
+    private mode: DiffVisualization['mode'],
   ) {}
 
   render(): void {
@@ -777,7 +753,9 @@ class DiffRenderer {
   }
 
   private generateEntityDiffsHTML(): string {
-    return this.diff.entityDiffs.map(diff => `
+    return this.diff.entityDiffs
+      .map(
+        (diff) => `
       <div class="entity-diff ${diff.changeType}">
         <div class="entity-diff-header">
           <span class="change-type">${diff.changeType}</span>
@@ -785,16 +763,22 @@ class DiffRenderer {
           <span class="entity-type">${diff.entityType}</span>
         </div>
         <div class="entity-diff-details">
-          ${diff.fieldChanges.map(field => `
+          ${diff.fieldChanges
+            .map(
+              (field) => `
             <div class="field-change">
               <strong>${field.fieldName}:</strong>
               <span class="old-value">${field.oldValue}</span> →
               <span class="new-value">${field.newValue}</span>
             </div>
-          `).join('')}
+          `,
+            )
+            .join('')}
         </div>
       </div>
-    `).join('');
+    `,
+      )
+      .join('');
   }
 }
 
@@ -844,15 +828,15 @@ class DiffExporter {
 - Breaking Changes: ${diff.summary.breakingChanges}
 
 ## Changes
-${diff.entityDiffs.map(d => `- ${d.changeType.toUpperCase()}: ${d.entityName}`).join('\n')}
+${diff.entityDiffs.map((d) => `- ${d.changeType.toUpperCase()}: ${d.entityName}`).join('\n')}
     `;
   }
 
   private exportCSV(diff: ArchitectureDiff): string {
     const header = 'Change Type,Entity Name,Entity Type,Impact,Breaking Change\n';
-    const rows = diff.entityDiffs.map(d =>
-      `${d.changeType},${d.entityName},${d.entityType},${d.impact.severity},${d.impact.breakingChanges}`
-    ).join('\n');
+    const rows = diff.entityDiffs
+      .map((d) => `${d.changeType},${d.entityName},${d.entityType},${d.impact.severity},${d.impact.breakingChanges}`)
+      .join('\n');
 
     return header + rows;
   }

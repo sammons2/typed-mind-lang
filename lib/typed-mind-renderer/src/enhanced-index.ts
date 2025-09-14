@@ -81,9 +81,7 @@ class EnhancedTypedMindRenderer {
 
   generateStaticHTML(): string {
     const html = this.getHTML();
-    const scriptTag = this.options.useEnhancedUI
-      ? '<script src="enhanced-renderer.js"></script>'
-      : '<script src="renderer.js"></script>';
+    const scriptTag = this.options.useEnhancedUI ? '<script src="enhanced-renderer.js"></script>' : '<script src="renderer.js"></script>';
 
     const inlineScript = `<script>
 ${this.generateRendererJS()}

@@ -15,14 +15,14 @@ export {
   PerformanceMonitor,
   LevelOfDetailManager,
   type ViewportInfo,
-  type SpatialItem
+  type SpatialItem,
 } from './performance/spatial-index';
 
 export {
   ValidationErrorProcessor,
   ErrorVisualizationRenderer,
   type EnhancedValidationError,
-  type ErrorSeverity
+  type ErrorSeverity,
 } from './validation/error-visualization';
 
 export {
@@ -35,7 +35,7 @@ export {
   type DataProcessorPlugin,
   type ThemePlugin,
   type ExportPlugin,
-  type PluginContext
+  type PluginContext,
 } from './plugins/plugin-system';
 
 export {
@@ -44,7 +44,7 @@ export {
   type MetricCategory,
   type Metric,
   type Recommendation,
-  type Risk
+  type Risk,
 } from './metrics/graph-metrics';
 
 export {
@@ -52,7 +52,7 @@ export {
   type ArchitecturalPattern,
   type PatternVisualization,
   type PatternMatcher,
-  type PatternRecommendation
+  type PatternRecommendation,
 } from './patterns/pattern-recognition';
 
 export {
@@ -61,7 +61,7 @@ export {
   type EntityDiff,
   type DiffOptions,
   type DiffChangeType,
-  type DiffSummary
+  type DiffSummary,
 } from './diff/diff-visualization';
 
 export {
@@ -70,13 +70,11 @@ export {
   type GeneratedCode,
   type CodePreview,
   type TargetLanguage,
-  type TargetFramework
+  type TargetFramework,
 } from './codegen/code-generation';
 
 // Re-export enhanced renderer options for convenience
-export type {
-  EnhancedRendererOptions
-} from './enhanced-index';
+export type { EnhancedRendererOptions } from './enhanced-index';
 
 // Type-only exports for advanced configuration
 export type AdvancedRendererOptions = {

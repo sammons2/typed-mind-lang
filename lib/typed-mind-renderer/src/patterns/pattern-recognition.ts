@@ -105,13 +105,13 @@ export class PatternRecognitionEngine {
     const recommendations = this.generateRecommendations();
 
     // Identify anti-patterns
-    const antiPatterns = this.detectedPatterns.filter(p => p.category === 'anti-pattern');
+    const antiPatterns = this.detectedPatterns.filter((p) => p.category === 'anti-pattern');
 
     return {
       patterns: this.detectedPatterns,
       patternsByCategory,
       recommendations,
-      antiPatterns
+      antiPatterns,
     };
   }
 
@@ -119,7 +119,7 @@ export class PatternRecognitionEngine {
    * Get pattern details by ID
    */
   getPattern(patternId: string): ArchitecturalPattern | null {
-    return this.detectedPatterns.find(p => p.id === patternId) || null;
+    return this.detectedPatterns.find((p) => p.id === patternId) || null;
   }
 
   /**
@@ -131,22 +131,22 @@ export class PatternRecognitionEngine {
 
     return {
       patternId,
-      highlightedEntities: pattern.entities.map(e => ({
+      highlightedEntities: pattern.entities.map((e) => ({
         entityId: e.entityId,
         role: e.role,
         color: this.getRoleColor(e.role),
         strokeWidth: 3,
-        animation: 'pulse'
+        animation: 'pulse',
       })),
-      highlightedRelationships: pattern.relationships.map(r => ({
-        from: pattern.entities.find(e => e.role === r.from)?.entityId || '',
-        to: pattern.entities.find(e => e.role === r.to)?.entityId || '',
+      highlightedRelationships: pattern.relationships.map((r) => ({
+        from: pattern.entities.find((e) => e.role === r.from)?.entityId || '',
+        to: pattern.entities.find((e) => e.role === r.to)?.entityId || '',
         type: r.type,
         color: this.getRelationshipColor(r.type),
         strokeWidth: 2,
-        animation: 'flow'
+        animation: 'flow',
       })),
-      overlay: this.createPatternOverlay(pattern)
+      overlay: this.createPatternOverlay(pattern),
     };
   }
 
@@ -166,11 +166,11 @@ export class PatternRecognitionEngine {
 
   private groupPatternsByCategory(patterns: ArchitecturalPattern[]): Record<string, ArchitecturalPattern[]> {
     const groups: Record<string, ArchitecturalPattern[]> = {
-      'structural': [],
-      'behavioral': [],
-      'creational': [],
-      'architectural': [],
-      'anti-pattern': []
+      structural: [],
+      behavioral: [],
+      creational: [],
+      architectural: [],
+      'anti-pattern': [],
     };
 
     for (const pattern of patterns) {
@@ -185,9 +185,9 @@ export class PatternRecognitionEngine {
 
     // Recommend missing patterns based on current architecture
     const entities = Array.from(this.graph?.entities.values() || []);
-    const hasControllers = entities.some(e => e.name.toLowerCase().includes('controller'));
-    const hasServices = entities.some(e => e.name.toLowerCase().includes('service'));
-    const hasModels = entities.some(e => e.type === 'DTO' || e.name.toLowerCase().includes('model'));
+    const hasControllers = entities.some((e) => e.name.toLowerCase().includes('controller'));
+    const hasServices = entities.some((e) => e.name.toLowerCase().includes('service'));
+    const hasModels = entities.some((e) => e.type === 'DTO' || e.name.toLowerCase().includes('model'));
 
     if (hasControllers && hasModels && !hasServices) {
       recommendations.push({
@@ -197,12 +197,12 @@ export class PatternRecognitionEngine {
         description: 'You have controllers and models but no service layer. A service layer can help organize business logic.',
         pattern: 'service-layer',
         benefits: ['Better separation of concerns', 'Improved testability', 'Reusable business logic'],
-        effort: 'medium'
+        effort: 'medium',
       });
     }
 
     // Recommend solutions for anti-patterns
-    const antiPatterns = this.detectedPatterns.filter(p => p.category === 'anti-pattern');
+    const antiPatterns = this.detectedPatterns.filter((p) => p.category === 'anti-pattern');
     for (const antiPattern of antiPatterns) {
       if (antiPattern.recommendations) {
         recommendations.push({
@@ -212,7 +212,7 @@ export class PatternRecognitionEngine {
           description: antiPattern.recommendations[0],
           pattern: antiPattern.id,
           benefits: ['Improved maintainability', 'Better code quality'],
-          effort: 'high'
+          effort: 'high',
         });
       }
     }
@@ -222,16 +222,16 @@ export class PatternRecognitionEngine {
 
   private getRoleColor(role: string): string {
     const colors: Record<string, string> = {
-      'controller': '#3fb950',
-      'service': '#58a6ff',
-      'model': '#f85149',
-      'view': '#f9c513',
-      'factory': '#7c3aed',
-      'observer': '#e06c75',
-      'subject': '#56b6c2',
-      'adapter': '#c678dd',
-      'repository': '#98c379',
-      'gateway': '#e5c07b'
+      controller: '#3fb950',
+      service: '#58a6ff',
+      model: '#f85149',
+      view: '#f9c513',
+      factory: '#7c3aed',
+      observer: '#e06c75',
+      subject: '#56b6c2',
+      adapter: '#c678dd',
+      repository: '#98c379',
+      gateway: '#e5c07b',
     };
 
     return colors[role.toLowerCase()] || '#8b949e';
@@ -239,13 +239,13 @@ export class PatternRecognitionEngine {
 
   private getRelationshipColor(type: string): string {
     const colors: Record<string, string> = {
-      'depends': '#58a6ff',
-      'creates': '#3fb950',
-      'uses': '#f85149',
-      'extends': '#f9c513',
-      'implements': '#7c3aed',
-      'contains': '#e06c75',
-      'calls': '#98c379'
+      depends: '#58a6ff',
+      creates: '#3fb950',
+      uses: '#f85149',
+      extends: '#f9c513',
+      implements: '#7c3aed',
+      contains: '#e06c75',
+      calls: '#98c379',
     };
 
     return colors[type] || '#8b949e';
@@ -258,7 +258,7 @@ export class PatternRecognitionEngine {
       confidence: pattern.confidence,
       category: pattern.category,
       entities: pattern.entities,
-      relationships: pattern.relationships
+      relationships: pattern.relationships,
     };
   }
 }
@@ -279,21 +279,14 @@ class MVCPatternMatcher implements PatternMatcher {
     const patterns: ArchitecturalPattern[] = [];
 
     // Find potential controllers, models, and views
-    const controllers = entities.filter(e =>
-      e.name.toLowerCase().includes('controller') ||
-      (e.type === 'Class' || e.type === 'ClassFile')
+    const controllers = entities.filter((e) => e.name.toLowerCase().includes('controller') || e.type === 'Class' || e.type === 'ClassFile');
+
+    const models = entities.filter(
+      (e) => e.type === 'DTO' || e.name.toLowerCase().includes('model') || e.name.toLowerCase().includes('entity'),
     );
 
-    const models = entities.filter(e =>
-      e.type === 'DTO' ||
-      e.name.toLowerCase().includes('model') ||
-      e.name.toLowerCase().includes('entity')
-    );
-
-    const views = entities.filter(e =>
-      e.type === 'UIComponent' ||
-      e.name.toLowerCase().includes('view') ||
-      e.name.toLowerCase().includes('component')
+    const views = entities.filter(
+      (e) => e.type === 'UIComponent' || e.name.toLowerCase().includes('view') || e.name.toLowerCase().includes('component'),
     );
 
     // Look for MVC triads
@@ -316,40 +309,36 @@ class MVCPatternMatcher implements PatternMatcher {
                 role: 'controller',
                 entityId: controller.name,
                 entityType: controller.type,
-                description: 'Handles user input and coordinates model and view'
+                description: 'Handles user input and coordinates model and view',
               },
-              ...relatedModels.map(m => ({
+              ...relatedModels.map((m) => ({
                 role: 'model',
                 entityId: m.name,
                 entityType: m.type,
-                description: 'Represents data and business logic'
+                description: 'Represents data and business logic',
               })),
-              ...relatedViews.map(v => ({
+              ...relatedViews.map((v) => ({
                 role: 'view',
                 entityId: v.name,
                 entityType: v.type,
-                description: 'Presents data to user'
-              }))
+                description: 'Presents data to user',
+              })),
             ],
             relationships: [
               {
                 from: 'controller',
                 to: 'model',
                 type: 'uses',
-                description: 'Controller manipulates model'
+                description: 'Controller manipulates model',
               },
               {
                 from: 'controller',
                 to: 'view',
                 type: 'uses',
-                description: 'Controller updates view'
-              }
+                description: 'Controller updates view',
+              },
             ],
-            benefits: [
-              'Clear separation of concerns',
-              'Improved testability',
-              'Better maintainability'
-            ]
+            benefits: ['Clear separation of concerns', 'Improved testability', 'Better maintainability'],
           });
         }
       }
@@ -362,9 +351,9 @@ class MVCPatternMatcher implements PatternMatcher {
     // Basic confidence calculation based on naming conventions and relationships
     let score = 0.5; // Base score
 
-    const hasController = entities.some(e => e.name.toLowerCase().includes('controller'));
-    const hasModel = entities.some(e => e.type === 'DTO' || e.name.toLowerCase().includes('model'));
-    const hasView = entities.some(e => e.type === 'UIComponent');
+    const hasController = entities.some((e) => e.name.toLowerCase().includes('controller'));
+    const hasModel = entities.some((e) => e.type === 'DTO' || e.name.toLowerCase().includes('model'));
+    const hasView = entities.some((e) => e.type === 'UIComponent');
 
     if (hasController) score += 0.2;
     if (hasModel) score += 0.2;
@@ -410,10 +399,7 @@ class RepositoryPatternMatcher implements PatternMatcher {
     const entities = Array.from(graph.entities.values());
     const patterns: ArchitecturalPattern[] = [];
 
-    const repositories = entities.filter(e =>
-      e.name.toLowerCase().includes('repository') ||
-      e.name.toLowerCase().includes('dao')
-    );
+    const repositories = entities.filter((e) => e.name.toLowerCase().includes('repository') || e.name.toLowerCase().includes('dao'));
 
     for (const repo of repositories) {
       const confidence = this.calculateConfidence([repo], new Map());
@@ -430,15 +416,11 @@ class RepositoryPatternMatcher implements PatternMatcher {
               role: 'repository',
               entityId: repo.name,
               entityType: repo.type,
-              description: 'Provides data access abstraction'
-            }
+              description: 'Provides data access abstraction',
+            },
           ],
           relationships: [],
-          benefits: [
-            'Centralized data access logic',
-            'Improved testability through mocking',
-            'Separation of data access concerns'
-          ]
+          benefits: ['Centralized data access logic', 'Improved testability through mocking', 'Separation of data access concerns'],
         });
       }
     }
@@ -469,12 +451,9 @@ class FactoryPatternMatcher implements PatternMatcher {
 
   detect(graph: ProgramGraph): ArchitecturalPattern[] {
     const entities = Array.from(graph.entities.values());
-    const factories = entities.filter(e =>
-      e.name.toLowerCase().includes('factory') ||
-      e.name.toLowerCase().includes('builder')
-    );
+    const factories = entities.filter((e) => e.name.toLowerCase().includes('factory') || e.name.toLowerCase().includes('builder'));
 
-    return factories.map(factory => ({
+    return factories.map((factory) => ({
       id: `factory-${factory.name}`,
       name: 'Factory Pattern',
       description: `Factory pattern: ${factory.name}`,
@@ -485,11 +464,11 @@ class FactoryPatternMatcher implements PatternMatcher {
           role: 'factory',
           entityId: factory.name,
           entityType: factory.type,
-          description: 'Creates objects without exposing instantiation logic'
-        }
+          description: 'Creates objects without exposing instantiation logic',
+        },
       ],
       relationships: [],
-      benefits: ['Encapsulates object creation', 'Reduces coupling', 'Supports dependency injection']
+      benefits: ['Encapsulates object creation', 'Reduces coupling', 'Supports dependency injection'],
     }));
   }
 
@@ -510,7 +489,9 @@ class ObserverPatternMatcher implements PatternMatcher {
     return [];
   }
 
-  calculateConfidence(): number { return 0.5; }
+  calculateConfidence(): number {
+    return 0.5;
+  }
 }
 
 class SingletonPatternMatcher implements PatternMatcher {
@@ -524,7 +505,9 @@ class SingletonPatternMatcher implements PatternMatcher {
     return [];
   }
 
-  calculateConfidence(): number { return 0.5; }
+  calculateConfidence(): number {
+    return 0.5;
+  }
 }
 
 class AdapterPatternMatcher implements PatternMatcher {
@@ -538,7 +521,9 @@ class AdapterPatternMatcher implements PatternMatcher {
     return [];
   }
 
-  calculateConfidence(): number { return 0.5; }
+  calculateConfidence(): number {
+    return 0.5;
+  }
 }
 
 class LayeredArchitectureMatcher implements PatternMatcher {
@@ -552,7 +537,9 @@ class LayeredArchitectureMatcher implements PatternMatcher {
     return [];
   }
 
-  calculateConfidence(): number { return 0.5; }
+  calculateConfidence(): number {
+    return 0.5;
+  }
 }
 
 class MicroservicesPatternMatcher implements PatternMatcher {
@@ -566,7 +553,9 @@ class MicroservicesPatternMatcher implements PatternMatcher {
     return [];
   }
 
-  calculateConfidence(): number { return 0.5; }
+  calculateConfidence(): number {
+    return 0.5;
+  }
 }
 
 // Anti-pattern matchers
@@ -599,21 +588,17 @@ class GodObjectAntiPatternMatcher implements PatternMatcher {
                 role: 'god-object',
                 entityId: entity.name,
                 entityType: entity.type,
-                description: 'Object with excessive responsibilities'
-              }
+                description: 'Object with excessive responsibilities',
+              },
             ],
             relationships: [],
             benefits: [], // Anti-patterns have no benefits
-            drawbacks: [
-              'Difficult to test',
-              'Hard to maintain',
-              'Violates single responsibility principle'
-            ],
+            drawbacks: ['Difficult to test', 'Hard to maintain', 'Violates single responsibility principle'],
             recommendations: [
               'Break into smaller, focused classes',
               'Apply single responsibility principle',
-              'Extract related functionality into separate classes'
-            ]
+              'Extract related functionality into separate classes',
+            ],
           });
         }
       }
@@ -650,7 +635,9 @@ class CircularDependencyAntiPatternMatcher implements PatternMatcher {
     return [];
   }
 
-  calculateConfidence(): number { return 0.8; }
+  calculateConfidence(): number {
+    return 0.8;
+  }
 }
 
 class DeadCodeAntiPatternMatcher implements PatternMatcher {
@@ -664,7 +651,9 @@ class DeadCodeAntiPatternMatcher implements PatternMatcher {
     return [];
   }
 
-  calculateConfidence(): number { return 0.9; }
+  calculateConfidence(): number {
+    return 0.9;
+  }
 }
 
 // Supporting interfaces

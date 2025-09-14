@@ -112,13 +112,13 @@ export class QuadTree {
       x: viewport.x,
       y: viewport.y,
       width: viewport.width,
-      height: viewport.height
+      height: viewport.height,
     };
 
     const items = this.query(bounds);
 
     // Additional culling based on scale and item size
-    return items.filter(item => {
+    return items.filter((item) => {
       const minSize = Math.min(item.bounds.width, item.bounds.height) * viewport.scale;
       return minSize > 1; // Don't render items smaller than 1 pixel
     });
@@ -143,7 +143,7 @@ export class QuadTree {
     const stats = {
       totalItems: this.items.length,
       maxDepth: this.level,
-      totalNodes: 1
+      totalNodes: 1,
     };
 
     for (const node of this.nodes) {
@@ -162,43 +162,55 @@ export class QuadTree {
     const x = this.bounds.x;
     const y = this.bounds.y;
 
-    this.nodes[0] = new QuadTree({
-      x: x + subWidth,
-      y: y,
-      width: subWidth,
-      height: subHeight
-    }, this.level + 1);
+    this.nodes[0] = new QuadTree(
+      {
+        x: x + subWidth,
+        y: y,
+        width: subWidth,
+        height: subHeight,
+      },
+      this.level + 1,
+    );
 
-    this.nodes[1] = new QuadTree({
-      x: x,
-      y: y,
-      width: subWidth,
-      height: subHeight
-    }, this.level + 1);
+    this.nodes[1] = new QuadTree(
+      {
+        x: x,
+        y: y,
+        width: subWidth,
+        height: subHeight,
+      },
+      this.level + 1,
+    );
 
-    this.nodes[2] = new QuadTree({
-      x: x,
-      y: y + subHeight,
-      width: subWidth,
-      height: subHeight
-    }, this.level + 1);
+    this.nodes[2] = new QuadTree(
+      {
+        x: x,
+        y: y + subHeight,
+        width: subWidth,
+        height: subHeight,
+      },
+      this.level + 1,
+    );
 
-    this.nodes[3] = new QuadTree({
-      x: x + subWidth,
-      y: y + subHeight,
-      width: subWidth,
-      height: subHeight
-    }, this.level + 1);
+    this.nodes[3] = new QuadTree(
+      {
+        x: x + subWidth,
+        y: y + subHeight,
+        width: subWidth,
+        height: subHeight,
+      },
+      this.level + 1,
+    );
   }
 
   private getIndex(bounds: BoundingBox): number {
-    const verticalMidpoint = this.bounds.x + (this.bounds.width / 2);
-    const horizontalMidpoint = this.bounds.y + (this.bounds.height / 2);
+    const verticalMidpoint = this.bounds.x + this.bounds.width / 2;
+    const horizontalMidpoint = this.bounds.y + this.bounds.height / 2;
 
-    const topQuadrant = bounds.y < horizontalMidpoint && (bounds.y + bounds.height) < horizontalMidpoint;
+    const topQuadrant = bounds.y < horizontalMidpoint && bounds.y + bounds.height < horizontalMidpoint;
     const bottomQuadrant = bounds.y > horizontalMidpoint;
 
-    if (bounds.x < verticalMidpoint && (bounds.x + bounds.width) < verticalMidpoint) {
+    if (bounds.x < verticalMidpoint && bounds.x + bounds.width < verticalMidpoint) {
       if (topQuadrant) return 1;
       if (bottomQuadrant) return 2;
     } else if (bounds.x > verticalMidpoint) {
@@ -210,10 +222,7 @@ export class QuadTree {
   }
 
   private intersects(a: BoundingBox, b: BoundingBox): boolean {
-    return !(a.x > b.x + b.width ||
-             a.x + a.width < b.x ||
-             a.y > b.y + b.height ||
-             a.y + a.height < b.y);
+    return !(a.x > b.x + b.width || a.x + a.width < b.x || a.y > b.y + b.height || a.y + a.height < b.y);
   }
 }
 
@@ -255,7 +264,7 @@ export class PerformanceMonitor {
       average: sum / samples.length,
       min: Math.min(...samples),
       max: Math.max(...samples),
-      samples: samples.length
+      samples: samples.length,
     };
   }
 
@@ -318,11 +327,11 @@ export class VirtualizationManager {
 
     // Expand viewport with buffer
     const bufferedViewport: ViewportInfo = {
-      x: viewport.x - (viewport.width * this.viewportBuffer),
-      y: viewport.y - (viewport.height * this.viewportBuffer),
+      x: viewport.x - viewport.width * this.viewportBuffer,
+      y: viewport.y - viewport.height * this.viewportBuffer,
       width: viewport.width * (1 + 2 * this.viewportBuffer),
       height: viewport.height * (1 + 2 * this.viewportBuffer),
-      scale: viewport.scale
+      scale: viewport.scale,
     };
 
     const items = this.spatialIndex.queryViewport(bufferedViewport);
@@ -339,8 +348,8 @@ export class VirtualizationManager {
         total: spatialStats.totalItems,
         visible: items.length,
         cullRatio: spatialStats.totalItems > 0 ? (spatialStats.totalItems - items.length) / spatialStats.totalItems : 0,
-        queryTime
-      }
+        queryTime,
+      },
     };
   }
 
@@ -382,32 +391,35 @@ export class LevelOfDetailManager {
       maxItems: Infinity,
       simplification: 'none',
       hideLabels: false,
-      hideDetails: false
+      hideDetails: false,
     },
     {
       minScale: 1.0,
       maxItems: 1000,
       simplification: 'basic',
       hideLabels: false,
-      hideDetails: true
+      hideDetails: true,
     },
     {
       minScale: 0.5,
       maxItems: 500,
       simplification: 'basic',
       hideLabels: true,
-      hideDetails: true
+      hideDetails: true,
     },
     {
       minScale: 0.0,
       maxItems: 200,
       simplification: 'aggressive',
       hideLabels: true,
-      hideDetails: true
-    }
+      hideDetails: true,
+    },
   ];
 
-  getLevelOfDetail(scale: number, itemCount: number): {
+  getLevelOfDetail(
+    scale: number,
+    itemCount: number,
+  ): {
     level: number;
     maxItems: number;
     simplification: 'none' | 'basic' | 'aggressive';
@@ -432,7 +444,7 @@ export class LevelOfDetailManager {
       simplification: selectedLevel.simplification,
       hideLabels: selectedLevel.hideLabels,
       hideDetails: selectedLevel.hideDetails,
-      shouldCull: itemCount > selectedLevel.maxItems
+      shouldCull: itemCount > selectedLevel.maxItems,
     };
   }
 

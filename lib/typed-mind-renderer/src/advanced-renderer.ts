@@ -10,7 +10,13 @@ import { createServer } from 'http';
 import type { ProgramGraph, ValidationResult } from '@sammons/typed-mind';
 
 // Import all the advanced systems
-import { VirtualizationManager, PerformanceMonitor, LevelOfDetailManager, type ViewportInfo, type SpatialItem } from './performance/spatial-index';
+import {
+  VirtualizationManager,
+  PerformanceMonitor,
+  LevelOfDetailManager,
+  type ViewportInfo,
+  type SpatialItem,
+} from './performance/spatial-index';
 import { ValidationErrorProcessor, ErrorVisualizationRenderer, type EnhancedValidationError } from './validation/error-visualization';
 import { PluginManager, type Plugin, type PluginContext } from './plugins/plugin-system';
 import { GraphMetricsAnalyzer, type HealthScore, type MetricCategory } from './metrics/graph-metrics';
@@ -204,11 +210,7 @@ class AdvancedTypedMindRenderer {
   /**
    * Compare two architectures (diff mode)
    */
-  async compareArchitectures(
-    oldGraph: ProgramGraph,
-    newGraph: ProgramGraph,
-    options?: DiffOptions
-  ): Promise<ArchitectureDiff> {
+  async compareArchitectures(oldGraph: ProgramGraph, newGraph: ProgramGraph, options?: DiffOptions): Promise<ArchitectureDiff> {
     if (!this.options.enableDiffMode) {
       throw new Error('Diff mode is not enabled');
     }
@@ -223,10 +225,7 @@ class AdvancedTypedMindRenderer {
   /**
    * Generate code preview for entity
    */
-  async generateCodePreview(
-    entityId: string,
-    config: Partial<CodeGenConfig> = {}
-  ): Promise<CodePreview> {
+  async generateCodePreview(entityId: string, config: Partial<CodeGenConfig> = {}): Promise<CodePreview> {
     if (!this.options.enableCodeGeneration) {
       throw new Error('Code generation is not enabled');
     }
@@ -263,10 +262,12 @@ class AdvancedTypedMindRenderer {
       } catch (error) {
         console.error('Request handling error:', error);
         res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-          error: 'Internal server error',
-          message: error instanceof Error ? error.message : 'Unknown error'
-        }));
+        res.end(
+          JSON.stringify({
+            error: 'Internal server error',
+            message: error instanceof Error ? error.message : 'Unknown error',
+          }),
+        );
       }
     });
 
@@ -284,20 +285,14 @@ class AdvancedTypedMindRenderer {
   /**
    * Event system
    */
-  on<K extends keyof AdvancedRendererEvents>(
-    event: K,
-    listener: (data: AdvancedRendererEvents[K]) => void
-  ): void {
+  on<K extends keyof AdvancedRendererEvents>(event: K, listener: (data: AdvancedRendererEvents[K]) => void): void {
     if (!this.eventListeners.has(event)) {
       this.eventListeners.set(event, []);
     }
     this.eventListeners.get(event)!.push(listener);
   }
 
-  off<K extends keyof AdvancedRendererEvents>(
-    event: K,
-    listener?: (data: AdvancedRendererEvents[K]) => void
-  ): void {
+  off<K extends keyof AdvancedRendererEvents>(event: K, listener?: (data: AdvancedRendererEvents[K]) => void): void {
     const listeners = this.eventListeners.get(event);
     if (!listeners) return;
 
@@ -309,10 +304,7 @@ class AdvancedTypedMindRenderer {
     }
   }
 
-  private emit<K extends keyof AdvancedRendererEvents>(
-    event: K,
-    data: AdvancedRendererEvents[K]
-  ): void {
+  private emit<K extends keyof AdvancedRendererEvents>(event: K, data: AdvancedRendererEvents[K]): void {
     const listeners = this.eventListeners.get(event);
     if (listeners) {
       for (const listener of listeners) {
@@ -332,10 +324,7 @@ class AdvancedTypedMindRenderer {
     const html = this.getAdvancedHTML();
     const scriptContent = this.generateAdvancedRendererJS();
 
-    return html.replace(
-      '<script src="advanced-renderer.js"></script>',
-      `<script>${scriptContent}</script>`
-    );
+    return html.replace('<script src="advanced-renderer.js"></script>', `<script>${scriptContent}</script>`);
   }
 
   // Private implementation methods
@@ -365,7 +354,7 @@ class AdvancedTypedMindRenderer {
       customPlugins: [],
       themePreference: 'auto',
       defaultCodeGenLanguage: 'typescript',
-      ...options
+      ...options,
     };
   }
 
@@ -387,7 +376,7 @@ class AdvancedTypedMindRenderer {
       showCodeGenPanel: false,
       pluginsLoaded: false,
       telemetryEnabled: this.options.enableTelemetry,
-      printModeActive: false
+      printModeActive: false,
     };
   }
 
@@ -399,15 +388,15 @@ class AdvancedTypedMindRenderer {
     this.virtualizationManager = new VirtualizationManager(bounds);
 
     // Create spatial items
-    const spatialItems: SpatialItem[] = entities.map(entity => ({
+    const spatialItems: SpatialItem[] = entities.map((entity) => ({
       id: entity.name,
       bounds: {
         x: Math.random() * bounds.width,
         y: Math.random() * bounds.height,
         width: 100, // Default entity width
-        height: 50  // Default entity height
+        height: 50, // Default entity height
       },
-      data: entity
+      data: entity,
     }));
 
     this.virtualizationManager.updateIndex(spatialItems);
@@ -447,7 +436,7 @@ class AdvancedTypedMindRenderer {
           },
           removeChild: (parent: Element, child: Element) => {
             if (parent && child && parent.removeChild) parent.removeChild(child);
-          }
+          },
         },
         d3: {
           select: (selector: any) => {
@@ -459,7 +448,7 @@ class AdvancedTypedMindRenderer {
           scaleOrdinal: () => ({ range: () => ({}), domain: () => ({}) }),
           scaleLinear: () => ({ range: () => ({}), domain: () => ({}) }),
           interpolate: (a: any, b: any) => () => a,
-          transition: () => ({ duration: () => ({}) })
+          transition: () => ({ duration: () => ({}) }),
         },
         events: {
           on: (event, handler) => this.on(event as any, handler),
@@ -471,7 +460,7 @@ class AdvancedTypedMindRenderer {
               this.off(event as any, onceHandler);
             };
             this.on(event as any, onceHandler);
-          }
+          },
         },
         storage: {
           get: (key: string) => {
@@ -501,13 +490,13 @@ class AdvancedTypedMindRenderer {
           keys: () => {
             if (typeof localStorage === 'undefined') return [];
             return Object.keys(localStorage);
-          }
+          },
         },
         theme: {
           getCurrentTheme: () => ({ name: 'default', cssVariables: {} }),
           setTheme: () => {},
           getEntityStyle: () => ({}),
-          getLinkStyle: () => ({})
+          getLinkStyle: () => ({}),
         },
         metrics: {
           recordMetric: (name, value, tags) => this.performanceMonitor.recordMetric(name, value),
@@ -519,9 +508,9 @@ class AdvancedTypedMindRenderer {
               if (value) result[key] = value.current;
             }
             return result;
-          }
-        }
-      }
+          },
+        },
+      },
     };
   }
 
@@ -591,7 +580,7 @@ class AdvancedTypedMindRenderer {
         '.js': 'application/javascript',
         '.css': 'text/css',
         '.png': 'image/png',
-        '.svg': 'image/svg+xml'
+        '.svg': 'image/svg+xml',
       };
 
       const ext = filePath.substring(filePath.lastIndexOf('.'));
@@ -693,44 +682,46 @@ class AdvancedTypedMindRenderer {
     const features = [
       {
         title: '⚡ Performance Optimization',
-        description: 'Spatial indexing and virtualization for smooth rendering of 1000+ entities'
+        description: 'Spatial indexing and virtualization for smooth rendering of 1000+ entities',
       },
       {
         title: '🔍 Error Visualization',
-        description: 'Comprehensive error analysis with severity indicators and quick fixes'
+        description: 'Comprehensive error analysis with severity indicators and quick fixes',
       },
       {
         title: '🔌 Plugin Architecture',
-        description: 'Extensible system for custom renderers and layout algorithms'
+        description: 'Extensible system for custom renderers and layout algorithms',
       },
       {
         title: '📊 Metrics Dashboard',
-        description: 'Architecture health metrics, complexity analysis, and coupling indicators'
+        description: 'Architecture health metrics, complexity analysis, and coupling indicators',
       },
       {
         title: '🎯 Pattern Recognition',
-        description: 'Automatic detection of architectural patterns and anti-patterns'
+        description: 'Automatic detection of architectural patterns and anti-patterns',
       },
       {
         title: '🔄 Diff Visualization',
-        description: 'Compare different versions of architectures with detailed change analysis'
+        description: 'Compare different versions of architectures with detailed change analysis',
       },
       {
         title: '💻 Code Generation',
-        description: 'Preview how entities translate to actual code in multiple languages'
+        description: 'Preview how entities translate to actual code in multiple languages',
       },
       {
         title: '🎨 Theme System',
-        description: 'Multiple visual themes including colorblind-friendly options'
-      }
+        description: 'Multiple visual themes including colorblind-friendly options',
+      },
     ];
 
-    return features.map(feature => `
+    return features.map(
+      (feature) => `
       <div class="feature">
         <h3>${feature.title}</h3>
         <p>${feature.description}</p>
       </div>
-    `);
+    `,
+    );
   }
 
   private generateAdvancedRendererJS(): string {
@@ -787,8 +778,8 @@ class AdvancedTypedMindRenderer {
       metadata: {
         healthScore: this.state.healthScore,
         patterns: this.state.detectedPatterns,
-        performance: this.performanceMonitor.getAllMetrics()
-      }
+        performance: this.performanceMonitor.getAllMetrics(),
+      },
     };
   }
 
@@ -827,7 +818,7 @@ export {
   GraphMetricsAnalyzer,
   PatternRecognitionEngine,
   ArchitectureDiffAnalyzer,
-  CodeGenerationEngine
+  CodeGenerationEngine,
 };
 
 // Export types for TypeScript users
@@ -847,5 +838,5 @@ export type {
   ArchitectureDiff,
   DiffOptions,
   CodeGenConfig,
-  CodePreview
+  CodePreview,
 };

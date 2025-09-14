@@ -60,25 +60,20 @@ export interface EntityRendererPlugin extends Plugin {
   /**
    * Render entity in SVG
    */
-  renderEntity(
-    entity: AnyEntity,
-    group: d3.Selection<SVGGElement, any, any, any>,
-    context: EntityRenderContext
-  ): EntityRenderResult;
+  renderEntity(entity: AnyEntity, group: d3.Selection<SVGGElement, any, any, any>, context: EntityRenderContext): EntityRenderResult;
 
   /**
    * Update entity visual state
    */
-  updateEntity?(
-    entity: AnyEntity,
-    group: d3.Selection<SVGGElement, any, any, any>,
-    context: EntityRenderContext
-  ): void;
+  updateEntity?(entity: AnyEntity, group: d3.Selection<SVGGElement, any, any, any>, context: EntityRenderContext): void;
 
   /**
    * Get entity bounds for layout calculations
    */
-  getEntityBounds(entity: AnyEntity, context: EntityRenderContext): {
+  getEntityBounds(
+    entity: AnyEntity,
+    context: EntityRenderContext,
+  ): {
     width: number;
     height: number;
     padding?: { top: number; right: number; bottom: number; left: number };
@@ -87,11 +82,7 @@ export interface EntityRendererPlugin extends Plugin {
   /**
    * Handle entity interactions
    */
-  handleInteraction?(
-    event: EntityInteractionEvent,
-    entity: AnyEntity,
-    context: EntityRenderContext
-  ): boolean; // Return true if handled, false to continue
+  handleInteraction?(event: EntityInteractionEvent, entity: AnyEntity, context: EntityRenderContext): boolean; // Return true if handled, false to continue
 }
 
 /**
@@ -104,19 +95,12 @@ export interface LayoutPlugin extends Plugin {
   /**
    * Calculate layout positions for entities
    */
-  calculateLayout(
-    entities: AnyEntity[],
-    links: LayoutLink[],
-    constraints: LayoutConstraints
-  ): Promise<LayoutResult> | LayoutResult;
+  calculateLayout(entities: AnyEntity[], links: LayoutLink[], constraints: LayoutConstraints): Promise<LayoutResult> | LayoutResult;
 
   /**
    * Update layout incrementally (for animations)
    */
-  updateLayout?(
-    currentLayout: LayoutResult,
-    changes: LayoutChange[]
-  ): Promise<LayoutResult> | LayoutResult;
+  updateLayout?(currentLayout: LayoutResult, changes: LayoutChange[]): Promise<LayoutResult> | LayoutResult;
 
   /**
    * Get layout-specific configuration UI
@@ -134,10 +118,7 @@ export interface InteractionPlugin extends Plugin {
   /**
    * Handle custom interactions
    */
-  handleInteraction(
-    event: InteractionEvent,
-    context: InteractionContext
-  ): boolean | Promise<boolean>;
+  handleInteraction(event: InteractionEvent, context: InteractionContext): boolean | Promise<boolean>;
 
   /**
    * Register custom keyboard shortcuts
@@ -159,10 +140,7 @@ export interface DataProcessorPlugin extends Plugin {
   /**
    * Process graph data for analysis
    */
-  processData(
-    entities: AnyEntity[],
-    context: DataProcessorContext
-  ): Promise<ProcessorResult> | ProcessorResult;
+  processData(entities: AnyEntity[], context: DataProcessorContext): Promise<ProcessorResult> | ProcessorResult;
 
   /**
    * Get analysis results display
@@ -205,9 +183,7 @@ export interface ExportPlugin extends Plugin {
   /**
    * Export visualization data
    */
-  export(
-    context: ExportContext
-  ): Promise<ExportResult> | ExportResult;
+  export(context: ExportContext): Promise<ExportResult> | ExportResult;
 
   /**
    * Get export options UI
@@ -337,18 +313,24 @@ export interface ThemeDefinition {
   name: string;
   cssVariables: Record<string, string>;
   customCSS?: string;
-  entityStyles?: Record<EntityType, {
-    fill: string;
-    stroke: string;
-    strokeWidth?: number;
-    [key: string]: any;
-  }>;
-  linkStyles?: Record<string, {
-    stroke: string;
-    strokeWidth?: number;
-    strokeDasharray?: string;
-    [key: string]: any;
-  }>;
+  entityStyles?: Record<
+    EntityType,
+    {
+      fill: string;
+      stroke: string;
+      strokeWidth?: number;
+      [key: string]: any;
+    }
+  >;
+  linkStyles?: Record<
+    string,
+    {
+      stroke: string;
+      strokeWidth?: number;
+      strokeDasharray?: string;
+      [key: string]: any;
+    }
+  >;
 }
 
 export interface ExportContext {
@@ -368,15 +350,18 @@ export interface ExportResult {
 
 export interface PluginConfigSchema {
   type: 'object';
-  properties: Record<string, {
-    type: 'string' | 'number' | 'boolean' | 'array' | 'object';
-    description: string;
-    default?: any;
-    enum?: any[];
-    minimum?: number;
-    maximum?: number;
-    items?: any;
-  }>;
+  properties: Record<
+    string,
+    {
+      type: 'string' | 'number' | 'boolean' | 'array' | 'object';
+      description: string;
+      default?: any;
+      enum?: any[];
+      minimum?: number;
+      maximum?: number;
+      items?: any;
+    }
+  >;
   required?: string[];
 }
 
@@ -466,7 +451,7 @@ export class PluginManager {
     // Create plugin context
     const pluginContext: PluginContext = {
       ...this.baseContext,
-      config
+      config,
     };
 
     this.pluginContexts.set(plugin.id, pluginContext);
@@ -600,11 +585,11 @@ export class PluginManager {
     canActivate: boolean;
     dependencies: string[];
   }> {
-    return Array.from(this.plugins.values()).map(plugin => ({
+    return Array.from(this.plugins.values()).map((plugin) => ({
       plugin,
       active: this.activePlugins.has(plugin.id),
       canActivate: this.canActivatePlugin(plugin.id),
-      dependencies: plugin.dependencies || []
+      dependencies: plugin.dependencies || [],
     }));
   }
 
@@ -643,7 +628,7 @@ export class BuiltInPluginRegistry {
     id: string,
     name: string,
     entityTypes: EntityType[],
-    renderer: EntityRendererPlugin['renderEntity']
+    renderer: EntityRendererPlugin['renderEntity'],
   ): EntityRendererPlugin {
     return {
       id,
@@ -655,19 +640,14 @@ export class BuiltInPluginRegistry {
       supportedEntityTypes: entityTypes,
       initialize: async () => {},
       renderEntity: renderer,
-      getEntityBounds: (entity) => ({ width: 100, height: 50 }) // Default bounds
+      getEntityBounds: (entity) => ({ width: 100, height: 50 }), // Default bounds
     };
   }
 
   /**
    * Create a simple layout plugin
    */
-  static createLayoutPlugin(
-    id: string,
-    name: string,
-    layoutType: string,
-    algorithm: LayoutPlugin['calculateLayout']
-  ): LayoutPlugin {
+  static createLayoutPlugin(id: string, name: string, layoutType: string, algorithm: LayoutPlugin['calculateLayout']): LayoutPlugin {
     return {
       id,
       name,
@@ -677,19 +657,14 @@ export class BuiltInPluginRegistry {
       type: 'layout',
       layoutType,
       initialize: async () => {},
-      calculateLayout: algorithm
+      calculateLayout: algorithm,
     };
   }
 
   /**
    * Create a simple theme plugin
    */
-  static createThemePlugin(
-    id: string,
-    name: string,
-    themeName: string,
-    definition: ThemeDefinition
-  ): ThemePlugin {
+  static createThemePlugin(id: string, name: string, themeName: string, definition: ThemeDefinition): ThemePlugin {
     return {
       id,
       name,
@@ -704,7 +679,7 @@ export class BuiltInPluginRegistry {
         for (const [property, value] of Object.entries(definition.cssVariables)) {
           container.style.setProperty(property, value);
         }
-      }
+      },
     };
   }
 }
