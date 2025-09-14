@@ -25,6 +25,8 @@ TypedMind is a domain-specific language (DSL) for describing program architectur
 This extension provides the following commands accessible via the Command Palette (Cmd/Ctrl+Shift+P):
 
 - **TypedMind: Validate Current File** - Check the current .tmd file for errors
+- **TypedMind: Preview** - Render and visualize the TypedMind architecture (opens in browser)
+- **TypedMind: Toggle Syntax Format** - Toggle between shortform and longform syntax (Ctrl+Shift+Alt+F)
 - **TypedMind: Show Entity Graph** - Visualize the program architecture (opens in browser)
 - **TypedMind: Format Document** - Format the TypedMind file (coming soon)
 - **TypedMind: Generate Documentation** - Create documentation from .tmd files (coming soon)
@@ -49,18 +51,18 @@ This extension provides the following commands accessible via the Command Palett
 3. Search for "TypedMind DSL"
 4. Click Install
 
-Or install directly from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=sammons.typed-mind).
+Or install directly from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=Sammons.typed-mind).
 
 ### From Command Line
 ```bash
-code --install-extension sammons.typed-mind
+code --install-extension Sammons.typed-mind
 ```
 
 ### Manual Installation (VSIX)
 **For Cursor IDE or other VS Code-compatible editors that may not have marketplace access:**
 
 1. **Download the latest VSIX file:**
-   - [Latest Release (v0.1.4)](https://github.com/sammons2/typed-mind-lang/releases/latest) - Download `typed-mind-0.1.4.vsix`
+   - [Latest Release (v0.2.0)](https://github.com/sammons2/typed-mind-lang/releases/latest) - Download `typed-mind-0.2.0.vsix`
    - Or browse all releases: [GitHub Releases](https://github.com/sammons2/typed-mind-lang/releases)
 
 2. **Install in VS Code/Cursor:**

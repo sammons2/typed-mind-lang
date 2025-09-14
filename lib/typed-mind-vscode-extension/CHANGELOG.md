@@ -5,6 +5,32 @@ All notable changes to the "TypedMind DSL" extension will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2025-09-14
+
+### Added
+- **TypedMind: Preview Command** - New command to render and visualize TypedMind files in browser
+- **Enhanced Renderer Integration** - Integrated enterprise-grade renderer with 8 subsystems:
+  - Performance optimization with spatial indexing and virtualization
+  - Advanced validation with error visualization
+  - Plugin system for extensibility
+  - Graph metrics and analytics
+  - Pattern recognition for architectural insights
+  - Diff visualization for comparing architectures
+  - Code generation support
+  - Interactive features with zoom, pan, and search
+- **Improved TypeScript Support** - Fixed all TypeScript compilation issues
+- **Updated Dependencies** - Using published NPM packages instead of workspace references
+
+### Changed
+- **Publisher Name** - Updated to correct publisher "Sammons" (capital S)
+- **Repository Links** - Fixed GitHub repository URL references
+- **Build Process** - Optimized build to exclude unnecessary LSP bundling during publish
+
+### Fixed
+- **Publishing Workflow** - Fixed VSCode marketplace publishing authentication
+- **Package Dependencies** - Resolved workspace dependency issues for marketplace compatibility
+- **TypeScript Errors** - Fixed all d3 type definitions and unused parameter warnings
+
 ## [1.0.0] - 2025-08-03
 
 ### Added
