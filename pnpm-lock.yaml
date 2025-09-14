@@ -176,14 +176,14 @@ importers:
   lib/typed-mind-vscode-extension:
     dependencies:
       '@sammons/typed-mind':
-        specifier: workspace:*
-        version: link:../typed-mind
+        specifier: ^0.1.8
+        version: 0.1.8
       '@sammons/typed-mind-lsp':
-        specifier: workspace:*
-        version: link:../typed-mind-lsp
+        specifier: ^0.1.8
+        version: 0.1.8
       '@sammons/typed-mind-renderer':
-        specifier: workspace:*
-        version: link:../typed-mind-renderer
+        specifier: ^0.2.1
+        version: 0.2.1
       vscode-languageclient:
         specifier: ^9.0.1
         version: 9.0.1
@@ -889,6 +889,19 @@ packages:
     resolution: {integrity: sha512-StxAO/8ts62KZVRAm4JZYq9+NqNsV7RvimNK+YM7ry//zebEH6meuugqW/P5OFUCjyQgui+9fUxT6d5NShvMvA==}
     cpu: [x64]
     os: [win32]
+
+  '@sammons/typed-mind-lsp@0.1.8':
+    resolution: {integrity: sha512-D4w9dwY8bvoAicb2sp4Ar6KUm/EE3QZ+n5t3dvltPhkI1oaczD1DEgFD6G7z/dr0I1Y4xuI5dBpdf9ROQP03EQ==}
+    engines: {node: '>=18.0.0'}
+    hasBin: true
+
+  '@sammons/typed-mind-renderer@0.2.1':
+    resolution: {integrity: sha512-pG4j1ggagkoMwd8HBmUFy/F8Y5PizZNEu99ZrcL6aXqTzSWxvbGNP2L/TIqS7wnM1bTiWuqO6DrKF9a+HVyXaQ==}
+    engines: {node: '>=22.0.0'}
+
+  '@sammons/typed-mind@0.1.8':
+    resolution: {integrity: sha512-3C8RZqva+eVE3TlrjBOsJWeXgAV7OkibHQDxML5sXaZoWbVpUTPTvOVGTH9NhAgfK1aLwT1ajtYzstvRX4TJTA==}
+    engines: {node: '>=22.0.0'}
 
   '@secretlint/config-creator@10.2.1':
     resolution: {integrity: sha512-nyuRy8uo2+mXPIRLJ93wizD1HbcdDIsVfgCT01p/zGVFrtvmiL7wqsl4KgZH0QFBM/KRLDLeog3/eaM5ASjtvw==}
@@ -3503,6 +3516,18 @@ snapshots:
 
   '@rollup/rollup-win32-x64-msvc@4.50.1':
     optional: true
+
+  '@sammons/typed-mind-lsp@0.1.8':
+    dependencies:
+      '@sammons/typed-mind': link:lib/typed-mind
+      vscode-languageserver: 9.0.1
+      vscode-languageserver-textdocument: 1.0.12
+
+  '@sammons/typed-mind-renderer@0.2.1':
+    dependencies:
+      '@sammons/typed-mind': link:lib/typed-mind
+
+  '@sammons/typed-mind@0.1.8': {}
 
   '@secretlint/config-creator@10.2.1':
     dependencies:
