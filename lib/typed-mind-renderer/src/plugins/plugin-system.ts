@@ -5,6 +5,7 @@
  */
 
 import type { AnyEntity, EntityType } from '@sammons/typed-mind';
+import type * as d3 from 'd3';
 
 /**
  * Core plugin interface - all plugins must implement this

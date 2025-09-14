@@ -440,15 +440,15 @@ class AdvancedTypedMindRenderer {
         },
         d3: {
           select: (selector: any) => {
-            // Server-side fallback
+            // Server-side fallback - return minimal d3 Selection-like object
             if (typeof window === 'undefined') return { attr: () => ({}), selectAll: () => ({ data: () => ({}) }) };
             return (globalThis as any).d3?.select?.(selector) || {};
           },
-          selectAll: (_selector: any) => ({ data: () => ({}) }),
-          scaleOrdinal: () => ({ range: () => ({}), domain: () => ({}) }),
-          scaleLinear: () => ({ range: () => ({}), domain: () => ({}) }),
+          selectAll: (_selector: any) => ({ data: () => ({}) }) as any,
+          scaleOrdinal: () => ({ range: () => ({}), domain: () => ({}) }) as any,
+          scaleLinear: () => ({ range: () => ({}), domain: () => ({}) }) as any,
           interpolate: (a: any, _b: any) => () => a,
-          transition: () => ({ duration: () => ({}) }),
+          transition: () => ({ duration: () => ({}) }) as any,
         },
         events: {
           on: (event, handler) => this.on(event as any, handler),

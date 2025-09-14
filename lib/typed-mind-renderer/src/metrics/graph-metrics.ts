@@ -658,12 +658,12 @@ export class GraphMetricsAnalyzer {
     return 2;
   }
 
-  private generateRecommendations(metric: Metric, category: string): Recommendation[] {
+  private generateRecommendations(_metric: Metric, _category: string): Recommendation[] {
     // Generate specific recommendations based on metric
     return [];
   }
 
-  private generateRisks(metric: Metric, category: string): Risk[] {
+  private generateRisks(_metric: Metric, _category: string): Risk[] {
     // Generate specific risks based on metric
     return [];
   }

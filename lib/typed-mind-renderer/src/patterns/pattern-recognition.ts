@@ -347,7 +347,8 @@ class MVCPatternMatcher implements PatternMatcher {
     return patterns;
   }
 
-  calculateConfidence(entities: AnyEntity[], relationships: Map<string, Set<string>>): number {
+  // Required by PatternMatcher interface
+  calculateConfidence(entities: AnyEntity[], _relationships: Map<string, Set<string>>): number {
     // Basic confidence calculation based on naming conventions and relationships
     let score = 0.5; // Base score
 
@@ -374,7 +375,7 @@ class MVCPatternMatcher implements PatternMatcher {
     return related;
   }
 
-  private entitiesAreRelated(entity1: AnyEntity, entity2: AnyEntity, graph: ProgramGraph): boolean {
+  private entitiesAreRelated(entity1: AnyEntity, entity2: AnyEntity, _graph: ProgramGraph): boolean {
     // Check for various types of relationships
     if ('imports' in entity1 && entity1.imports?.includes(entity2.name)) return true;
     if ('calls' in entity1 && entity1.calls?.includes(entity2.name)) return true;
@@ -428,7 +429,8 @@ class RepositoryPatternMatcher implements PatternMatcher {
     return patterns;
   }
 
-  calculateConfidence(entities: AnyEntity[], relationships: Map<string, Set<string>>): number {
+  // Required by PatternMatcher interface
+  calculateConfidence(entities: AnyEntity[], _relationships: Map<string, Set<string>>): number {
     const repo = entities[0];
     let confidence = 0.3;
 
@@ -472,7 +474,8 @@ class FactoryPatternMatcher implements PatternMatcher {
     }));
   }
 
-  calculateConfidence(entities: AnyEntity[]): number {
+  // Required by PatternMatcher interface
+  calculateConfidence(entities: AnyEntity[], _relationships: Map<string, Set<string>>): number {
     const factory = entities[0];
     return factory.name.toLowerCase().includes('factory') ? 0.8 : 0.6;
   }
@@ -489,7 +492,8 @@ class ObserverPatternMatcher implements PatternMatcher {
     return [];
   }
 
-  calculateConfidence(): number {
+  // Required by PatternMatcher interface
+  calculateConfidence(_entities: AnyEntity[], _relationships: Map<string, Set<string>>): number {
     return 0.5;
   }
 }
@@ -505,7 +509,8 @@ class SingletonPatternMatcher implements PatternMatcher {
     return [];
   }
 
-  calculateConfidence(): number {
+  // Required by PatternMatcher interface
+  calculateConfidence(_entities: AnyEntity[], _relationships: Map<string, Set<string>>): number {
     return 0.5;
   }
 }
@@ -521,7 +526,8 @@ class AdapterPatternMatcher implements PatternMatcher {
     return [];
   }
 
-  calculateConfidence(): number {
+  // Required by PatternMatcher interface
+  calculateConfidence(_entities: AnyEntity[], _relationships: Map<string, Set<string>>): number {
     return 0.5;
   }
 }
@@ -537,7 +543,8 @@ class LayeredArchitectureMatcher implements PatternMatcher {
     return [];
   }
 
-  calculateConfidence(): number {
+  // Required by PatternMatcher interface
+  calculateConfidence(_entities: AnyEntity[], _relationships: Map<string, Set<string>>): number {
     return 0.5;
   }
 }
@@ -553,7 +560,8 @@ class MicroservicesPatternMatcher implements PatternMatcher {
     return [];
   }
 
-  calculateConfidence(): number {
+  // Required by PatternMatcher interface
+  calculateConfidence(_entities: AnyEntity[], _relationships: Map<string, Set<string>>): number {
     return 0.5;
   }
 }
@@ -607,7 +615,8 @@ class GodObjectAntiPatternMatcher implements PatternMatcher {
     return patterns;
   }
 
-  calculateConfidence(entities: AnyEntity[]): number {
+  // Required by PatternMatcher interface
+  calculateConfidence(entities: AnyEntity[], _relationships: Map<string, Set<string>>): number {
     const entity = entities[0];
     if (entity.type === 'Class' || entity.type === 'ClassFile') {
       const methods = 'methods' in entity ? entity.methods?.length || 0 : 0;
@@ -635,7 +644,8 @@ class CircularDependencyAntiPatternMatcher implements PatternMatcher {
     return [];
   }
 
-  calculateConfidence(): number {
+  // Required by PatternMatcher interface
+  calculateConfidence(_entities: AnyEntity[], _relationships: Map<string, Set<string>>): number {
     return 0.8;
   }
 }
@@ -651,7 +661,8 @@ class DeadCodeAntiPatternMatcher implements PatternMatcher {
     return [];
   }
 
-  calculateConfidence(): number {
+  // Required by PatternMatcher interface
+  calculateConfidence(_entities: AnyEntity[], _relationships: Map<string, Set<string>>): number {
     return 0.9;
   }
 }

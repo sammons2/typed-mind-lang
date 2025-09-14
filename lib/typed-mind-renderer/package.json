@@ -91,6 +91,7 @@
     "@sammons/typed-mind": "workspace:*"
   },
   "devDependencies": {
+    "@types/d3": "^7.4.3",
     "@types/node": "^22.18.1",
     "tsup": "^8.3.5",
     "vitest": "^3.2.4"
