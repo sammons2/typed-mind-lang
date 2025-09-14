@@ -1,7 +1,7 @@
 {
   "name": "@sammons/typed-mind-renderer",
-  "version": "0.1.8",
-  "description": "Interactive HTML/D3.js renderer for TypedMind DSL - generates beautiful visualizations of software architectures",
+  "version": "0.2.0",
+  "description": "Enterprise-grade interactive renderer for TypedMind DSL with advanced visualization, performance optimization, pattern recognition, and comprehensive architectural analysis",
   "keywords": [
     "typedmind",
     "dsl",
@@ -9,7 +9,14 @@
     "visualization",
     "d3",
     "html",
-    "architecture-diagram"
+    "architecture-diagram",
+    "performance",
+    "virtualization",
+    "pattern-recognition",
+    "metrics",
+    "diff-visualization",
+    "code-generation",
+    "plugins"
   ],
   "author": "sammons",
   "license": "MIT",
@@ -23,6 +30,44 @@
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./advanced": {
+      "types": "./dist/advanced-renderer.d.ts",
+      "default": "./dist/advanced-renderer.js"
+    },
+    "./performance": {
+      "types": "./dist/performance/spatial-index.d.ts",
+      "default": "./dist/performance/spatial-index.js"
+    },
+    "./validation": {
+      "types": "./dist/validation/error-visualization.d.ts",
+      "default": "./dist/validation/error-visualization.js"
+    },
+    "./plugins": {
+      "types": "./dist/plugins/plugin-system.d.ts",
+      "default": "./dist/plugins/plugin-system.js"
+    },
+    "./metrics": {
+      "types": "./dist/metrics/graph-metrics.d.ts",
+      "default": "./dist/metrics/graph-metrics.js"
+    },
+    "./patterns": {
+      "types": "./dist/patterns/pattern-recognition.d.ts",
+      "default": "./dist/patterns/pattern-recognition.js"
+    },
+    "./diff": {
+      "types": "./dist/diff/diff-visualization.d.ts",
+      "default": "./dist/diff/diff-visualization.js"
+    },
+    "./codegen": {
+      "types": "./dist/codegen/code-generation.d.ts",
+      "default": "./dist/codegen/code-generation.js"
+    }
+  },
   "files": [
     "dist",
     "README.md"

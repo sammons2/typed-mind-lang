@@ -4,7 +4,7 @@ import { readFileSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
 import { parseArgs } from 'util';
 import { DSLChecker } from '@sammons/typed-mind';
-import { TypedMindRenderer } from '@sammons/typed-mind-renderer';
+import { EnhancedTypedMindRenderer } from '@sammons/typed-mind-renderer';
 
 const options = {
   help: {
@@ -129,9 +129,14 @@ async function main() {
       const programGraph = checker.parse(content, absolutePath);
       const validationResult = checker.check(content, absolutePath);
 
-      const renderer = new TypedMindRenderer({
+      const renderer = new EnhancedTypedMindRenderer({
         port: parseInt(values.port || '3000', 10),
         openBrowser: !values['no-browser'],
+        enableInteractive: true,
+        enableMultiSelection: true,
+        enableKeyboardNavigation: true,
+        enableAccessibility: true,
+        enablePerformanceMonitoring: true,
       });
 
       renderer.setProgramGraph(programGraph);
