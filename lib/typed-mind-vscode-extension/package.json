@@ -159,9 +159,9 @@
     "clean": "rm -rf dist lsp-dist lsp-bundled node_modules *.vsix"
   },
   "dependencies": {
-    "@sammons/typed-mind": "^0.1.8",
-    "@sammons/typed-mind-lsp": "^0.1.8",
-    "@sammons/typed-mind-renderer": "^0.2.1",
+    "@sammons/typed-mind": "workspace:*",
+    "@sammons/typed-mind-lsp": "workspace:*",
+    "@sammons/typed-mind-renderer": "workspace:*",
     "vscode-languageclient": "^9.0.1"
   },
   "devDependencies": {
