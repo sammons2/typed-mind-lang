@@ -4,7 +4,7 @@
  */
 
 // Export original renderer for backward compatibility
-export { TypedMindRenderer } from './enhanced-index';
+export { EnhancedTypedMindRenderer as TypedMindRenderer } from './enhanced-index';
 
 // Export advanced renderer as the main export
 export { AdvancedTypedMindRenderer } from './advanced-renderer';

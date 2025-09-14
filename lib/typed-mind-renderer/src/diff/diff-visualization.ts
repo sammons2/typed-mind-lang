@@ -404,7 +404,7 @@ export class ArchitectureDiffAnalyzer {
     // Use fuzzy matching to detect potential renames
     for (const removed of removedEntities) {
       for (const added of addedEntities) {
-        const similarity = this.calculateSimilarity(removed.oldVersion!, added.newVersion!);
+        const similarity = this.calculateSimilarity(removed.oldVersion as AnyEntity, added.newVersion as AnyEntity);
         if (similarity > 0.8) {
           // High similarity threshold
           renames.push({

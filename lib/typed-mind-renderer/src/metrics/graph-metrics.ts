@@ -67,8 +67,8 @@ export class GraphMetricsAnalyzer {
   private graph: ProgramGraph;
   private entities: AnyEntity[];
   private entityMap: Map<string, AnyEntity>;
-  private dependencyGraph: Map<string, Set<string>>;
-  private reverseDependencyGraph: Map<string, Set<string>>;
+  private dependencyGraph: Map<string, Set<string>> = new Map();
+  private reverseDependencyGraph: Map<string, Set<string>> = new Map();
 
   constructor(graph: ProgramGraph) {
     this.graph = graph;
