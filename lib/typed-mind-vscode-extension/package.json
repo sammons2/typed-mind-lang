@@ -151,7 +151,7 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "pnpm run build && pnpm run bundle-lsp",
+    "vscode:prepublish": "pnpm run build",
     "build": "tsup",
     "bundle-lsp": "cd ../typed-mind-lsp && pnpm run build:bundled && cd - && rm -rf ./lsp-bundled && cp -r ../typed-mind-lsp/dist-bundled ./lsp-bundled",
     "dev": "tsup --watch",
