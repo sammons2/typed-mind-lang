@@ -101,8 +101,9 @@ jobs:
 
       - name: Build TypedMind packages
         run: |
-          # Extension might depend on core packages
-          pnpm build
+          # Build only the extension and its dependencies
+          cd lib/typed-mind-vscode-extension
+          pnpm run build
 
       - name: Package extension
         run: |
