@@ -82,7 +82,7 @@ jobs:
           done
           
           # Validate package.json
-          npx @vscode/vsce ls
+          npx @vscode/vsce ls --no-dependencies
           
           cd ../..
 
