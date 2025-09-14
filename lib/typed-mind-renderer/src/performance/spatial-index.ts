@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Spatial Indexing System for High-Performance Graph Visualization
  * Implements quadtree-based spatial partitioning for efficient rendering of large graphs

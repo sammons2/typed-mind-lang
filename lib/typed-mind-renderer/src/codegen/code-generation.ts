@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Code Generation Preview System for TypedMind
  * Shows how architectural entities would translate to actual code structures

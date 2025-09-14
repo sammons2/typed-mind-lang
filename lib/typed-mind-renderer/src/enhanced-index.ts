@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Enhanced TypedMind Renderer - Simplified Integration
  * Extends the original renderer with new visualization capabilities

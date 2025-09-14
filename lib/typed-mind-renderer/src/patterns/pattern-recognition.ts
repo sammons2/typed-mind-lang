@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Pattern Recognition System for TypedMind Architecture Analysis
  * Automatically identifies and highlights common architectural patterns

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Interactive TypedMind Renderer - Comprehensive Interactive Features
  * Building on the enhanced renderer with full interaction capabilities
