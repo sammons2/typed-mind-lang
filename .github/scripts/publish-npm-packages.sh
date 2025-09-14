@@ -22,11 +22,19 @@ publish_package() {
   local package_dir=$1
   local package_name=$(jq -r '.name' "$package_dir/package.json")
   local version=$(jq -r '.version' "$package_dir/package.json")
-  
+
+  echo "Checking $package_name@$version..."
+
+  # Check if this version already exists
+  if npm view "$package_name@$version" version >/dev/null 2>&1; then
+    echo "✓ $package_name@$version already published, skipping..."
+    return 0
+  fi
+
   echo "Publishing $package_name@$version from $package_dir..."
-  
+
   cd "$package_dir"
-  
+
   if [ "$DRY_RUN" = true ]; then
     echo "Would publish: npm publish --access public"
     npm pack --dry-run
