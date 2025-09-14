@@ -172,9 +172,15 @@ importers:
 
   lib/typed-mind-vscode-extension:
     dependencies:
+      '@sammons/typed-mind':
+        specifier: workspace:*
+        version: link:../typed-mind
       '@sammons/typed-mind-lsp':
         specifier: workspace:*
         version: link:../typed-mind-lsp
+      '@sammons/typed-mind-renderer':
+        specifier: workspace:*
+        version: link:../typed-mind-renderer
       vscode-languageclient:
         specifier: ^9.0.1
         version: 9.0.1
