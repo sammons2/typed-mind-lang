@@ -597,7 +597,7 @@ Generated at: ${new Date().toISOString()}
     };
   }
 
-  private generateRecommendations(entities: GeneratedCode[], graph: ProgramGraph): string[] {
+  private generateRecommendations(entities: GeneratedCode[], _graph: ProgramGraph): string[] {
     const recommendations: string[] = [];
 
     // Check for common issues
@@ -638,7 +638,7 @@ abstract class LanguageGenerator {
 }
 
 class TypeScriptGenerator extends LanguageGenerator {
-  async generateEntity(entity: AnyEntity, config: CodeGenConfig, graph: ProgramGraph): Promise<GeneratedCode> {
+  async generateEntity(entity: AnyEntity, config: CodeGenConfig, _graph: ProgramGraph): Promise<GeneratedCode> {
     const files: GeneratedFile[] = [];
     const dependencies: CodeDependency[] = [];
 
@@ -729,7 +729,7 @@ ${methods
     };
   }
 
-  private generateClassTest(entity: any, config: CodeGenConfig): GeneratedFile {
+  private generateClassTest(entity: any, _config: CodeGenConfig): GeneratedFile {
     const content = `import { ${entity.name} } from '../classes/${entity.name}';
 
 describe('${entity.name}', () => {

@@ -133,7 +133,7 @@ ${this.generateInteractiveRendererJS()}
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(result));
-      } catch (error) {
+      } catch (_error) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Invalid export request' }));
       }
@@ -1454,7 +1454,7 @@ ${this.generateInteractiveRendererJS()}
 
         this.downloadFile(result.data, result.filename, result.mimeType);
 
-      } catch (error) {
+      } catch (_error) {
         console.error('Export failed:', error);
         this.showNotification('Export failed: ' + error.message, 'error');
       } finally {
@@ -2292,7 +2292,7 @@ ${this.generateInteractiveRendererJS()}
           filters: Array.from(value.filters.entries())
         }));
         localStorage.setItem('typedmind-bookmarks', JSON.stringify(bookmarkData));
-      } catch (error) {
+      } catch (_error) {
         console.warn('Failed to persist bookmarks:', error);
       }
     }
@@ -2314,7 +2314,7 @@ ${this.generateInteractiveRendererJS()}
           });
           this.updateBookmarkList();
         }
-      } catch (error) {
+      } catch (_error) {
         console.warn('Failed to load bookmarks:', error);
       }
     }

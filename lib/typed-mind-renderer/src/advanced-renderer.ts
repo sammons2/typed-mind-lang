@@ -444,10 +444,10 @@ class AdvancedTypedMindRenderer {
             if (typeof window === 'undefined') return { attr: () => ({}), selectAll: () => ({ data: () => ({}) }) };
             return (globalThis as any).d3?.select?.(selector) || {};
           },
-          selectAll: (selector: any) => ({ data: () => ({}) }),
+          selectAll: (_selector: any) => ({ data: () => ({}) }),
           scaleOrdinal: () => ({ range: () => ({}), domain: () => ({}) }),
           scaleLinear: () => ({ range: () => ({}), domain: () => ({}) }),
-          interpolate: (a: any, b: any) => () => a,
+          interpolate: (a: any, _b: any) => () => a,
           transition: () => ({ duration: () => ({}) }),
         },
         events: {
@@ -468,7 +468,7 @@ class AdvancedTypedMindRenderer {
               if (typeof localStorage === 'undefined') return null;
               const value = localStorage.getItem(key);
               return value ? JSON.parse(value) : null;
-            } catch {
+            } catch (error) {
               return null;
             }
           },
@@ -499,7 +499,7 @@ class AdvancedTypedMindRenderer {
           getLinkStyle: () => ({}),
         },
         metrics: {
-          recordMetric: (name, value, tags) => this.performanceMonitor.recordMetric(name, value),
+          recordMetric: (name, value, _tags) => this.performanceMonitor.recordMetric(name, value),
           getMetric: (name) => this.performanceMonitor.getMetric(name)?.current || null,
           getAllMetrics: () => {
             const metrics = this.performanceMonitor.getAllMetrics();
@@ -598,7 +598,7 @@ class AdvancedTypedMindRenderer {
     try {
       const htmlPath = join(__dirname, 'static', 'advanced-index.html');
       return readFileSync(htmlPath, 'utf-8');
-    } catch {
+    } catch (error) {
       return this.generateFallbackHTML();
     }
   }

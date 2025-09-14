@@ -476,7 +476,7 @@ export class ArchitectureDiffAnalyzer {
     return 'modified';
   }
 
-  private assessFieldSignificance(field: string, oldValue: any, newValue: any): FieldDiff['significance'] {
+  private assessFieldSignificance(field: string, _oldValue: any, _newValue: any): FieldDiff['significance'] {
     const criticalFields = ['type', 'signature', 'path'];
     const majorFields = ['name', 'imports', 'exports'];
 
@@ -505,7 +505,7 @@ export class ArchitectureDiffAnalyzer {
     return changes;
   }
 
-  private buildRelationshipMap(graph: ProgramGraph): Map<string, { from: string; to: string; type: string }> {
+  private buildRelationshipMap(_graph: ProgramGraph): Map<string, { from: string; to: string; type: string }> {
     const relationships = new Map();
     // Implementation would build relationship map from graph
     return relationships;
@@ -548,7 +548,7 @@ export class ArchitectureDiffAnalyzer {
     return 'low';
   }
 
-  private calculateDiffMetrics(entityDiffs: EntityDiff[], relationshipDiffs: RelationshipDiff[]): DiffMetrics {
+  private calculateDiffMetrics(_entityDiffs: EntityDiff[], _relationshipDiffs: RelationshipDiff[]): DiffMetrics {
     // Implementation would calculate various metrics
     return {
       churnRate: 0.15,
@@ -648,7 +648,7 @@ class EntityStructureDetector implements ChangeDetector {
   name = 'Entity Structure Detector';
   description = 'Detects structural changes in entities';
 
-  async assessImpact(changeType: DiffChangeType, oldVersion?: AnyEntity, newVersion?: AnyEntity): Promise<DiffImpact> {
+  async assessImpact(changeType: DiffChangeType, _oldVersion?: AnyEntity, _newVersion?: AnyEntity): Promise<DiffImpact> {
     return {
       severity: changeType === 'removed' ? 'high' : 'low',
       affectedEntities: [],

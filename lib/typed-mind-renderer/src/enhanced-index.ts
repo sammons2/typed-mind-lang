@@ -95,7 +95,7 @@ ${this.generateRendererJS()}
       const interactiveHtmlPath = join(__dirname, 'static', 'interactive-index.html');
       try {
         return readFileSync(interactiveHtmlPath, 'utf-8');
-      } catch {
+      } catch (error) {
         console.warn('Interactive UI not found, falling back to enhanced');
       }
     }
@@ -104,7 +104,7 @@ ${this.generateRendererJS()}
       const enhancedHtmlPath = join(__dirname, 'static', 'enhanced-index.html');
       try {
         return readFileSync(enhancedHtmlPath, 'utf-8');
-      } catch {
+      } catch (error) {
         console.warn('Enhanced UI not found, falling back to original');
       }
     }
