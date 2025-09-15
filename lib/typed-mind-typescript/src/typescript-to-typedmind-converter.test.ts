@@ -397,4 +397,95 @@ describe('TypeScriptToTypedMindConverter', () => {
     // Should handle invalid names gracefully (convert to valid names or skip)
     expect(result.success).toBe(true);
   });
+
+  it('should only convert exported interfaces and type aliases to DTOs', () => {
+    const analysis = createMockAnalysis();
+
+    // Add a module with both exported and non-exported interfaces/types
+    analysis.modules.push({
+      filePath: createFilePath('/project/src/internal-types.ts'),
+      imports: [],
+      exports: [
+        {
+          name: 'PublicInterface',
+          isDefault: false,
+          type: 'interface',
+        },
+        {
+          name: 'PublicType',
+          isDefault: false,
+          type: 'type',
+        },
+      ],
+      functions: [],
+      classes: [],
+      interfaces: [
+        {
+          name: 'PublicInterface',
+          extends: [],
+          properties: [
+            {
+              name: 'id',
+              type: 'string',
+              isReadonly: false,
+              isStatic: false,
+              isPrivate: false,
+              isProtected: false,
+              isOptional: false,
+            },
+          ],
+          methods: [],
+        },
+        {
+          name: 'InternalInterface', // NOT exported
+          extends: [],
+          properties: [
+            {
+              name: 'internalField',
+              type: 'string',
+              isReadonly: false,
+              isStatic: false,
+              isPrivate: false,
+              isProtected: false,
+              isOptional: false,
+            },
+          ],
+          methods: [],
+        },
+      ],
+      types: [
+        {
+          name: 'PublicType',
+          type: 'string | number',
+        },
+        {
+          name: 'InternalType', // NOT exported
+          type: 'boolean | null',
+        },
+      ],
+      constants: [],
+    } as ParsedModule);
+
+    const converter = new TypeScriptToTypedMindConverter();
+    const result = converter.convert(analysis);
+
+    expect(result.success).toBe(true);
+    expect(result.errors).toHaveLength(0);
+
+    // Should create DTOs for exported interface and type
+    const publicInterface = result.entities.find((e) => e.name === 'PublicInterface');
+    expect(publicInterface).toBeDefined();
+    expect(publicInterface?.type).toBe('DTO');
+
+    const publicType = result.entities.find((e) => e.name === 'PublicType');
+    expect(publicType).toBeDefined();
+    expect(publicType?.type).toBe('Constants'); // Type aliases become Constants
+
+    // Should NOT create DTOs for non-exported interface and type
+    const internalInterface = result.entities.find((e) => e.name === 'InternalInterface');
+    expect(internalInterface).toBeUndefined();
+
+    const internalType = result.entities.find((e) => e.name === 'InternalType');
+    expect(internalType).toBeUndefined();
+  });
 });

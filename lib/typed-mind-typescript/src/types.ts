@@ -1,14 +1,6 @@
 import * as ts from 'typescript';
 import { AnyEntity } from '@sammons/typed-mind';
 
-export type ExportMode = 'export' | 'assert' | 'check';
-
-export interface ParsedType {
-  readonly type: string;
-  readonly isOptional?: boolean;
-  readonly description?: string;
-}
-
 export interface ParsedFunction {
   readonly name: string;
   readonly signature: string;
@@ -173,9 +165,6 @@ export const isExportDeclaration = (node: ts.Node): node is ts.ExportDeclaration
 
 export const isImportDeclaration = (node: ts.Node): node is ts.ImportDeclaration => ts.isImportDeclaration(node);
 
-// Branded types for safety
-export type FilePath = string & { readonly __brand: 'FilePath' };
-export type EntityName = string & { readonly __brand: 'EntityName' };
-
-export const createFilePath = (path: string): FilePath => path as FilePath;
-export const createEntityName = (name: string): EntityName => name as EntityName;
+// Utility functions
+export const createFilePath = (path: string): string => path;
+export const createEntityName = (name: string): string => name;

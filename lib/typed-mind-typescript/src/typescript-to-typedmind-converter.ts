@@ -640,12 +640,16 @@ export class TypeScriptToTypedMindConverter {
 
     // Convert interfaces as DTOs
     for (const iface of module.interfaces) {
-      this.convertInterfaceToDTO(iface);
+      if (this.isInterfaceExported(iface, module)) {
+        this.convertInterfaceToDTO(iface);
+      }
     }
 
     // Convert all type aliases (both object-like and union types)
     for (const typeAlias of module.types) {
-      this.convertTypeAliasToDTO(typeAlias);
+      if (this.isTypeAliasExported(typeAlias, module)) {
+        this.convertTypeAliasToDTO(typeAlias);
+      }
     }
 
     // Convert constants - create individual entities for exported constants
@@ -685,12 +689,16 @@ export class TypeScriptToTypedMindConverter {
     }
 
     for (const iface of module.interfaces) {
-      this.convertInterfaceToDTO(iface);
+      if (this.isInterfaceExported(iface, module)) {
+        this.convertInterfaceToDTO(iface);
+      }
     }
 
     // Convert all type aliases (both object-like and union types)
     for (const typeAlias of module.types) {
-      this.convertTypeAliasToDTO(typeAlias);
+      if (this.isTypeAliasExported(typeAlias, module)) {
+        this.convertTypeAliasToDTO(typeAlias);
+      }
     }
 
     // Convert constants - create individual entities for exported constants

@@ -24,25 +24,6 @@ AssertionEngine #: lib/typed-mind-typescript/src/assertion-engine.ts
   => [assert]
 
 # DTOs
-ExportRegistry %
-EntityInfo %
-  - name: string
-  - type: string
-  - sourceFile: string
-  - exported: boolean
-EntityRegistry %
-  - functions: Map<string, EntityInfo>
-  - classes: Map<string, EntityInfo>
-  - interfaces: Map<string, EntityInfo>
-  - types: Map<string, EntityInfo>
-  - constants: Map<string, EntityInfo>
-  - files: Map<string, EntityInfo>
-FilePath %
-EntityName %
-ParsedType %
-  - type: string
-  - isOptional?: boolean
-  - description?: string
 ParsedFunction %
   - name: string
   - signature: string
@@ -158,7 +139,6 @@ Deviation %
   - severity: string
 
 # Constants
-ExportMode ! src/types.ts
 isFunction ! lib/typed-mind-typescript/src/types.ts
 isClass ! lib/typed-mind-typescript/src/types.ts
 isInterface ! lib/typed-mind-typescript/src/types.ts
