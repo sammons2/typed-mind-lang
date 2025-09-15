@@ -1,26 +1,18 @@
 # Longform syntax is for humans
-program MyApplication {
-  entry: main
-  version: "1.0.0"
-}
+MyApplication -> main v1.0.0
 
 # Main application file
-file main {
-  path: "main.ts"
-  exports: [App]
-}
+main @ main.ts:
+  -> [App, Application]
 
-class App {
-  extends: Application
-  methods: [start, stop]
-}
+Application <:
+  => [initialize, shutdown]
 
-function start {
-  signature: "() => void"
-  description: "Starts the application"
-}
+App <: Application
+  => [start, stop]
 
-function stop {
-  signature: "() => void"
-  description: "Stops the application"
-}
+start :: () => void
+  "Starts the application"
+
+stop :: () => void
+  "Stops the application"

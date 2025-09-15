@@ -1,42 +1,26 @@
 # Supplementary content for getting-started-dto-longform snippet
 # Provides program and file structure for DTO demonstration
 
-program DTOExampleApp {
-  entry: ModelsFile
-  version: "1.0.0"
-}
+DTOExampleApp -> ModelsFile v1.0.0
 
-file ModelsFile {
-  path: "models/user.ts"
-  exports: [User, UserService, getUser, createUser, updateUser, validateId, queryDatabase, BaseService]
-}
+ModelsFile @ models/user.ts:
+  -> [User, UserService, getUser, createUser, updateUser, validateId, queryDatabase, BaseService]
 
 # Missing function definitions
-function createUser {
-  signature: "(data: any) => User"
-  description: "Creates a new user"
-}
+createUser :: (data: any) => User
+  "Creates a new user"
 
-function updateUser {
-  signature: "(id: string, data: any) => User"
-  description: "Updates user data"
-}
+updateUser :: (id: string, data: any) => User
+  "Updates user data"
 
-function validateId {
-  signature: "(id: string) => boolean"
-  description: "Validates user ID"
-}
+validateId :: (id: string) => boolean
+  "Validates user ID"
 
-function queryDatabase {
-  signature: "(query: string) => User"
-  description: "Queries the database"
-}
+queryDatabase :: (query: string) => User
+  "Queries the database"
 
-class BaseService {
-  methods: [validate]
-}
+BaseService <:
+  => [validate]
 
-function validate {
-  signature: "(data: any) => boolean"
-  description: "Base validation method"
-}
+validate :: (data: any) => boolean
+  "Base validation method"

@@ -1,88 +1,54 @@
 # Supplementary content for function-longform snippet
 # Provides minimal context needed for validation
 
-program FunctionExampleApp {
-  entry: ExampleFile
-  version: "1.0.0"
-}
+FunctionExampleApp -> ExampleFile v1.0.0
 
-file ExampleFile {
-  path: "examples/functions.ts"
-  imports: [App]
-  exports: [validateEmail, login, updateUserProfile, validateCredentials, generateToken, initializeApp]
-}
+ExampleFile @ examples/functions.ts:
+  <- [App]
+  -> [validateEmail, login, updateUserProfile, validateCredentials, generateToken, initializeApp]
 
 # Required DTOs
-dto LoginDto {
-  description: "Login credentials"
-  fields: {
-    email: "string # User email",
-    password: "string # User password"
-  }
-}
+LoginDto %
+  "Login credentials"
+  - email: string "User email"
+  - password: string "User password"
 
-dto AuthToken {
-  description: "Authentication token"
-  fields: {
-    token: "string # JWT token",
-    expiresAt: "Date # Token expiration"
-  }
-}
+AuthToken %
+  "Authentication token"
+  - token: string "JWT token"
+  - expiresAt: Date "Token expiration"
 
-dto ProfileDto {
-  description: "Profile update data"
-  fields: {
-    name: "string # User name",
-    email: "string # User email"
-  }
-}
+ProfileDto %
+  "Profile update data"
+  - name: string "User name"
+  - email: string "User email"
 
-dto User {
-  description: "User entity"
-  fields: {
-    id: "string # User ID",
-    name: "string # User name",
-    email: "string # User email"
-  }
-}
+User %
+  "User entity"
+  - id: string "User ID"
+  - name: string "User name"
+  - email: string "User email"
 
 # Required UI Components
-component App {
-  root: true
-  description: "Main application component"
-  contains: [ProfileComponent, HeaderComponent]
-}
+App &! "Main application component"
+  > [ProfileComponent, HeaderComponent]
 
-component ProfileComponent {
-  description: "Profile display component"
-  containedBy: [App]
-}
+ProfileComponent & "Profile display component"
+  < [App]
 
-component HeaderComponent {
-  description: "Header component"
-  containedBy: [App]
-}
+HeaderComponent & "Header component"
+  < [App]
 
 # Required functions for calls
-function validateCredentials {
-  signature: "(data: LoginDto) => boolean"
-  description: "Validates user credentials"
-}
+validateCredentials :: (data: LoginDto) => boolean
+  "Validates user credentials"
 
-function generateToken {
-  signature: "(user: User) => AuthToken"
-  description: "Generates authentication token"
-}
+generateToken :: (user: User) => AuthToken
+  "Generates authentication token"
 
-function initializeApp {
-  signature: "() => void"
-  description: "Initializes the application UI"
-  affects: [App]
-}
+initializeApp :: () => void
+  "Initializes the application UI"
+  ~ [App]
 
 # Required runtime parameter
-parameter JWT_SECRET {
-  type: "env"
-  description: "JWT secret key"
-  required: true
-}
+JWT_SECRET $env "JWT secret key" (required)

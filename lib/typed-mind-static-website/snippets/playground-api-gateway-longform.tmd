@@ -1,65 +1,34 @@
 # Longform syntax is for humans
-program TodoApp {
-  entry: api
-  version: "1.0.0"
-}
+TodoApp -> api v1.0.0
 
-file api {
-  path: "api.ts"
-  imports: [CreateTodoDto, Todo]
-  exports: [TodoService]
-}
+api @ api.ts:
+  <- [CreateTodoDto, Todo]
+  -> [TodoService, BaseService]
 
-class TodoService {
-  extends: BaseService
-  methods: [createTodo, getTodos]
-}
+TodoService <: BaseService
+  => [createTodo, getTodos]
 
-function createTodo {
-  signature: "(input: CreateTodoDto) => Todo"
-  description: "Creates a new todo item"
-  input: CreateTodoDto
-  output: Todo
-}
+createTodo :: (input: CreateTodoDto) => Todo
+  "Creates a new todo item"
+  <- CreateTodoDto
+  -> Todo
 
-function getTodos {
-  signature: "() => Todo[]"
-  description: "Retrieves all todo items"
-  output: Todo
-}
+getTodos :: () => Todo[]
+  "Retrieves all todo items"
+  -> Todo
 
-dto CreateTodoDto {
-  description: "Input for creating todos"
-  fields: {
-    title: {
-      type: "string"
-      description: "Todo title"
-    }
-    completed: {
-      type: "boolean"
-      description: "Completion status"
-    }
-  }
-}
+CreateTodoDto % "Input for creating todos"
+  - title: string "Todo title"
+  - completed: boolean "Completion status"
 
-dto Todo {
-  description: "Todo entity"
-  fields: {
-    id: {
-      type: "string"
-      description: "Unique identifier"
-    }
-    title: {
-      type: "string"
-      description: "Todo title"
-    }
-    completed: {
-      type: "boolean"
-      description: "Completion status"
-    }
-    createdAt: {
-      type: "Date"
-      description: "Creation timestamp"
-    }
-  }
-}class BaseService { methods: [validate] } function validate { signature: "(data: any) => boolean" description: "Validates input data" }
+Todo % "Todo entity"
+  - id: string "Unique identifier"
+  - title: string "Todo title"
+  - completed: boolean "Completion status"
+  - createdAt: Date "Creation timestamp"
+
+BaseService <:
+  => [validate]
+
+validate :: (data: any) => boolean
+  "Validates input data"

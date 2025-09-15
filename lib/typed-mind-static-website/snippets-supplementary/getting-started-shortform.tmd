@@ -2,7 +2,7 @@
 
 # Create a main entry file since programs need File entry points, not ClassFiles
 MainFile @ main.ts:
-  <- [App]
+  <- [App, Application, initialize, listen, BaseService]
   -> [startApp]
 
 # Entry function that starts the App ClassFile
@@ -10,18 +10,12 @@ startApp :: () => void
   "Entry point that starts the application"
   ~> [start]
 
-# Import entities into MainFile and export startApp
-file MainFile {
-  imports: [Application, initialize, listen, BaseService]
-  exports: [startApp]
-}
-
 # Base service that exports Application class
 BaseService @ base.ts:
   -> [Application, initialize, listen]
 
-# Base class that App extends  
-Application <: Object
+# Base class that App extends
+Application <:
   => [initialize, listen]
 
 # Missing functions that are called by start

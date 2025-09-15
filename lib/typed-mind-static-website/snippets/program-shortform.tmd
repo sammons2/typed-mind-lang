@@ -3,7 +3,10 @@ MyApplication -> main v1.0.0
 
 # Main application file
 main @ main.ts:
-  -> [App]
+  -> [App, Application]
+
+Application <:
+  => [initialize, shutdown]
 
 App <: Application
   => [start, stop]

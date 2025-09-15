@@ -1,92 +1,46 @@
 # Longform syntax is for humans
-program TodoApp {
-  entry: api
-  version: "1.0.0"
-}
+TodoApp -> api v1.0.0
 
-file api {
-  path: "api.ts"
-  imports: [CreateTodoDto, Todo]
-  exports: [TodoService, BaseService]
-}
+api @ api.ts:
+  <- [CreateTodoDto, Todo]
+  -> [TodoService, BaseService]
 
-class TodoService {
-  extends: BaseService
-  methods: [createTodo, getTodos, findById, update, delete]
-}
+TodoService <: BaseService
+  => [createTodo, getTodos, findById, update, delete]
 
-class BaseService {
-  methods: [validate]
-}
+BaseService <:
+  => [validate]
 
-function createTodo {
-  signature: "(input: CreateTodoDto) => Todo"
-  description: "Creates a new todo item"
-  input: CreateTodoDto
-  output: Todo
-}
+createTodo :: (input: CreateTodoDto) => Todo
+  "Creates a new todo item"
+  <- CreateTodoDto
+  -> Todo
 
-function getTodos {
-  signature: "() => Todo[]"
-  description: "Retrieves all todo items"
-  output: Todo
-}
+getTodos :: () => Todo[]
+  "Retrieves all todo items"
+  -> Todo
 
-function findById {
-  signature: "(id: string) => Todo"
-  description: "Finds todo by ID"
-  output: Todo
-}
+findById :: (id: string) => Todo
+  "Finds todo by ID"
+  -> Todo
 
-function update {
-  signature: "(id: string, input: CreateTodoDto) => Todo"
-  description: "Updates existing todo"
-  input: CreateTodoDto
-  output: Todo
-}
+update :: (id: string, input: CreateTodoDto) => Todo
+  "Updates existing todo"
+  <- CreateTodoDto
+  -> Todo
 
-function delete {
-  signature: "(id: string) => void"
-  description: "Deletes a todo"
-}
+delete :: (id: string) => void
+  "Deletes a todo"
 
-function validate {
-  signature: "(data: any) => boolean"
-  description: "Validates input data"
-}
+validate :: (data: any) => boolean
+  "Validates input data"
 
-dto CreateTodoDto {
-  description: "Input for creating todos"
-  fields: {
-    title: {
-      type: "string"
-      description: "Todo title"
-    }
-    completed: {
-      type: "boolean"
-      description: "Completion status"
-    }
-  }
-}
+CreateTodoDto % "Input for creating todos"
+  - title: string "Todo title"
+  - completed: boolean "Completion status"
 
-dto Todo {
-  description: "Todo entity"
-  fields: {
-    id: {
-      type: "string"
-      description: "Unique identifier"
-    }
-    title: {
-      type: "string"
-      description: "Todo title"
-    }
-    completed: {
-      type: "boolean"
-      description: "Completion status"
-    }
-    createdAt: {
-      type: "Date"
-      description: "Creation timestamp"
-    }
-  }
-}class BaseService { methods: [validate] } function validate { signature: "(data: any) => boolean" description: "Validates input data" }
+Todo % "Todo entity"
+  - id: string "Unique identifier"
+  - title: string "Todo title"
+  - completed: boolean "Completion status"
+  - createdAt: Date "Creation timestamp"

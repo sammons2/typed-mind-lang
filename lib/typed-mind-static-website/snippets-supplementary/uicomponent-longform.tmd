@@ -1,16 +1,11 @@
 # Supplementary content for uicomponent-longform snippet
 # Provides program and functions that affect UI components
 
-program UIExampleApp {
-  entry: UIFile
-  version: "1.0.0"
-}
+UIExampleApp -> UIFile v1.0.0
 
-file UIFile {
-  path: "src/ui-manager.ts"
+UIFile @ src/ui-manager.ts:
   <- [LoginDto, AuthToken, ProfileDto, User]
-  exports: [login, logout, updateUserProfile, deleteUser, initializeApp, App]
-}
+  -> [login, logout, updateUserProfile, deleteUser, initializeApp, App]
 
 # Function that will affect the App component (defined after main snippet)
 initializeApp :: () => void

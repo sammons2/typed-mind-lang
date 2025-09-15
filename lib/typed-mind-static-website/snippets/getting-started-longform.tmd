@@ -1,31 +1,20 @@
 # Longform syntax is for humans
-program MyFirstApp {
-  entry: AppFile
-  version: "1.0.0"
-}
+MyFirstApp -> AppFile v1.0.0
 
-file AppFile {
-  path: "src/app.ts"
-  imports: [App]
-  exports: [startApp]
-}
+AppFile @ src/app.ts:
+  <- [App]
+  -> [startApp, Application]
 
-function startApp {
-  signature: "() => void"
-  description: "Application entry point"
+startApp :: () => void
+  "Application entry point"
   ~> [start]
-}
 
 # ClassFile fusion operator eliminates boilerplate
-App #: main.ts {
-  extends: Application
-  methods: [start, stop]
-  exports: [start, stop, initialize, listen]
-}
+App #: main.ts <: Application
+  => [start, stop]
+  -> [initialize, listen]
 
-function start {
-  signature: () => void
-  description: "Starts the application"
-  calls: [initialize, listen]
-  consumes: [PORT, NODE_ENV]
-}
+start :: () => void
+  "Starts the application"
+  ~> [initialize, listen]
+  $< [PORT, NODE_ENV]
