@@ -14,10 +14,13 @@ export default defineConfig({
   outExtension: ({ format }) => ({
     js: `.${format === 'cjs' ? 'cjs' : 'mjs'}`
   }),
-  esbuildOptions: {
-    platform: 'node',
-    banner: {
-      js: (context) => context.path.includes('cli') ? '#!/usr/bin/env node\n' : ''
+  esbuildOptions(options, context) {
+    return {
+      ...options,
+      platform: 'node',
+      banner: {
+        js: context.outputPath?.includes('cli') ? '#!/usr/bin/env node\n' : ''
+      }
     }
   }
 });
