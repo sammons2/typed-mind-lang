@@ -12,10 +12,10 @@ npm install -g @sammons/typed-mind-cli
 
 ```bash
 # Parse and validate a TypedMind file
-typed-mind validate program.tmd
+typed-mind --check program.tmd
 
 # Render a TypedMind program to HTML
-typed-mind render program.tmd --output output.html
+typed-mind --render program.tmd --output output.html
 
 # Show help
 typed-mind --help
@@ -30,6 +30,15 @@ TypedMind is a Domain Specific Language (DSL) for declaratively describing softw
 - UI components and their relationships
 - Asset management and routing
 - Cross-cutting concerns and validation rules
+
+## Module Usage
+
+```js
+// ESM
+import { DSLChecker } from '@sammons/typed-mind-cli';
+// CJS
+const { DSLChecker } = require('@sammons/typed-mind-cli');
+```
 
 ## Requirements
 
